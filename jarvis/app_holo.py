@@ -86,6 +86,14 @@ class HoloBridge:
     def minimize_app(self):
         self.window.minimize()
 
+    def resize_to_mini(self):
+        """Режим парящего компактного 3D-шара"""
+        self.window.resize(320, 320)
+
+    def resize_to_full(self):
+        """Разворот в полный голографический интерфейс"""
+        self.window.resize(1000, 720)
+
     def close_app(self):
         self.window.destroy()
         os._exit(0)
@@ -106,7 +114,7 @@ def start_holo_jarvis():
         background_color='#060c18'
     )
     bridge = HoloBridge(window)
-    window.expose(bridge.trigger_listen, bridge.send_command, bridge.minimize_app, bridge.close_app)
+    window.expose(bridge.trigger_listen, bridge.send_command, bridge.minimize_app, bridge.close_app, bridge.resize_to_mini, bridge.resize_to_full)
     webview.start()
 
 if __name__ == "__main__":

@@ -36,7 +36,39 @@
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(0, 240, 255, 0.03);
         }
 
-        /* Область для перетаскивания безрамочного окна по экрану */
+        /* Режим мини-виджета: Чисто светящийся 3D-шар */
+        body.mini-mode {
+            padding: 0;
+            border: none;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        body.mini-mode .drag-zone,
+        body.mini-mode .holo-overlay,
+        body.mini-mode .bottom-bar {
+            display: none !important;
+        }
+
+        /* Кнопка быстрого разворачивания прямо по клику на шар */
+        .mini-expand-hint {
+            display: none;
+            position: absolute;
+            bottom: 10px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #00f0ff;
+            background: rgba(3, 15, 30, 0.8);
+            border: 1px solid #00f0ff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        body.mini-mode .mini-expand-hint {
+            display: block;
+        }
         .drag-zone {
             position: absolute;
             top: 0; left: 0; right: 0; height: 50px;
@@ -260,13 +292,14 @@
             <span class="hud-status-badge" id="hud-status">HOLO-3D CORE // READY</span>
         </div>
         <div class="controls-top">
-            <button class="btn-holo" onclick="toggleMinimize()">— СВЕРНУТЬ</button>
+            <button class="btn-holo" onclick="toggleMiniOrb()">🔮 ТОЛЬКО ШАР</button>
             <button class="btn-holo" style="border-color: #ff5252; color: #ff8a80;" onclick="closeApp()">✕</button>
         </div>
     </div>
 
     <!-- 3D Canvas WebGL -->
     <div id="webgl-container"></div>
+    <div class="mini-expand-hint" id="mini-hint">КЛИКНИТЕ ДЛЯ РАЗВОРОТА</div>
 
     <!-- Голографический текст Джарвиса -->
     <div class="holo-overlay">
@@ -482,9 +515,25 @@
             }
         }
 
-        function toggleMinimize() {
-            if (window.pywebview) window.pywebview.api.minimize_app();
+        let isMiniMode = false;
+
+        function toggleMiniOrb() {
+            isMiniMode = !isMiniMode;
+            if (isMiniMode) {
+                document.body.classList.add('mini-mode');
+                if (window.pywebview) window.pywebview.api.resize_to_mini();
+            } else {
+                document.body.classList.remove('mini-mode');
+                if (window.pywebview) window.pywebview.api.resize_to_full();
+            }
         }
+
+        // Клик по шару в мини-режиме разворачивает полный интерфейс
+        window.addEventListener('click', (e) => {
+            if (isMiniMode) {
+                toggleMiniOrb();
+            }
+        });
 
         function closeApp() {
             if (window.pywebview) window.pywebview.api.close_app();
