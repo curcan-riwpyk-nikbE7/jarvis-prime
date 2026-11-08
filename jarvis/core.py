@@ -4,23 +4,27 @@ from google import genai
 from google.genai import types
 
 from jarvis.config import Config
+from jarvis.memory import JarvisMemory
 from jarvis.tools.video_editor import VideoEditorTool
 from jarvis.tools.computer_use import ComputerUseTool
 from jarvis.tools.file_manager import FileManagerTool
 from jarvis.tools.terminal import TerminalTool
+from jarvis.tools.vision import VisionTool
 
 SYSTEM_PROMPT = """
 Ты — J.A.R.V.I.S. Prime, автономный ИИ-ассистент, управляющий компьютером пользователя (сэра).
-У тебя есть реальные инструменты для выполнения задач:
+У тебя есть реальные инструменты:
 1. Видеомонтаж (нарезка, склейка видео, наложение музыки через FFmpeg).
-2. Computer-Use (управление мышью, клики, ввод текста, переключение окон, скриншоты экрана).
-3. Поиск файлов на диске (папка Загрузки, Рабочий стол).
-4. Выполнение терминальных команд PowerShell.
+2. Computer-Use (управление мышью, клики, ввод текста, переключение окон, скриншоты).
+3. Зрение (analyze_screen — ты умеешь смотреть на экран и анализировать, что там происходит).
+4. Поиск файлов на диске (Загрузки, Рабочий стол).
+5. Выполнение терминальных команд PowerShell.
 
 Правила:
 - Веди себя как британский джентльмен и преданный ИИ-помощник Тони Старка (обращайся «сэр»).
-- Когда сэр просит смонтировать видео или сделать что-то на компьютере, используй доступные инструменты.
-- Отвечай коротко, емко, без лишних длинных монологов.
+- Запоминай предпочтения пользователя и используй контекст.
+- Если сэр говорит «посмотри на экран» или спрашивает о происходящем на мониторе, используй analyze_screen.
+- Отвечай емко, без лишней "воды", готово для озвучивания.
 """
 
 class JarvisCore:
@@ -30,13 +34,14 @@ class JarvisCore:
             raise ValueError("GEMINI_API_KEY не установлен в .env")
 
         self.client = genai.Client(api_key=api_key)
+        self.memory = JarvisMemory()
 
-        # Регистрируем функции в Gemini Function Calling
         self.tools = [
             VideoEditorTool.trim_video,
             VideoEditorTool.concatenate_videos,
             VideoEditorTool.add_background_music,
             VideoEditorTool.convert_to_shorts_9_16,
+            VisionTool.analyze_screen,
             ComputerUseTool.take_screenshot,
             ComputerUseTool.mouse_click,
             ComputerUseTool.type_text,

@@ -3,8 +3,8 @@ import sys
 import threading
 from pathlib import Path
 import webview
+import keyboard
 
-# Добавляем корневую директорию проекта
 root_dir = str(Path(__file__).resolve().parent.parent)
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
@@ -12,6 +12,7 @@ if root_dir not in sys.path:
 from jarvis.config import Config
 from jarvis.voice.engine import VoiceEngine
 from jarvis.core import JarvisCore
+from jarvis.sound_fx import SoundFX
 
 class JarvisBridge:
     def __init__(self, window):
@@ -19,6 +20,9 @@ class JarvisBridge:
         self.voice = VoiceEngine()
         self.core = None
         self._init_core()
+        self._start_wake_word_listener()
+        self._setup_hotkeys()
+        SoundFX.play_startup_sound()
 
     def _init_core(self):
         def load():
@@ -28,8 +32,34 @@ class JarvisBridge:
                 print(f"[Bridge] Ошибка инициализации: {e}")
         threading.Thread(target=load, daemon=True).start()
 
+    def _setup_hotkeys(self):
+        """Горячая клавиша Alt+J для мгновенной активации микрофона в любой программе"""
+        def on_hotkey():
+            SoundFX.play_wake_sound()
+            self.trigger_listen()
+
+        try:
+            keyboard.add_hotkey("alt+j", on_hotkey)
+        except Exception:
+            pass
+
+    def _start_wake_word_listener(self):
+        """Фоновый непрерывный перехват активационной фразы 'Джарвис'"""
+        def loop():
+            while True:
+                try:
+                    # Быстрое фоновое прослушивание ключевого слова
+                    heard = self.voice.listen(timeout=3, phrase_time_limit=4)
+                    if heard and any(w in heard.lower() for w in ["джарвис", "jarvis"]):
+                        SoundFX.play_wake_sound()
+                        self.trigger_listen()
+                except Exception:
+                    pass
+        threading.Thread(target=loop, daemon=True).start()
+
     def trigger_listen(self):
         def task():
+            SoundFX.play_wake_sound()
             self.window.evaluate_js("setStatus('СЛУШАЮ ВАС, СЭР...', true, false)")
             user_text = self.voice.listen(timeout=6, phrase_time_limit=10)
             self.window.evaluate_js("setStatus('СИСТЕМЫ В СТРОЮ // ГОТОВ К РАБОТЕ', false, false)")
