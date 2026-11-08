@@ -38,7 +38,7 @@ class VoiceEngine:
         await communicate.save(output_path)
 
     def speak(self, text: str):
-        """Озвучивание текста: сначала через чистый нейро-голос Edge-TTS, при сбое — через нативный движок Windows"""
+        """Озвучивание текста: приоритет строго на русский дубляж Edge-TTS"""
         if not text:
             return
 
@@ -47,15 +47,16 @@ class VoiceEngine:
 
         success = False
         try:
-            asyncio.run(asyncio.wait_for(self._async_speak_edge(text, temp_path), timeout=4.0))
-            if os.path.exists(temp_path) and os.path.getsize(temp_path) > 500:
+            # Увеличиваем таймаут, чтобы не переключаться на старый голос Windows
+            asyncio.run(asyncio.wait_for(self._async_speak_edge(text, temp_path), timeout=8.0))
+            if os.path.exists(temp_path) and os.path.getsize(temp_path) > 300:
                 pygame.mixer.music.load(temp_path)
                 pygame.mixer.music.play()
                 while pygame.mixer.music.get_busy():
                     pygame.time.Clock().tick(10)
                 success = True
         except Exception as e:
-            pass
+            print(f"[Voice Error]: {e}")
         finally:
             if os.path.exists(temp_path):
                 try:
@@ -64,12 +65,6 @@ class VoiceEngine:
                 except Exception:
                     pass
 
-        # Если интернет-голос не проигрался, говорим через нативный Windows голос мужским тоном
-        if not success and self.sapi:
-            try:
-                # Понижаем скорость для более солидного звучания
-                self.sapi.setProperty('rate', 160)
-                self.sapi.say(text)
-                self.sapi.runAndWait()
-            except Exception:
-                pass
+        # Если интернет-голос совсем не сработал
+        if not success:
+            print(f"[Fallback Voice]: {text}")

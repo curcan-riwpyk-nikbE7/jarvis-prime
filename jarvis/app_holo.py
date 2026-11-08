@@ -94,17 +94,16 @@ class HoloBridge:
 def start_holo_jarvis():
     html_path = os.path.join(os.path.dirname(__file__), "ui", "holo.html")
     
-    # Создаем безрамочное окно с поддержкой прозрачности
+    # Создаем безрамочное окно в глубоком премиальном темном стиле
     window = webview.create_window(
         title="J.A.R.V.I.S. Holo-Sphere",
         url=html_path,
         width=1000,
-        height=700,
+        height=720,
         frameless=True,          # БЕЗ СИСТЕМНОЙ РАМКИ WINDOWS
         easy_drag=True,          # Перетаскивание кликом
-        on_top=True,             # Парит поверх всех окон
-        transparent=True,        # Прозрачный фон
-        background_color='#030811'
+        on_top=True,             # Парит поверх окон
+        background_color='#060c18'
     )
     bridge = HoloBridge(window)
     window.expose(bridge.trigger_listen, bridge.send_command, bridge.minimize_app, bridge.close_app)

@@ -17,8 +17,13 @@
 
         /* Полная прозрачность и перетаскивание окна */
         body {
-            background: transparent;
-            color: #e0f7fa;
+            background: #040914;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 180, 216, 0.08) 0%, transparent 70%),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 35px 35px, 35px 35px;
+            color: #b2ebf2;
             height: 100vh;
             overflow: hidden;
             display: flex;
@@ -26,6 +31,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), inset 0 0 40px rgba(0, 240, 255, 0.03);
         }
 
         /* Область для перетаскивания безрамочного окна по экрану */
@@ -331,10 +339,10 @@
             geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
             const material = new THREE.PointsMaterial({
-                size: 2.2,
+                size: 1.5,
                 vertexColors: true,
                 transparent: true,
-                opacity: 0.85,
+                opacity: 0.6,
                 blending: THREE.AdditiveBlending
             });
 
