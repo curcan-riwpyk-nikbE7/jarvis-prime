@@ -524,11 +524,12 @@
         <!-- 1. ЛЕВАЯ НАВИГАЦИЯ -->
         <div class="sidebar">
             <div class="nav-group">
-                <div class="nav-item active" onclick="switchTab('plugins', this)">🧩 Плагины и Скилы</div>
-                <div class="nav-item" onclick="switchTab('studio', this)">🎬 Студия Монтажа</div>
+                <div class="nav-item active" onclick="switchTab('home', this)">🏠 Главная</div>
                 <div class="nav-item" onclick="switchTab('chat', this)">💬 Чат с Джарвисом</div>
+                <div class="nav-item" onclick="switchTab('plugins', this)">🧩 Плагины</div>
+                <div class="nav-item" onclick="switchTab('studio', this)">🎬 Студия Монтажа</div>
                 <div class="nav-item" onclick="switchTab('pc-control', this)">💻 Управление ПК</div>
-                <div class="nav-item" onclick="switchTab('memory', this)">🧠 Память и Профиль</div>
+                <div class="nav-item" onclick="switchTab('memory', this)">🧠 Память</div>
                 <div class="nav-item" onclick="switchTab('settings', this)">⚙️ Настройки</div>
             </div>
 
@@ -543,8 +544,80 @@
         <!-- 2. ЦЕНТРАЛЬНАЯ КОЛОНКА -->
         <div class="main-content">
             
-            <!-- ВКЛАДКА 1: ПЛАГИНЫ И СКИЛЫ (КАК В KIRA) -->
-            <div class="tab-panel active" id="tab-plugins">
+            <!-- ВКЛАДКА 0: ГЛАВНАЯ (ТОЧНО КАК НА СКРИНШОТЕ KIRA) -->
+            <div class="tab-panel active" id="tab-home">
+                <div style="text-align: center; margin-top: 15px; margin-bottom: 30px;">
+                    <div style="font-size: 38px; font-weight: 800; color: #ffffff; letter-spacing: 1px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                        Привет, я <span style="background: linear-gradient(135deg, #00f0ff, #9d4edd); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">J.A.R.V.I.S.</span>
+                    </div>
+                    <div style="font-size: 14px; color: var(--text-muted); margin-top: 6px;">
+                        Ваш персональный голосовой ассистент и AI-помощник
+                    </div>
+                </div>
+
+                <!-- Строка ввода с хоткеем Ctrl+K -->
+                <div style="background: rgba(26, 21, 48, 0.7); border: 1px solid var(--border-soft); border-radius: 14px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                    <input type="text" id="home-cmd-input" placeholder="Скажите команду или спросите что-нибудь..." style="flex: 1; background: transparent; border: none; color: #ffffff; font-size: 14px; outline: none;" onkeydown="if(event.key==='Enter') sendFromHome()">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span style="font-size: 11px; background: rgba(157, 78, 221, 0.2); color: #c77dff; padding: 3px 8px; border-radius: 6px; font-weight: 600;">🎙️ Alt + J</span>
+                        <button class="btn-mic-bar" style="padding: 6px 16px; border-radius: 8px;" onclick="toggleVoice()">Голос</button>
+                    </div>
+                </div>
+
+                <!-- Подсказки «Попробуйте сказать:» -->
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 35px;">
+                    <span style="font-size: 12px; color: var(--text-muted);">Попробуйте сказать:</span>
+                    <span class="action-chip" onclick="sendQuick('Открой YouTube')">Открой YouTube</span>
+                    <span class="action-chip" onclick="sendQuick('Сделай скриншот экрана')">Сделай скриншот</span>
+                    <span class="action-chip" onclick="sendQuick('Запусти Spotify')">Запусти Spotify</span>
+                    <span class="action-chip" onclick="sendQuick('Поищи в Google последние новости')">Поищи в Google</span>
+                    <span class="action-chip" onclick="sendQuick('Наведи порядок на рабочем столе')">Очисти рабочий стол</span>
+                </div>
+
+                <!-- Блок быстрых действий (сетка 3x2 как на скриншоте) -->
+                <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 14px; letter-spacing: 0.5px;">Быстрые действия</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 30px;">
+                    <div class="plugin-card" style="height: 80px; padding: 14px; justify-content: center; gap: 6px;" onclick="sendQuick('Открой Telegram')">
+                        <div style="font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                            <span>📦</span> Открыть приложение
+                        </div>
+                    </div>
+                    <div class="plugin-card" style="height: 80px; padding: 14px; justify-content: center; gap: 6px;" onclick="sendQuick('Покажи список всех открытых окон')">
+                        <div style="font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                            <span>🪟</span> Управление окнами
+                        </div>
+                    </div>
+                    <div class="plugin-card" style="height: 80px; padding: 14px; justify-content: center; gap: 6px;" onclick="sendQuick('Сделай звук погромче')">
+                        <div style="font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                            <span>⚙️</span> Системные команды
+                        </div>
+                    </div>
+                    <div class="plugin-card" style="height: 80px; padding: 14px; justify-content: center; gap: 6px;" onclick="sendQuick('Включи музыку')">
+                        <div style="font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                            <span>🎵</span> Медиа контроль
+                        </div>
+                    </div>
+                    <div class="plugin-card" style="height: 80px; padding: 14px; justify-content: center; gap: 6px;" onclick="sendQuick('Найди видео в папке Загрузки')">
+                        <div style="font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                            <span>📁</span> Работа с файлами
+                        </div>
+                    </div>
+                    <div class="plugin-card" style="height: 80px; padding: 14px; justify-content: center; gap: 6px;" onclick="sendQuick('Обрежь первые 30 секунд у видео')">
+                        <div style="font-size: 13px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px;">
+                            <span>🎬</span> FFmpeg Монтаж
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Блок «Недавние команды» -->
+                <div style="font-size: 13px; font-weight: 700; color: #ffffff; margin-bottom: 10px;">Недавние команды</div>
+                <div style="background: var(--bg-card); border: 1px solid var(--border-soft); border-radius: 12px; padding: 16px; color: var(--text-muted); font-size: 12px;" id="recent-commands-box">
+                    История появится после первой команды, сэр.
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 1: ПЛАГИНЫ И СКИЛЫ -->
+            <div class="tab-panel" id="tab-plugins">
                 <div class="section-title">Плагины и Скилы</div>
                 <div class="section-desc">Расширения возможностей Джарвиса — модули управления системой и медиа</div>
 
@@ -824,12 +897,13 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        function sendText() {
-            const input = document.getElementById('cmd-input');
+        function sendFromHome() {
+            const input = document.getElementById('home-cmd-input');
             const val = input.value.trim();
             if (val) {
                 input.value = '';
                 addMessage('СЭР', val, true);
+                switchTab('chat');
                 if (window.pywebview) window.pywebview.api.send_command(val);
             }
         }
