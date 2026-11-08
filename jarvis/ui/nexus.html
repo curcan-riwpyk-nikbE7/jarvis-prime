@@ -3,726 +3,866 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. QUANTUM NEXUS</title>
+    <title>J.A.R.V.I.S. PRIME MARK VII</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
+        :root {
+            --cyan: #00f0ff;
+            --cyan-glow: rgba(0, 240, 255, 0.45);
+            --purple: #a855f7;
+            --purple-glow: rgba(168, 85, 247, 0.45);
+            --gold: #f59e0b;
+            --bg-deep: #050811;
+            --panel-bg: rgba(9, 14, 28, 0.65);
+            --border-glow: rgba(0, 240, 255, 0.22);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Consolas', 'Segoe UI', monospace;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Consolas', sans-serif;
             user-select: none;
         }
 
         body {
-            background-color: #020409;
-            background-image: 
-                radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.05) 0%, transparent 60%),
-                radial-gradient(circle at 10% 20%, rgba(157, 78, 221, 0.08) 0%, transparent 40%),
-                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-            color: #d1f4ff;
+            background-color: var(--bg-deep);
+            color: #e2e8f0;
             height: 100vh;
             overflow: hidden;
             display: flex;
             position: relative;
-            border-radius: 20px;
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            box-shadow: 0 0 70px rgba(0, 0, 0, 0.95), inset 0 0 60px rgba(0, 240, 255, 0.03);
+            border-radius: 18px;
+            border: 1px solid var(--border-glow);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), inset 0 0 100px rgba(0, 240, 255, 0.02);
+            background-image: 
+                radial-gradient(circle at 50% 35%, rgba(0, 240, 255, 0.08) 0%, transparent 55%),
+                radial-gradient(circle at 15% 85%, rgba(168, 85, 247, 0.06) 0%, transparent 45%);
         }
 
-        /* Область перетаскивания окна */
-        .top-drag-bar {
+        /* Верхняя панель заголовка окна */
+        .titlebar {
             position: absolute;
-            top: 0; left: 0; right: 0; height: 45px;
+            top: 0; left: 0; right: 0;
+            height: 48px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 25px;
+            padding: 0 22px;
             z-index: 100;
             -webkit-app-region: drag;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            background: linear-gradient(180deg, rgba(8, 12, 24, 0.8) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
         }
 
-        .hud-brand {
-            font-size: 12px;
-            letter-spacing: 5px;
-            font-weight: 900;
-            color: #00f0ff;
-            text-shadow: 0 0 15px #00f0ff;
+        .brand-badge {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .hud-controls {
+        .arc-logo {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 12px var(--cyan);
             display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .arc-logo::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--cyan);
+        }
+
+        .brand-title {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #ffffff;
+            text-transform: uppercase;
+        }
+
+        .brand-sub {
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            color: var(--cyan);
+            padding: 2px 7px;
+            background: rgba(0, 240, 255, 0.1);
+            border-radius: 4px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+        }
+
+        .controls-group {
+            display: flex;
+            align-items: center;
             gap: 10px;
             -webkit-app-region: no-drag;
         }
 
-        .btn-circle-action {
-            background: rgba(0, 240, 255, 0.08);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            color: #80d8ff;
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            color: #cbd5e1;
             font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 20px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 8px;
             cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--cyan);
+            color: #ffffff;
+            box-shadow: 0 0 16px var(--cyan-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-close {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .btn-close:hover {
+            background: #ef4444;
+            color: #fff;
+            box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
+        }
+
+        /* 3D Canvas реактора по центру */
+        #reactor-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Главная сетка HUD */
+        .hud-grid {
+            position: absolute;
+            top: 55px; left: 24px; right: 24px; bottom: 20px;
+            z-index: 10;
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            grid-template-rows: 1fr auto;
+            gap: 20px;
+            pointer-events: none;
+        }
+
+        /* Стеклянные карточки UI */
+        .glass-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            padding: 18px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+            pointer-events: all;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--cyan);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        /* Индикаторы телеметрии ПК */
+        .gauge-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .gauge-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .gauge-val {
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        .progress-track {
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .bar-cyan { background: linear-gradient(90deg, var(--cyan), #38bdf8); box-shadow: 0 0 10px var(--cyan-glow); }
+        .bar-purple { background: linear-gradient(90deg, var(--purple), #c084fc); box-shadow: 0 0 10px var(--purple-glow); }
+        .bar-gold { background: linear-gradient(90deg, var(--gold), #fbbf24); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+
+        /* Протоколы системы */
+        .spec-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .spec-row strong {
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        /* Правая колонка действий и скилов */
+        .actions-column {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: all;
+        }
+
+        .action-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-card:hover {
+            transform: translateX(-4px) translateY(-1px);
+            border-color: var(--cyan);
+            background: rgba(0, 240, 255, 0.09);
+            box-shadow: 0 0 25px var(--cyan-glow);
+        }
+
+        .act-icon {
+            font-size: 20px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .act-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .act-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .act-sub {
+            font-size: 10px;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+        }
+
+        /* Нижний интерактивный пульт по центру */
+        .bottom-dock {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            margin-top: auto;
+            pointer-events: none;
+        }
+
+        /* Индикатор речи Джарвиса */
+        .speech-capsule {
+            pointer-events: all;
+            max-width: 680px;
+            width: 100%;
+            background: rgba(8, 14, 28, 0.88);
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            border-radius: 14px;
+            padding: 14px 22px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 240, 255, 0.04);
+            backdrop-filter: blur(25px);
+            text-align: center;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #f1f5f9;
+            transition: all 0.3s;
+        }
+
+        .speech-tag {
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            color: var(--cyan);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        /* Командная строка с голосовой кнопкой */
+        .command-bar {
+            pointer-events: all;
+            width: 100%;
+            max-width: 680px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(10, 16, 32, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.28);
+            border-radius: 14px;
+            padding: 6px 8px 6px 18px;
+            backdrop-filter: blur(25px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.25s;
+        }
+
+        .command-bar:focus-within {
+            border-color: var(--cyan);
+            box-shadow: 0 0 30px var(--cyan-glow);
+        }
+
+        .command-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 13.5px;
+            letter-spacing: 0.3px;
+        }
+        .command-input::placeholder {
+            color: #64748b;
+        }
+
+        .btn-mic-prime {
+            background: linear-gradient(135deg, var(--cyan), #2563eb);
+            border: none;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 20px var(--cyan-glow);
             transition: all 0.2s;
         }
 
-        .btn-circle-action:hover {
-            background: #00f0ff;
-            color: #000;
-            box-shadow: 0 0 15px #00f0ff;
+        .btn-mic-prime:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 30px var(--cyan);
         }
 
-        /* ПОЛНОЦЕННОЕ ГОЛОГРАФИЧЕСКОЕ ОКНО НАСТРОЕК */
-        .settings-modal {
+        .btn-mic-prime.listening {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            animation: pulseMic 1s infinite alternate;
+        }
+
+        @keyframes pulseMic {
+            from { transform: scale(1); box-shadow: 0 0 15px #f59e0b; }
+            to { transform: scale(1.06); box-shadow: 0 0 35px #ef4444; }
+        }
+
+        /* ПОЛНОЦЕННОЕ МОДАЛЬНОЕ ОКНО НАСТРОЕК */
+        .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 4, 10, 0.9);
-            backdrop-filter: blur(20px);
+            background: rgba(3, 6, 15, 0.88);
+            backdrop-filter: blur(30px);
             z-index: 1000;
             justify-content: center;
             align-items: center;
         }
 
-        .settings-box {
-            width: 820px;
+        .modal-container {
+            width: 840px;
             max-height: 85vh;
-            background: #060b18;
-            border: 1px solid rgba(0, 240, 255, 0.4);
-            box-shadow: 0 0 60px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 240, 255, 0.04);
-            border-radius: 16px;
+            background: #090e1f;
+            border: 1px solid rgba(0, 240, 255, 0.35);
+            border-radius: 18px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.85), 0 0 40px var(--cyan-glow);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            animation: modalFadeIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes modalFadeIn {
+        @keyframes modalPop {
             from { opacity: 0; transform: scale(0.96) translateY(-10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
-        .settings-header {
+        .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 18px 25px;
-            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
-            background: rgba(0, 240, 255, 0.03);
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.02);
         }
 
-        .settings-title {
+        .modal-title {
             font-size: 14px;
             font-weight: 800;
-            letter-spacing: 3px;
-            color: #00f0ff;
+            letter-spacing: 2.5px;
+            color: var(--cyan);
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .settings-body {
+        .modal-body {
             display: grid;
-            grid-template-columns: 200px 1fr;
+            grid-template-columns: 210px 1fr;
             flex: 1;
             overflow: hidden;
         }
 
-        /* Боковые табы настроек */
-        .settings-tabs {
-            background: rgba(3, 7, 16, 0.8);
-            border-right: 1px solid rgba(0, 240, 255, 0.15);
-            padding: 15px 10px;
+        .nav-tabs {
+            background: rgba(5, 9, 20, 0.7);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px 12px;
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
 
-        .tab-btn {
+        .nav-tab-btn {
             background: transparent;
             border: none;
-            color: #8b9bb4;
-            text-align: left;
+            color: #94a3b8;
+            font-size: 12.5px;
+            font-weight: 600;
             padding: 10px 14px;
             border-radius: 8px;
-            font-size: 12px;
             cursor: pointer;
+            text-align: left;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .tab-btn:hover {
+        .nav-tab-btn:hover {
             color: #ffffff;
-            background: rgba(0, 240, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .tab-btn.active {
-            background: rgba(0, 240, 255, 0.15);
-            border-left: 3px solid #00f0ff;
-            color: #00f0ff;
-            font-weight: bold;
+        .nav-tab-btn.active {
+            color: var(--cyan);
+            background: rgba(0, 240, 255, 0.12);
+            border-left: 3px solid var(--cyan);
+            font-weight: 700;
         }
 
-        /* Контентная зона выбранного таба */
-        .tab-content-zone {
-            padding: 25px;
+        .tab-pane-container {
+            padding: 24px;
             overflow-y: auto;
             max-height: 60vh;
         }
 
-        .setting-section {
+        .settings-pane {
             display: none;
-        }
-        .setting-section.active {
-            display: flex;
             flex-direction: column;
             gap: 18px;
         }
+        .settings-pane.active {
+            display: flex;
+        }
 
-        .set-row {
+        .form-row {
             display: flex;
             flex-direction: column;
             gap: 6px;
         }
 
-        .set-label {
+        .form-label {
             font-size: 11px;
+            font-weight: 700;
             letter-spacing: 1.5px;
-            color: #00f0ff;
-            font-weight: bold;
+            color: var(--cyan);
+            text-transform: uppercase;
         }
 
-        .set-desc {
+        .form-sub {
             font-size: 11px;
-            color: #8b9bb4;
+            color: #94a3b8;
             line-height: 1.4;
         }
 
-        .set-input, .set-select {
-            width: 100%;
-            background: #030610;
-            border: 1px solid rgba(0, 240, 255, 0.25);
+        .form-control {
+            background: #050914;
+            border: 1px solid rgba(255, 255, 255, 0.12);
             color: #ffffff;
             padding: 10px 14px;
             border-radius: 8px;
             font-size: 13px;
             outline: none;
+            transition: all 0.2s;
         }
 
-        .set-input:focus, .set-select:focus {
-            border-color: #00f0ff;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        .form-control:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 15px var(--cyan-glow);
         }
 
-        .range-slider-row {
+        .slider-flex {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-
-        .range-slider {
+        .slider-flex input {
             flex: 1;
-            accent-color: #00f0ff;
+            accent-color: var(--cyan);
         }
 
-        .settings-footer {
-            padding: 15px 25px;
-            border-top: 1px solid rgba(0, 240, 255, 0.2);
+        .modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            background: rgba(3, 7, 16, 0.8);
-        }
-
-        /* 3D WebGL Холст в центре */
-        #quantum-canvas {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1;
-        }
-
-        /* 1. ЛЕВАЯ КИНЕТИЧЕСКАЯ ШКАЛА ТЕЛЕМЕТРИИ */
-        .telemetry-left {
-            position: absolute;
-            left: 25px;
-            top: 70px;
-            bottom: 30px;
-            width: 220px;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            pointer-events: none;
-        }
-
-        .holo-panel {
-            background: rgba(5, 12, 26, 0.65);
-            border: 1px solid rgba(0, 240, 255, 0.25);
-            border-left: 3px solid #00f0ff;
-            border-radius: 8px;
-            padding: 14px;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            pointer-events: all;
-        }
-
-        .panel-header {
-            font-size: 10px;
-            letter-spacing: 2px;
-            color: #00f0ff;
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .gauge-metric {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            margin-bottom: 8px;
-        }
-
-        .metric-info {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #8b9bb4;
-        }
-
-        .metric-bar-bg {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .metric-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #00f0ff, #9d4edd);
-            width: 50%;
-            transition: width 0.5s ease;
-            box-shadow: 0 0 8px #00f0ff;
-        }
-
-        /* 2. ПРАВАЯ ПАНЕЛЬ СФЕРЫ ДЕЙСТВИЙ (ОРБИТАЛЬНЫЕ УЗЛЫ) */
-        .telemetry-right {
-            position: absolute;
-            right: 25px;
-            top: 70px;
-            bottom: 30px;
-            width: 260px;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            pointer-events: none;
-        }
-
-        .orbital-node {
-            background: rgba(5, 12, 26, 0.65);
-            border: 1px solid rgba(0, 240, 255, 0.2);
-            border-radius: 8px;
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            backdrop-filter: blur(12px);
-            transition: all 0.25s;
-            pointer-events: all;
-            margin-bottom: 8px;
-        }
-
-        .orbital-node:hover {
-            border-color: #00f0ff;
-            background: rgba(0, 240, 255, 0.12);
-            transform: translateX(-4px);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
-        }
-
-        .node-icon {
-            font-size: 18px;
-        }
-
-        .node-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .node-sub {
-            font-size: 9px;
-            color: #8b9bb4;
-            letter-spacing: 1px;
-        }
-
-        /* 3. ЦЕНТРАЛЬНЫЙ ПАРИРУЮЩИЙ РАДИАЛЬНЫЙ ТЕРМИНАЛ */
-        .center-hud-core {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            z-index: 20;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        }
-
-        /* Плавающие футуристичные титры Джарвиса */
-        .live-subtitle-capsule {
-            background: rgba(4, 9, 20, 0.85);
-            border: 1px solid rgba(0, 240, 255, 0.4);
-            box-shadow: 0 0 35px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 240, 255, 0.05);
-            backdrop-filter: blur(16px);
-            border-radius: 14px;
-            padding: 14px 22px;
-            font-size: 13px;
-            line-height: 1.5;
-            color: #e0f7fa;
-            text-align: center;
-            max-width: 100%;
-            transition: all 0.3s;
-        }
-
-        .live-subtitle-capsule::before {
-            content: '◆ J.A.R.V.I.S. QUANTUM CORE ◆';
-            display: block;
-            font-size: 9px;
-            letter-spacing: 3px;
-            color: #00f0ff;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        /* Неоновая квантовая строка ввода */
-        .quantum-input-bar {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            background: rgba(4, 9, 20, 0.8);
-            border: 1px solid rgba(0, 240, 255, 0.3);
-            border-radius: 30px;
-            padding: 6px 8px 6px 20px;
-            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
-            backdrop-filter: blur(16px);
-            transition: all 0.3s;
-        }
-
-        .quantum-input-bar:focus-within {
-            border-color: #00f0ff;
-            box-shadow: 0 0 35px rgba(0, 240, 255, 0.4);
-        }
-
-        .quantum-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: #ffffff;
-            font-size: 13px;
-            outline: none;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-quantum-mic {
-            background: linear-gradient(135deg, #00f0ff, #7928ca);
-            border: none;
-            color: #000;
-            font-weight: 900;
-            padding: 10px 22px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 11px;
-            letter-spacing: 1px;
-            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
-            transition: all 0.2s;
-        }
-
-        .btn-quantum-mic:hover {
-            box-shadow: 0 0 25px #00f0ff;
-            transform: scale(1.04);
-            color: #fff;
-        }
-
-        .btn-quantum-mic.listening {
-            background: linear-gradient(135deg, #ff9100, #ff0055);
-            color: #fff;
-            animation: pulseQuantum 1s infinite alternate;
-        }
-
-        @keyframes pulseQuantum {
-            0% { transform: scale(1); box-shadow: 0 0 20px #ff9100; }
-            100% { transform: scale(1.08); box-shadow: 0 0 40px #ff0055; }
+            background: rgba(5, 9, 20, 0.5);
         }
     </style>
 </head>
 <body>
 
-    <!-- ВЕРХНЯЯ ШАПКА ХАЙ-ТЕК ПАНЕЛИ -->
-    <div class="top-drag-bar">
-        <div class="hud-brand">
-            <span>⚡ J.A.R.V.I.S. // QUANTUM NEXUS</span>
-            <span style="font-size: 9px; border: 1px solid rgba(0, 240, 255, 0.3); padding: 2px 6px; border-radius: 4px; color: #80d8ff;">SYS.ACTIVE</span>
-        </div>
-        <div class="hud-controls">
-            <button class="btn-circle-action" onclick="openFullSettings()">⚙️ НАСТРОЙКИ</button>
-            <button class="btn-circle-action" onclick="toggleMiniOrb()">🔮 ТОЛЬКО 3D ШАР</button>
-            <button class="btn-circle-action" style="border-color: #ff5252; color: #ff8a80;" onclick="closeApp()">✕</button>
-        </div>
-    </div>
-
-    <!-- 3D КВАНТОВЫЙ ХОЛСТ -->
-    <div id="canvas-container"></div>
-
-    <!-- 1. ЛЕВАЯ КИНЕТИЧЕСКАЯ ТЕЛЕМЕТРИЯ ЖЕЛЕЗА -->
-    <div class="telemetry-left">
-        <div class="holo-panel">
-            <div class="panel-header">
-                <span>ТЕЛЕМЕТРИЯ ПК</span>
-                <span style="color: #00e676;">ONLINE</span>
-            </div>
-
-            <div class="gauge-metric">
-                <div class="metric-info"><span>ПРОЦЕССОР</span> <strong id="cpu-val" style="color: #00f0ff;">--%</strong></div>
-                <div class="metric-bar-bg"><div class="metric-bar-fill" id="cpu-bar" style="width: 20%;"></div></div>
-            </div>
-
-            <div class="gauge-metric">
-                <div class="metric-info"><span>ОЗУ ПАМЯТЬ</span> <strong id="ram-val" style="color: #9d4edd;">--%</strong></div>
-                <div class="metric-bar-bg"><div class="metric-bar-fill" id="ram-bar" style="width: 45%; background: linear-gradient(90deg, #9d4edd, #f72585);"></div></div>
-            </div>
-
-            <div class="gauge-metric">
-                <div class="metric-info"><span>НАКОПИТЕЛЬ</span> <strong id="disk-val" style="color: #f72585;">--%</strong></div>
-                <div class="metric-bar-bg"><div class="metric-bar-fill" id="disk-bar" style="width: 70%; background: linear-gradient(90deg, #f72585, #ff0055);"></div></div>
-            </div>
+    <!-- ВЕРХНИЙ БАР УПРАВЛЕНИЯ -->
+    <div class="titlebar">
+        <div class="brand-badge">
+            <div class="arc-logo"></div>
+            <div class="brand-title">J.A.R.V.I.S. PRIME</div>
+            <div class="brand-sub">MARK VII // HUD</div>
         </div>
 
-        <div class="holo-panel" style="border-left-color: #9d4edd;">
-            <div class="panel-header">
-                <span>ПРОТОКОЛЫ СВЯЗИ</span>
-            </div>
-            <div style="font-size: 10px; color: #8b9bb4; line-height: 1.8;">
-                <div>● WAKE-WORD: <strong style="color: #00f0ff;">«ДЖАРВИС»</strong></div>
-                <div>● ХОТКЕЙ: <strong style="color: #9d4edd;">ALT + J</strong></div>
-                <div>● ГОЛОС: <strong style="color: #00e676;">ДУБЛЯЖ BARANOV</strong></div>
-                <div>● МОЗГ: <strong style="color: #00f0ff;">GEMINI MULTIMODAL</strong></div>
-            </div>
+        <div class="controls-group">
+            <button class="btn-ghost" onclick="openFullSettings()">⚙️ Настройки</button>
+            <button class="btn-ghost" onclick="toggleMiniOrb()">🔮 Свернуть в Шар</button>
+            <button class="btn-close" onclick="closeApp()">✕</button>
         </div>
     </div>
 
-    <!-- 2. ПРАВЫЕ ОРБИТАЛЬНЫЕ УЗЛЫ ДЕЙСТВИЙ -->
-    <div class="telemetry-right">
-        <div class="orbital-node" onclick="sendQuick('Посмотри на экран и скажи, что здесь открыто')">
-            <span class="node-icon">👁️</span>
-            <div>
-                <div class="node-label">Зрение Экрана</div>
-                <div class="node-sub">GEMINI VISION</div>
-            </div>
-        </div>
+    <!-- ТРЕХМЕРНЫЙ ЦЕНТРАЛЬНЫЙ РЕАКТОР (THREE.JS) -->
+    <div id="reactor-canvas"></div>
 
-        <div class="orbital-node" onclick="sendQuick('Прочитай документ на рабочем столе и расскажи суть')">
-            <span class="node-icon">📄</span>
-            <div>
-                <div class="node-label">Анализ Документов</div>
-                <div class="node-sub">PDF / DOCX / EXCEL</div>
-            </div>
-        </div>
-
-        <div class="orbital-node" onclick="sendQuick('Обрежь первые 30 секунд у видео')">
-            <span class="node-icon">🎬</span>
-            <div>
-                <div class="node-label">FFmpeg Студия</div>
-                <div class="node-sub">НАРЕЗКА И МОНТАЖ</div>
-            </div>
-        </div>
-
-        <div class="orbital-node" onclick="sendQuick('Создай видео полета Железного Человека')">
-            <span class="node-icon">✨</span>
-            <div>
-                <div class="node-label">Генерация Видео</div>
-                <div class="node-sub">AI VIDEO RENDER</div>
-            </div>
-        </div>
-
-        <div class="orbital-node" onclick="sendQuick('Наведи порядок на рабочем столе')">
-            <span class="node-icon">🧹</span>
-            <div>
-                <div class="node-label">Уборка Стола</div>
-                <div class="node-sub">FILE ORGANIZER</div>
-            </div>
-        </div>
-
-        <div class="orbital-node" onclick="sendQuick('Включи саундтрек Iron Man')">
-            <span class="node-icon">🎵</span>
-            <div>
-                <div class="node-label">Музыка и Звук</div>
-                <div class="node-sub">MEDIA CONTROL</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. ЦЕНТРАЛЬНЫЙ ТЕРМИНАЛ И ПЛАВАЮЩИЕ ТИТРЫ -->
-    <div class="center-hud-core">
-        <div class="live-subtitle-capsule" id="subtitle-box">
-            Все протоколы активированы, сэр. Я подключен к вашей системе. Назовите команду или скажите «Джарвис».
-        </div>
-
-        <div class="quantum-input-bar">
-            <input type="text" class="quantum-input" id="cmd-input" placeholder="Введите команду или говорите голосом..." onkeydown="if(event.key==='Enter') sendText()">
-            <button class="btn-quantum-mic" id="mic-btn" onclick="toggleVoice()">🎙️ МИКРОФОН</button>
-        </div>
-    </div>
-
-    <!-- ПОЛНОЦЕННОЕ ГОЛОГРАФИЧЕСКОЕ ОКНО НАСТРОЕК СО ВСЕМИ ПАРАМЕТРАМИ -->
-    <div class="settings-modal" id="full-settings-modal">
-        <div class="settings-box">
-            <div class="settings-header">
-                <div class="settings-title">⚙️ J.A.R.V.I.S. CONFIGURATION MATRIX</div>
-                <button class="btn-circle-action" onclick="closeFullSettings()">&times;</button>
-            </div>
-
-            <div class="settings-body">
-                <!-- Меню категорий настроек -->
-                <div class="settings-tabs">
-                    <button class="tab-btn active" id="tb-voice-tts" onclick="switchSetTab('voice-tts')">🔊 Голос и Синтез</button>
-                    <button class="tab-btn" id="tb-mic-stt" onclick="switchSetTab('mic-stt')">🎙️ Слух и Микрофон</button>
-                    <button class="tab-btn" id="tb-llm-models" onclick="switchSetTab('llm-models')">🧠 Модели и Мозг</button>
-                    <button class="tab-btn" id="tb-person-profile" onclick="switchSetTab('person-profile')">🎩 Персонализация</button>
-                    <button class="tab-btn" id="tb-skills-matrix" onclick="switchSetTab('skills-matrix')">🧩 Модули и Скилы</button>
+    <!-- ОСНОВНАЯ СЕТКА HUD -->
+    <div class="hud-grid">
+        
+        <!-- ЛЕВАЯ ПАНЕЛЬ: ТЕЛЕМЕТРИЯ И СИСТЕМА -->
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div class="glass-card">
+                <div class="card-header">
+                    <span>Телеметрия ПК</span>
+                    <div class="status-dot"></div>
                 </div>
 
-                <!-- Контент категорий -->
-                <div class="tab-content-zone">
+                <div class="gauge-item">
+                    <div class="gauge-meta">
+                        <span>Процессор (CPU)</span>
+                        <span class="gauge-val" id="cpu-val">--%</span>
+                    </div>
+                    <div class="progress-track"><div class="progress-bar bar-cyan" id="cpu-bar" style="width: 20%;"></div></div>
+                </div>
+
+                <div class="gauge-item">
+                    <div class="gauge-meta">
+                        <span>Память (RAM)</span>
+                        <span class="gauge-val" id="ram-val">--%</span>
+                    </div>
+                    <div class="progress-track"><div class="progress-bar bar-purple" id="ram-bar" style="width: 42%;"></div></div>
+                </div>
+
+                <div class="gauge-item">
+                    <div class="gauge-meta">
+                        <span>Накопитель (SSD)</span>
+                        <span class="gauge-val" id="disk-val">--%</span>
+                    </div>
+                    <div class="progress-track"><div class="progress-bar bar-gold" id="disk-bar" style="width: 58%;"></div></div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <div class="card-header">
+                    <span>Протоколы связи</span>
+                    <span style="color: #64748b; font-size: 10px;">ONLINE</span>
+                </div>
+                <div class="spec-list">
+                    <div class="spec-row"><span>Активация</span><strong>«Джарвис»</strong></div>
+                    <div class="spec-row"><span>Хоткей</span><strong>Alt + J</strong></div>
+                    <div class="spec-row"><span>Голос</span><strong>Вячеслав Баранов</strong></div>
+                    <div class="spec-row"><span>Движок</span><strong>Gemini 3.5 Flash</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ЦЕНТРАЛЬНОЕ ПУСТОЕ ПРОСТРАНСТВО ДЛЯ РЕАКТОРА -->
+        <div></div>
+
+        <!-- ПРАВАЯ ПАНЕЛЬ: АВТОНОМНЫЕ ИНСТРУМЕНТЫ -->
+        <div class="actions-column">
+            <div class="action-card" onclick="sendQuick('Посмотри на экран и скажи, что здесь открыто')">
+                <div class="act-icon">👁️</div>
+                <div class="act-info">
+                    <div class="act-title">Зрение Экрана</div>
+                    <div class="act-sub">Мультимодальный анализ Gemini Vision</div>
+                </div>
+            </div>
+
+            <div class="action-card" onclick="sendQuick('Прочитай документ на рабочем столе и расскажи суть')">
+                <div class="act-icon">📄</div>
+                <div class="act-info">
+                    <div class="act-title">Анализ Документов</div>
+                    <div class="act-sub">PDF, DOCX, таблицы Excel</div>
+                </div>
+            </div>
+
+            <div class="action-card" onclick="sendQuick('Обрежь первые 30 секунд у видео')">
+                <div class="act-icon">🎬</div>
+                <div class="act-info">
+                    <div class="act-title">FFmpeg Студия</div>
+                    <div class="act-sub">Нарезка, склейка, формат Shorts 9:16</div>
+                </div>
+            </div>
+
+            <div class="action-card" onclick="sendQuick('Создай видео полета Железного Человека')">
+                <div class="act-icon">✨</div>
+                <div class="act-info">
+                    <div class="act-title">Генератор Видео</div>
+                    <div class="act-sub">Автономный 60 FPS Ken Burns рендер</div>
+                </div>
+            </div>
+
+            <div class="action-card" onclick="sendQuick('Наведи порядок на рабочем столе')">
+                <div class="act-icon">🧹</div>
+                <div class="act-info">
+                    <div class="act-title">Уборка Стола</div>
+                    <div class="act-sub">Интеллектуальная сортировка файлов</div>
+                </div>
+            </div>
+
+            <div class="action-card" onclick="sendQuick('Включи саундтрек Iron Man')">
+                <div class="act-icon">🎵</div>
+                <div class="act-info">
+                    <div class="act-title">Медиа Контроль</div>
+                    <div class="act-sub">Управление звуком и плеером</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- НИЖНИЙ ЦЕНТРАЛЬНЫЙ ПУЛЬТ: ТИТРЫ И ВВОД -->
+        <div class="bottom-dock">
+            <div class="speech-capsule" id="subtitle-box">
+                <div class="speech-tag">◆ J.A.R.V.I.S. Core Online ◆</div>
+                Здравствуйте, сэр. Все протоколы активированы. Чем могу помочь?
+            </div>
+
+            <div class="command-bar">
+                <input type="text" class="command-input" id="cmd-input" placeholder="Введите команду или скажите вслух «Джарвис»..." onkeydown="if(event.key==='Enter') sendText()">
+                <button class="btn-mic-prime" id="mic-btn" onclick="toggleVoice()">
+                    <span>🎙️</span>
+                    <span>СЛУШАТЬ</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
+    <div class="modal-overlay" id="full-settings-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ J.A.R.V.I.S. MATRIX CONFIGURATION</div>
+                <button class="btn-close" onclick="closeFullSettings()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Табы слева -->
+                <div class="nav-tabs">
+                    <button class="nav-tab-btn active" id="tb-voice-tts" onclick="switchSetTab('voice-tts')">🔊 Голос и Синтез</button>
+                    <button class="nav-tab-btn" id="tb-mic-stt" onclick="switchSetTab('mic-stt')">🎙️ Слух и Микрофон</button>
+                    <button class="nav-tab-btn" id="tb-llm-models" onclick="switchSetTab('llm-models')">🧠 Модели и Мозг</button>
+                    <button class="nav-tab-btn" id="tb-person-profile" onclick="switchSetTab('person-profile')">🎩 Персонализация</button>
+                    <button class="nav-tab-btn" id="tb-skills-matrix" onclick="switchSetTab('skills-matrix')">🧩 Модули и Скилы</button>
+                </div>
+
+                <!-- Контент табов справа -->
+                <div class="tab-pane-container">
                     
-                    <!-- 1. ГОЛОС И СИНТЕЗ -->
-                    <div class="setting-section active" id="sec-voice-tts">
-                        <div class="set-row">
-                            <label class="set-label">ГОЛОС ДЖАРВИСА (NEURAL TTS):</label>
-                            <select class="set-select" id="set-voice-actor">
+                    <!-- 1. ГОЛОС -->
+                    <div class="settings-pane active" id="sec-voice-tts">
+                        <div class="form-row">
+                            <label class="form-label">Голосовой актёр (Neural TTS):</label>
+                            <select class="form-control" id="set-voice-actor">
                                 <option value="ru-RU-DmitryNeural">Русский кинодубляж Баранова (Мужской глубокий)</option>
                                 <option value="ru-RU-SvetlanaNeural">Женский голос ПЯТНИЦА / F.R.I.D.A.Y.</option>
                                 <option value="en-GB-RyanNeural">Оригинальный английский (Paul Bettany / Джентльмен)</option>
                             </select>
-                            <div class="set-desc">Нейросетевой тембр с глубоким басом и кинематографичными интонациями.</div>
+                            <div class="form-sub">Кинематографичный голос с бархатным тоном.</div>
                         </div>
 
-                        <div class="set-row">
-                            <label class="set-label">СКОРОСТЬ РЕЧИ (SPEED RATE):</label>
-                            <div class="range-slider-row">
-                                <input type="range" class="range-slider" id="set-rate-slider" min="-20" max="30" value="-2" oninput="updateSliderVal('set-rate-slider', 'rate-val', '%')">
-                                <strong id="rate-val" style="color: #00f0ff; width: 45px;">-2%</strong>
+                        <div class="form-row">
+                            <label class="form-label">Скорость речи (Rate):</label>
+                            <div class="slider-flex">
+                                <input type="range" id="set-rate-slider" min="-20" max="30" value="-2" oninput="updateSliderVal('set-rate-slider', 'rate-val', '%')">
+                                <strong id="rate-val" style="color: var(--cyan); width: 45px;">-2%</strong>
                             </div>
-                            <div class="set-desc">Регулировка темпа речи дворецкого (от размеренного до быстрого).</div>
                         </div>
 
-                        <div class="set-row">
-                            <label class="set-label">ВЫСОТА ТОНА (PITCH BASS):</label>
-                            <div class="range-slider-row">
-                                <input type="range" class="range-slider" id="set-pitch-slider" min="-10" max="10" value="-3" oninput="updateSliderVal('set-pitch-slider', 'pitch-val', 'Hz')">
-                                <strong id="pitch-val" style="color: #00f0ff; width: 45px;">-3Hz</strong>
+                        <div class="form-row">
+                            <label class="form-label">Высота тона / Бас (Pitch):</label>
+                            <div class="slider-flex">
+                                <input type="range" id="set-pitch-slider" min="-10" max="10" value="-3" oninput="updateSliderVal('set-pitch-slider', 'pitch-val', 'Hz')">
+                                <strong id="pitch-val" style="color: var(--cyan); width: 45px;">-3Hz</strong>
                             </div>
-                            <div class="set-desc">Понижение тона добавляет бархатный киношный бас.</div>
-                        </div>
-
-                        <div class="set-row">
-                            <label class="set-label">ЗВУКОВЫЕ ЭФФЕКТЫ РЕАКТОРА (SOUND FX):</label>
-                            <select class="set-select" id="set-sound-fx">
-                                <option value="true">Включены (Неоновый сигнал пинга и заряд реактора)</option>
-                                <option value="false">Выключены (Тихий режим)</option>
-                            </select>
                         </div>
                     </div>
 
                     <!-- 2. СЛУХ И МИКРОФОН -->
-                    <div class="setting-section" id="sec-mic-stt">
-                        <div class="set-row">
-                            <label class="set-label">ФОНОВЫЙ WAKE-WORD («ДЖАРВИС»):</label>
-                            <select class="set-select" id="set-wake-word">
-                                <option value="true">Включен (Активация голосом без нажатия кнопок)</option>
-                                <option value="false">Выключен (Только по нажатию кнопки или Alt+J)</option>
-                            </select>
-                            <div class="set-desc">Джарвис непрерывно ожидает кодовое слово в микрофоне.</div>
-                        </div>
-
-                        <div class="set-row">
-                            <label class="set-label">МИКРОФОН:</label>
-                            <select class="set-select" id="set-mic-select">
-                                <option value="default">Основной системный микрофон (Windows Default)</option>
+                    <div class="settings-pane" id="sec-mic-stt">
+                        <div class="form-row">
+                            <label class="form-label">Wake-Word активация («Джарвис»):</label>
+                            <select class="form-control" id="set-wake-word">
+                                <option value="true">Включен (Активация без нажатия кнопок)</option>
+                                <option value="false">Выключен (Только по нажатию кнопки)</option>
                             </select>
                         </div>
 
-                        <div class="set-row">
-                            <label class="set-label">ГЛОБАЛЬНАЯ ГОРЯЧАЯ КЛАВИША:</label>
-                            <input type="text" class="set-input" id="set-hotkey" value="alt+j">
-                            <div class="set-desc">Комбинация клавиш для вызова из любой полноэкранной игры или софта.</div>
+                        <div class="form-row">
+                            <label class="form-label">Горячая клавиша (Hotkey):</label>
+                            <input type="text" class="form-control" id="set-hotkey" value="alt+j">
+                            <div class="form-sub">Глобальная комбинация для вызова из любого окна или игры.</div>
                         </div>
                     </div>
 
-                    <!-- 3. МОДЕЛИ И МОЗГ -->
-                    <div class="setting-section" id="sec-llm-models">
-                        <div class="set-row">
-                            <label class="set-label">ОСНОВНОЙ LLM-ПРОВАЙДЕР:</label>
-                            <select class="set-select" id="set-model-engine">
+                    <!-- 3. МОДЕЛИ -->
+                    <div class="settings-pane" id="sec-llm-models">
+                        <div class="form-row">
+                            <label class="form-label">Нейросетевой движок:</label>
+                            <select class="form-control" id="set-model-engine">
                                 <option value="gemini-3.5-flash">Google Gemini 3.5 Flash (Рекомендуется: мультимодальный + быстрый)</option>
                                 <option value="gemini-3.8-flash">Google Gemini 3.8 Flash (Новейший)</option>
-                                <option value="groq-llama">Groq LPU (Llama 3.3 70B — сверхбыстрый 500 токенов/сек)</option>
+                                <option value="groq-llama">Groq LPU (Llama 3.3 70B — 500 токенов/сек)</option>
                                 <option value="local-ollama">Локально (Ollama Llama 3 — без интернета)</option>
                             </select>
                         </div>
 
-                        <div class="set-row">
-                            <label class="set-label">API КЛЮЧ GEMINI / GROQ:</label>
-                            <input type="password" class="set-input" id="set-api-key" placeholder="Вставьте ваш ключ API...">
-                            <div class="set-desc">Ключ надежно сохраняется в локальной зашифрованной конфигурации .env</div>
+                        <div class="form-row">
+                            <label class="form-label">API Ключ:</label>
+                            <input type="password" class="form-control" id="set-api-key" placeholder="Вставьте ваш API ключ...">
                         </div>
                     </div>
 
                     <!-- 4. ПЕРСОНАЛИЗАЦИЯ -->
-                    <div class="setting-section" id="sec-person-profile">
-                        <div class="set-row">
-                            <label class="set-label">КАК К ВАМ ОБРАЩАТЬСЯ:</label>
-                            <input type="text" class="set-input" id="set-user-name" value="Сэр">
-                            <div class="set-desc">Джарвис будет уважительно использовать это имя в диалоге.</div>
+                    <div class="settings-pane" id="sec-person-profile">
+                        <div class="form-row">
+                            <label class="form-label">Как к вам обращаться:</label>
+                            <input type="text" class="form-control" id="set-user-name" value="Сэр">
                         </div>
 
-                        <div class="set-row">
-                            <label class="set-label">СТИЛЬ И ТОН ОБЩЕНИЯ:</label>
-                            <select class="set-select" id="set-user-tone">
+                        <div class="form-row">
+                            <label class="form-label">Стиль общения:</label>
+                            <select class="form-control" id="set-user-tone">
                                 <option value="sir">Формальный британский джентльмен («На вы», тактично, остроумно)</option>
                                 <option value="friend">Дружеский тон («На ты», неформально)</option>
                             </select>
                         </div>
                     </div>
 
-                    <!-- 5. МОДУЛИ И СКИЛЫ -->
-                    <div class="setting-section" id="sec-skills-matrix">
-                        <div class="set-desc" style="margin-bottom: 10px;">Включение и отключение встроенных инструментов:</div>
+                    <!-- 5. МОДУЛИ -->
+                    <div class="settings-pane" id="sec-skills-matrix">
+                        <div class="form-sub" style="margin-bottom: 8px;">Активные инструменты ассистента:</div>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
-                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
-                                <span>🎬 FFmpeg Студия (Монтаж, нарезка, Shorts 9:16)</span> <input type="checkbox" checked disabled>
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(255, 255, 255, 0.03); padding: 10px 14px; border-radius: 8px;">
+                                <span>🎬 FFmpeg Студия (Монтаж, нарезка, Shorts)</span> <input type="checkbox" checked disabled>
                             </label>
-                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(255, 255, 255, 0.03); padding: 10px 14px; border-radius: 8px;">
                                 <span>📄 Анализ документов (PDF, Word, Excel)</span> <input type="checkbox" checked disabled>
                             </label>
-                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(255, 255, 255, 0.03); padding: 10px 14px; border-radius: 8px;">
                                 <span>👁️ Зрение экрана (Gemini Vision)</span> <input type="checkbox" checked disabled>
                             </label>
-                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(255, 255, 255, 0.03); padding: 10px 14px; border-radius: 8px;">
                                 <span>✨ Автономный генератор видео</span> <input type="checkbox" checked disabled>
                             </label>
-                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(255, 255, 255, 0.03); padding: 10px 14px; border-radius: 8px;">
                                 <span>🧹 Сортировка рабочего стола</span> <input type="checkbox" checked disabled>
                             </label>
                         </div>
@@ -731,86 +871,84 @@
                 </div>
             </div>
 
-            <!-- Подвал настроек -->
-            <div class="settings-footer">
-                <button class="btn-circle-action" onclick="closeFullSettings()">ОТМЕНА</button>
-                <button class="btn-quantum-mic" style="padding: 6px 20px;" onclick="saveFullSettings()">СОХРАНИТЬ ПАРАМЕТРЫ</button>
+            <div class="modal-footer">
+                <button class="btn-ghost" onclick="closeFullSettings()">Отмена</button>
+                <button class="btn-mic-prime" onclick="saveFullSettings()">Сохранить настройки</button>
             </div>
         </div>
     </div>
 
+    <!-- ТРЕХМЕРНЫЙ РЕАКТОР И СКРИПТЫ ВЗАИМОДЕЙСТВИЯ -->
     <script>
-        // ========================================================
-        // УНИКАЛЬНАЯ 3D-ВИЗУАЛИЗАЦИЯ: КВАНТОВЫЙ ТОРУС-РЕАКТОР (THREE.JS)
-        // Такого визуала нет ни в одном проекте на GitHub!
-        // ========================================================
-        let scene, camera, renderer, torusMesh, particleCore, rings = [];
+        let scene, camera, renderer, coreMesh, particleSystem, rings = [];
         let isSpeaking = false;
         let isListening = false;
         let mouseX = 0, mouseY = 0;
 
-        function initQuantum3D() {
+        function init3DReactor() {
+            const container = document.getElementById('reactor-canvas');
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 210;
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 190;
+            camera.position.y = 15;
 
             renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            document.body.appendChild(renderer.domElement);
-            renderer.domElement.id = 'quantum-canvas';
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
 
-            // 1. Создаем 3D Квантовый Торус из светящихся узлов
-            const torusGeo = new THREE.TorusGeometry(65, 18, 30, 120);
-            const torusMat = new THREE.PointsMaterial({
-                size: 1.6,
+            // 1. Икосаэдрическое квантовое кристаллическое ядро
+            const icoGeo = new THREE.IcosahedronGeometry(32, 2);
+            const icoMat = new THREE.MeshBasicMaterial({
                 color: 0x00f0ff,
+                wireframe: true,
                 transparent: true,
-                opacity: 0.75,
+                opacity: 0.7,
                 blending: THREE.AdditiveBlending
             });
-            torusMesh = new THREE.Points(torusGeo, torusMat);
-            scene.add(torusMesh);
+            coreMesh = new THREE.Mesh(icoGeo, icoMat);
+            scene.add(coreMesh);
 
-            // 2. Внутреннее пульсирующее ядро частиц
-            const coreGeo = new THREE.BufferGeometry();
-            const coreCount = 1200;
-            const corePos = new Float32Array(coreCount * 3);
-            for(let i = 0; i < coreCount * 3; i++) {
-                corePos[i] = (Math.random() - 0.5) * 60;
+            // 2. Внутреннее светящееся облако плазмы
+            const pCount = 800;
+            const pGeo = new THREE.BufferGeometry();
+            const pPos = new Float32Array(pCount * 3);
+            for(let i = 0; i < pCount * 3; i++) {
+                pPos[i] = (Math.random() - 0.5) * 45;
             }
-            coreGeo.setAttribute('position', new THREE.BufferAttribute(corePos, 3));
-            const coreMat = new THREE.PointsMaterial({
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+            const pMat = new THREE.PointsMaterial({
                 size: 2.2,
-                color: 0x9d4edd,
+                color: 0xa855f7,
                 transparent: true,
-                opacity: 0.85,
+                opacity: 0.8,
                 blending: THREE.AdditiveBlending
             });
-            particleCore = new THREE.Points(coreGeo, coreMat);
-            scene.add(particleCore);
+            particleSystem = new THREE.Points(pGeo, pMat);
+            scene.add(particleSystem);
 
-            // 3. Кинетические орбитальные кольца
-            for (let i = 0; i < 3; i++) {
-                const ringGeo = new THREE.RingGeometry(85 + i * 14, 86 + i * 14, 80);
+            // 3. Кинетические гироскопические кольца
+            const ringRadii = [48, 62, 76];
+            ringRadii.forEach((r, idx) => {
+                const ringGeo = new THREE.RingGeometry(r, r + 1.2, 90);
                 const ringMat = new THREE.MeshBasicMaterial({
-                    color: 0x00f0ff,
+                    color: idx === 1 ? 0xa855f7 : 0x00f0ff,
                     side: THREE.DoubleSide,
                     transparent: true,
-                    opacity: 0.35 - i * 0.08,
+                    opacity: 0.45 - idx * 0.1,
                     blending: THREE.AdditiveBlending
                 });
                 const ring = new THREE.Mesh(ringGeo, ringMat);
-                ring.rotation.x = Math.PI / (2.2 + i);
-                ring.rotation.y = (i * Math.PI) / 4;
+                ring.rotation.x = Math.PI / (2.2 + idx * 0.5);
+                ring.rotation.y = idx * Math.PI / 3;
                 scene.add(ring);
                 rings.push(ring);
-            }
+            });
 
-            // Слежение за мышкой
+            // Мышь
             window.addEventListener('mousemove', (e) => {
-                mouseX = (e.clientX - window.innerWidth / 2) * 0.0008;
-                mouseY = (e.clientY - window.innerHeight / 2) * 0.0008;
+                mouseX = (e.clientX - window.innerWidth / 2) * 0.0006;
+                mouseY = (e.clientY - window.innerHeight / 2) * 0.0006;
             });
 
             window.addEventListener('resize', () => {
@@ -819,49 +957,45 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
 
-            animateQuantum();
+            renderLoop();
         }
 
         let clock = new THREE.Clock();
 
-        function animateQuantum() {
-            requestAnimationFrame(animateQuantum);
+        function renderLoop() {
+            requestAnimationFrame(renderLoop);
             const time = clock.getElapsedTime();
 
-            // Сложное кинетическое 3D-вращение
-            torusMesh.rotation.x += 0.005;
-            torusMesh.rotation.y += 0.007;
+            coreMesh.rotation.x += 0.006;
+            coreMesh.rotation.y += 0.009;
 
-            // Следование за мышкой
-            torusMesh.rotation.x += (mouseY - torusMesh.rotation.x) * 0.05;
-            torusMesh.rotation.y += (mouseX - torusMesh.rotation.y) * 0.05;
+            coreMesh.rotation.x += (mouseY - coreMesh.rotation.x) * 0.05;
+            coreMesh.rotation.y += (mouseX - coreMesh.rotation.y) * 0.05;
 
-            particleCore.rotation.y -= 0.01;
-            particleCore.rotation.x += 0.006;
+            particleSystem.rotation.y -= 0.012;
+            particleSystem.rotation.x += 0.005;
 
-            rings.forEach((r, idx) => {
-                r.rotation.z += 0.004 * (idx % 2 === 0 ? 1 : -1);
+            rings.forEach((r, i) => {
+                r.rotation.z += 0.004 * (i % 2 === 0 ? 1 : -1);
                 r.rotation.x += 0.002;
             });
 
-            // Эффект пульсации при речи
-            let pulse = 1;
+            // Пульсация
+            let scale = 1;
             if (isSpeaking) {
-                pulse = 1 + Math.sin(time * 16) * 0.12;
+                scale = 1 + Math.sin(time * 16) * 0.12;
             } else if (isListening) {
-                pulse = 1 + Math.sin(time * 8) * 0.06;
+                scale = 1 + Math.sin(time * 8) * 0.06;
             }
-            torusMesh.scale.set(pulse, pulse, pulse);
-            particleCore.scale.set(pulse, pulse, pulse);
+            coreMesh.scale.set(scale, scale, scale);
+            particleSystem.scale.set(scale, scale, scale);
 
             renderer.render(scene, camera);
         }
 
-        initQuantum3D();
+        init3DReactor();
 
-        // ========================================================
-        // МОСТ К PYTHON & ТЕЛЕМЕТРИЯ
-        // ========================================================
+        // Телеметрия
         function updateSystemGauges(cpu, ram, disk) {
             document.getElementById('cpu-val').innerText = cpu + '%';
             document.getElementById('cpu-bar').style.width = cpu + '%';
@@ -879,16 +1013,16 @@
             const btn = document.getElementById('mic-btn');
             if (listening) {
                 btn.classList.add('listening');
-                btn.innerText = '🔴 СЛУШАЮ СЭР...';
-                torusMesh.material.color.setHex(0xff9100);
+                btn.innerHTML = '<span>🔴</span><span>СЛУШАЮ...</span>';
+                coreMesh.material.color.setHex(0xf59e0b);
             } else if (speaking) {
                 btn.classList.remove('listening');
-                btn.innerText = '🔊 ОТВЕЧАЮ...';
-                torusMesh.material.color.setHex(0xff0055);
+                btn.innerHTML = '<span>🔊</span><span>ОТВЕЧАЮ...</span>';
+                coreMesh.material.color.setHex(0xef4444);
             } else {
                 btn.classList.remove('listening');
-                btn.innerText = '🎙️ МИКРОФОН';
-                torusMesh.material.color.setHex(0x00f0ff);
+                btn.innerHTML = '<span>🎙️</span><span>СЛУШАТЬ</span>';
+                coreMesh.material.color.setHex(0x00f0ff);
             }
         }
 
@@ -897,7 +1031,7 @@
         }
 
         function addMessage(author, text, isUser) {
-            setSubtitle(`<strong>${author}:</strong> ${text}`);
+            setSubtitle(`<div class="speech-tag">◆ ${author} ◆</div>${text}`);
         }
 
         function sendText() {
@@ -905,13 +1039,13 @@
             const val = input.value.trim();
             if (val) {
                 input.value = '';
-                setSubtitle(`<strong>СЭР:</strong> «${val}»`);
+                setSubtitle(`<div class="speech-tag">◆ ВЫ ◆</div>${val}`);
                 if (window.pywebview) window.pywebview.api.send_command(val);
             }
         }
 
         function sendQuick(prompt) {
-            setSubtitle(`<strong>СЭР:</strong> «${prompt}»`);
+            setSubtitle(`<div class="speech-tag">◆ ВЫ ◆</div>${prompt}`);
             if (window.pywebview) window.pywebview.api.send_command(prompt);
         }
 
@@ -927,14 +1061,13 @@
             if (window.pywebview) window.pywebview.api.close_app();
         }
 
-        // ========================================================
-        // ЛОГИКА ОКНА ПОЛНЫХ НАСТРОЕК (SETTINGS MODAL)
-        // ========================================================
+        // ==========================================
+        // НАСТРОЙКИ
+        // ==========================================
         function openFullSettings() {
             const modal = document.getElementById('full-settings-modal');
             if (modal) {
                 modal.style.display = 'flex';
-                // Загрузить текущие настройки
                 if (window.pywebview && window.pywebview.api.get_settings) {
                     window.pywebview.api.get_settings().then(data => {
                         if (data) {
@@ -966,8 +1099,8 @@
         }
 
         function switchSetTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.setting-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.settings-pane').forEach(sec => sec.classList.remove('active'));
 
             const targetBtn = document.getElementById('tb-' + tabId);
             const targetSec = document.getElementById('sec-' + tabId);
@@ -986,7 +1119,6 @@
             const rateVal = document.getElementById('set-rate-slider').value;
             const pitchVal = document.getElementById('set-pitch-slider').value;
             const wake = document.getElementById('set-wake-word').value;
-            const mic = document.getElementById('set-mic-select').value;
             const hotkey = document.getElementById('set-hotkey').value;
             const model = document.getElementById('set-model-engine').value;
             const apiKey = document.getElementById('set-api-key').value;
@@ -998,7 +1130,6 @@
                 speech_rate: (rateVal >= 0 ? '+' : '') + rateVal + '%',
                 speech_pitch: (pitchVal >= 0 ? '+' : '') + pitchVal + 'Hz',
                 wake_word: wake,
-                mic_device: mic,
                 hotkey: hotkey,
                 model: model,
                 gemini_api_key: apiKey,
@@ -1009,7 +1140,7 @@
             if (window.pywebview && window.pywebview.api.save_settings) {
                 window.pywebview.api.save_settings(newSettings).then(() => {
                     closeFullSettings();
-                    setSubtitle(`<strong>J.A.R.V.I.S.:</strong> Конфигурация успешно обновлена, сэр.`);
+                    setSubtitle(`<div class="speech-tag">◆ J.A.R.V.I.S. Core ◆</div>Конфигурация успешно обновлена, сэр.`);
                 });
             } else {
                 closeFullSettings();
