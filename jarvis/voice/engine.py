@@ -32,7 +32,9 @@ class VoiceEngine:
             return ""
 
     async def _async_speak_edge(self, text: str, output_path: str):
-        communicate = edge_tts.Communicate(text, self.voice_name, rate="+5%", pitch="-1Hz")
+        # Настройка русского дубляжа Джарвиса (Вячеслав Баранов):
+        # Глубокий, спокойный мужской тон (-3Hz), чуть замедленный темп речи (-2%)
+        communicate = edge_tts.Communicate(text, "ru-RU-DmitryNeural", rate="-2%", pitch="-3Hz")
         await communicate.save(output_path)
 
     def speak(self, text: str):
@@ -62,9 +64,11 @@ class VoiceEngine:
                 except Exception:
                     pass
 
-        # Если интернет-голос не проигрался, мгновенно говорим через нативный Windows голос
+        # Если интернет-голос не проигрался, говорим через нативный Windows голос мужским тоном
         if not success and self.sapi:
             try:
+                # Понижаем скорость для более солидного звучания
+                self.sapi.setProperty('rate', 160)
                 self.sapi.say(text)
                 self.sapi.runAndWait()
             except Exception:
