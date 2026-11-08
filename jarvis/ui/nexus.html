@@ -586,7 +586,7 @@
     </div>
 
     <!-- ПОЛНОЦЕННОЕ ГОЛОГРАФИЧЕСКОЕ ОКНО НАСТРОЕК СО ВСЕМИ ПАРАМЕТРАМИ -->
-    <div class="settings-modal" id="settings-modal">
+    <div class="settings-modal" id="full-settings-modal">
         <div class="settings-box">
             <div class="settings-header">
                 <div class="settings-title">⚙️ J.A.R.V.I.S. CONFIGURATION MATRIX</div>
@@ -596,11 +596,11 @@
             <div class="settings-body">
                 <!-- Меню категорий настроек -->
                 <div class="settings-tabs">
-                    <button class="tab-btn active" onclick="switchSetTab('voice-tts', this)">🔊 Голос и Синтез</button>
-                    <button class="tab-btn" onclick="switchSetTab('mic-stt', this)">🎙️ Слух и Микрофон</button>
-                    <button class="tab-btn" onclick="switchSetTab('llm-models', this)">🧠 Модели и Мозг</button>
-                    <button class="tab-btn" onclick="switchSetTab('person-profile', this)">🎩 Персонализация</button>
-                    <button class="tab-btn" onclick="switchSetTab('skills-matrix', this)">🧩 Модули и Скилы</button>
+                    <button class="tab-btn active" id="tb-voice-tts" onclick="switchSetTab('voice-tts')">🔊 Голос и Синтез</button>
+                    <button class="tab-btn" id="tb-mic-stt" onclick="switchSetTab('mic-stt')">🎙️ Слух и Микрофон</button>
+                    <button class="tab-btn" id="tb-llm-models" onclick="switchSetTab('llm-models')">🧠 Модели и Мозг</button>
+                    <button class="tab-btn" id="tb-person-profile" onclick="switchSetTab('person-profile')">🎩 Персонализация</button>
+                    <button class="tab-btn" id="tb-skills-matrix" onclick="switchSetTab('skills-matrix')">🧩 Модули и Скилы</button>
                 </div>
 
                 <!-- Контент категорий -->
@@ -610,7 +610,7 @@
                     <div class="setting-section active" id="sec-voice-tts">
                         <div class="set-row">
                             <label class="set-label">ГОЛОС ДЖАРВИСА (NEURAL TTS):</label>
-                            <select class="set-select" id="set-voice-name">
+                            <select class="set-select" id="set-voice-actor">
                                 <option value="ru-RU-DmitryNeural">Русский кинодубляж Баранова (Мужской глубокий)</option>
                                 <option value="ru-RU-SvetlanaNeural">Женский голос ПЯТНИЦА / F.R.I.D.A.Y.</option>
                                 <option value="en-GB-RyanNeural">Оригинальный английский (Paul Bettany / Джентльмен)</option>
@@ -621,8 +621,8 @@
                         <div class="set-row">
                             <label class="set-label">СКОРОСТЬ РЕЧИ (SPEED RATE):</label>
                             <div class="range-slider-row">
-                                <input type="range" class="range-slider" id="set-voice-speed" min="-20" max="30" value="-2" oninput="document.getElementById('speed-val').innerText = this.value + '%'">
-                                <strong id="speed-val" style="color: #00f0ff; width: 45px;">-2%</strong>
+                                <input type="range" class="range-slider" id="set-rate-slider" min="-20" max="30" value="-2" oninput="updateSliderVal('set-rate-slider', 'rate-val', '%')">
+                                <strong id="rate-val" style="color: #00f0ff; width: 45px;">-2%</strong>
                             </div>
                             <div class="set-desc">Регулировка темпа речи дворецкого (от размеренного до быстрого).</div>
                         </div>
@@ -630,7 +630,7 @@
                         <div class="set-row">
                             <label class="set-label">ВЫСОТА ТОНА (PITCH BASS):</label>
                             <div class="range-slider-row">
-                                <input type="range" class="range-slider" id="set-voice-pitch" min="-10" max="10" value="-3" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'">
+                                <input type="range" class="range-slider" id="set-pitch-slider" min="-10" max="10" value="-3" oninput="updateSliderVal('set-pitch-slider', 'pitch-val', 'Hz')">
                                 <strong id="pitch-val" style="color: #00f0ff; width: 45px;">-3Hz</strong>
                             </div>
                             <div class="set-desc">Понижение тона добавляет бархатный киношный бас.</div>
@@ -657,18 +657,16 @@
                         </div>
 
                         <div class="set-row">
-                            <label class="set-label">ГЛОБАЛЬНАЯ ГОРЯЧАЯ КЛАВИША:</label>
-                            <input type="text" class="set-input" id="set-hotkey-val" value="alt+j">
-                            <div class="set-desc">Комбинация клавиш для вызова из любой полноэкранной игры или софта.</div>
+                            <label class="set-label">МИКРОФОН:</label>
+                            <select class="set-select" id="set-mic-select">
+                                <option value="default">Основной системный микрофон (Windows Default)</option>
+                            </select>
                         </div>
 
                         <div class="set-row">
-                            <label class="set-label">ЧУВСТВИТЕЛЬНОСТЬ МИКРОФОНА И ФИЛЬТР ШУМА:</label>
-                            <select class="set-select">
-                                <option value="0.4">Оптимальная калибровка (0.4 сек адаптации к фону)</option>
-                                <option value="0.8">Высокая фильтрация шума (для шумных комнат)</option>
-                                <option value="0.2">Мгновенный захват речи</option>
-                            </select>
+                            <label class="set-label">ГЛОБАЛЬНАЯ ГОРЯЧАЯ КЛАВИША:</label>
+                            <input type="text" class="set-input" id="set-hotkey" value="alt+j">
+                            <div class="set-desc">Комбинация клавиш для вызова из любой полноэкранной игры или софта.</div>
                         </div>
                     </div>
 
@@ -676,7 +674,7 @@
                     <div class="setting-section" id="sec-llm-models">
                         <div class="set-row">
                             <label class="set-label">ОСНОВНОЙ LLM-ПРОВАЙДЕР:</label>
-                            <select class="set-select" id="set-llm-model">
+                            <select class="set-select" id="set-model-engine">
                                 <option value="gemini-3.5-flash">Google Gemini 3.5 Flash (Рекомендуется: мультимодальный + быстрый)</option>
                                 <option value="gemini-3.8-flash">Google Gemini 3.8 Flash (Новейший)</option>
                                 <option value="groq-llama">Groq LPU (Llama 3.3 70B — сверхбыстрый 500 токенов/сек)</option>
