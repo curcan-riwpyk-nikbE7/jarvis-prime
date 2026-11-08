@@ -59,8 +59,27 @@ class JarvisCore:
 
     def process_request(self, user_text: str) -> str:
         """Отправляет запрос в ядро Gemini с автоматическим выполнением инструментов"""
-        try:
-            response = self.chat.send_message(user_text)
-            return response.text.strip() if response.text else "Команда выполнена, сэр."
-        except Exception as e:
-            return f"Прошу прощения, сэр. Ошибка при выполнении задачи: {str(e)}"
+        txt = user_text.lower().strip()
+        if any(w in txt for w in ["привет", "здравствуй", "джарвис", "ты тут"]):
+            return "Здравствуйте, сэр. Все протоколы активированы, системы в строю. Чем могу помочь?"
+
+        models_pool = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.8-flash"]
+        for m in models_pool:
+            try:
+                chat = self.client.chats.create(
+                    model=m,
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        tools=self.tools,
+                        temperature=0.4
+                    )
+                )
+                response = chat.send_message(user_text)
+                return response.text.strip() if response.text else "Команда выполнена, сэр."
+            except Exception as e:
+                err_str = str(e)
+                if "503" in err_str or "429" in err_str or "UNAVAILABLE" in err_str:
+                    continue
+                return f"Прошу прощения, сэр: {err_str}"
+
+        return "Прошу прощения, сэр. Серверы Gemini сейчас перегружены, попробуйте повторить команду через мгновение."
