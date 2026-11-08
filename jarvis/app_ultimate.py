@@ -141,15 +141,15 @@ class UltimateBridge:
 
 
 def start_ultimate_jarvis():
-    html_path = os.path.join(os.path.dirname(__file__), "ui", "kira_style.html")
+    html_path = os.path.join(os.path.dirname(__file__), "ui", "nexus.html")
     window = webview.create_window(
-        title="J.A.R.V.I.S. PRIME — Ultimate Control Center",
+        title="J.A.R.V.I.S. PRIME — Quantum Nexus HUD",
         url=html_path,
-        width=1200,
-        height=760,
+        width=1180,
+        height=740,
         frameless=True,
         easy_drag=True,
-        background_color='#0a0814'
+        background_color='#020409'
     )
     bridge = UltimateBridge(window)
     window.expose(

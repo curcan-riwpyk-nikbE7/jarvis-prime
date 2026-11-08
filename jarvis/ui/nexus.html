@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. QUANTUM NEXUS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Consolas', 'Segoe UI', monospace;
+            user-select: none;
+        }
+
+        body {
+            background-color: #020409;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.05) 0%, transparent 60%),
+                radial-gradient(circle at 10% 20%, rgba(157, 78, 221, 0.08) 0%, transparent 40%),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            color: #d1f4ff;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            box-shadow: 0 0 70px rgba(0, 0, 0, 0.95), inset 0 0 60px rgba(0, 240, 255, 0.03);
+        }
+
+        /* Область перетаскивания окна */
+        .top-drag-bar {
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 45px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 25px;
+            z-index: 100;
+            -webkit-app-region: drag;
+        }
+
+        .hud-brand {
+            font-size: 12px;
+            letter-spacing: 5px;
+            font-weight: 900;
+            color: #00f0ff;
+            text-shadow: 0 0 15px #00f0ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hud-controls {
+            display: flex;
+            gap: 10px;
+            -webkit-app-region: no-drag;
+        }
+
+        .btn-circle-action {
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #80d8ff;
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-circle-action:hover {
+            background: #00f0ff;
+            color: #000;
+            box-shadow: 0 0 15px #00f0ff;
+        }
+
+        /* 3D WebGL Холст в центре */
+        #quantum-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+        }
+
+        /* 1. ЛЕВАЯ КИНЕТИЧЕСКАЯ ШКАЛА ТЕЛЕМЕТРИИ */
+        .telemetry-left {
+            position: absolute;
+            left: 25px;
+            top: 70px;
+            bottom: 30px;
+            width: 220px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .holo-panel {
+            background: rgba(5, 12, 26, 0.65);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            border-left: 3px solid #00f0ff;
+            border-radius: 8px;
+            padding: 14px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            pointer-events: all;
+        }
+
+        .panel-header {
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #00f0ff;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .gauge-metric {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .metric-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #8b9bb4;
+        }
+
+        .metric-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00f0ff, #9d4edd);
+            width: 50%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 8px #00f0ff;
+        }
+
+        /* 2. ПРАВАЯ ПАНЕЛЬ СФЕРЫ ДЕЙСТВИЙ (ОРБИТАЛЬНЫЕ УЗЛЫ) */
+        .telemetry-right {
+            position: absolute;
+            right: 25px;
+            top: 70px;
+            bottom: 30px;
+            width: 260px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .orbital-node {
+            background: rgba(5, 12, 26, 0.65);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: all 0.25s;
+            pointer-events: all;
+            margin-bottom: 8px;
+        }
+
+        .orbital-node:hover {
+            border-color: #00f0ff;
+            background: rgba(0, 240, 255, 0.12);
+            transform: translateX(-4px);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .node-icon {
+            font-size: 18px;
+        }
+
+        .node-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .node-sub {
+            font-size: 9px;
+            color: #8b9bb4;
+            letter-spacing: 1px;
+        }
+
+        /* 3. ЦЕНТРАЛЬНЫЙ ПАРИРУЮЩИЙ РАДИАЛЬНЫЙ ТЕРМИНАЛ */
+        .center-hud-core {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        /* Плавающие футуристичные титры Джарвиса */
+        .live-subtitle-capsule {
+            background: rgba(4, 9, 20, 0.85);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.2), inset 0 0 15px rgba(0, 240, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border-radius: 14px;
+            padding: 14px 22px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #e0f7fa;
+            text-align: center;
+            max-width: 100%;
+            transition: all 0.3s;
+        }
+
+        .live-subtitle-capsule::before {
+            content: '◆ J.A.R.V.I.S. QUANTUM CORE ◆';
+            display: block;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: #00f0ff;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        /* Неоновая квантовая строка ввода */
+        .quantum-input-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            background: rgba(4, 9, 20, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 30px;
+            padding: 6px 8px 6px 20px;
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+            backdrop-filter: blur(16px);
+            transition: all 0.3s;
+        }
+
+        .quantum-input-bar:focus-within {
+            border-color: #00f0ff;
+            box-shadow: 0 0 35px rgba(0, 240, 255, 0.4);
+        }
+
+        .quantum-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-quantum-mic {
+            background: linear-gradient(135deg, #00f0ff, #7928ca);
+            border: none;
+            color: #000;
+            font-weight: 900;
+            padding: 10px 22px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 11px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+            transition: all 0.2s;
+        }
+
+        .btn-quantum-mic:hover {
+            box-shadow: 0 0 25px #00f0ff;
+            transform: scale(1.04);
+            color: #fff;
+        }
+
+        .btn-quantum-mic.listening {
+            background: linear-gradient(135deg, #ff9100, #ff0055);
+            color: #fff;
+            animation: pulseQuantum 1s infinite alternate;
+        }
+
+        @keyframes pulseQuantum {
+            0% { transform: scale(1); box-shadow: 0 0 20px #ff9100; }
+            100% { transform: scale(1.08); box-shadow: 0 0 40px #ff0055; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ВЕРХНЯЯ ШАПКА ХАЙ-ТЕК ПАНЕЛИ -->
+    <div class="top-drag-bar">
+        <div class="hud-brand">
+            <span>⚡ J.A.R.V.I.S. // QUANTUM NEXUS</span>
+            <span style="font-size: 9px; border: 1px solid rgba(0, 240, 255, 0.3); padding: 2px 6px; border-radius: 4px; color: #80d8ff;">SYS.ACTIVE</span>
+        </div>
+        <div class="hud-controls">
+            <button class="btn-circle-action" onclick="toggleMiniOrb()">🔮 ТОЛЬКО 3D ШАР</button>
+            <button class="btn-circle-action" style="border-color: #ff5252; color: #ff8a80;" onclick="closeApp()">✕</button>
+        </div>
+    </div>
+
+    <!-- 3D КВАНТОВЫЙ ХОЛСТ -->
+    <div id="canvas-container"></div>
+
+    <!-- 1. ЛЕВАЯ КИНЕТИЧЕСКАЯ ТЕЛЕМЕТРИЯ ЖЕЛЕЗА -->
+    <div class="telemetry-left">
+        <div class="holo-panel">
+            <div class="panel-header">
+                <span>ТЕЛЕМЕТРИЯ ПК</span>
+                <span style="color: #00e676;">ONLINE</span>
+            </div>
+
+            <div class="gauge-metric">
+                <div class="metric-info"><span>ПРОЦЕССОР</span> <strong id="cpu-val" style="color: #00f0ff;">--%</strong></div>
+                <div class="metric-bar-bg"><div class="metric-bar-fill" id="cpu-bar" style="width: 20%;"></div></div>
+            </div>
+
+            <div class="gauge-metric">
+                <div class="metric-info"><span>ОЗУ ПАМЯТЬ</span> <strong id="ram-val" style="color: #9d4edd;">--%</strong></div>
+                <div class="metric-bar-bg"><div class="metric-bar-fill" id="ram-bar" style="width: 45%; background: linear-gradient(90deg, #9d4edd, #f72585);"></div></div>
+            </div>
+
+            <div class="gauge-metric">
+                <div class="metric-info"><span>НАКОПИТЕЛЬ</span> <strong id="disk-val" style="color: #f72585;">--%</strong></div>
+                <div class="metric-bar-bg"><div class="metric-bar-fill" id="disk-bar" style="width: 70%; background: linear-gradient(90deg, #f72585, #ff0055);"></div></div>
+            </div>
+        </div>
+
+        <div class="holo-panel" style="border-left-color: #9d4edd;">
+            <div class="panel-header">
+                <span>ПРОТОКОЛЫ СВЯЗИ</span>
+            </div>
+            <div style="font-size: 10px; color: #8b9bb4; line-height: 1.8;">
+                <div>● WAKE-WORD: <strong style="color: #00f0ff;">«ДЖАРВИС»</strong></div>
+                <div>● ХОТКЕЙ: <strong style="color: #9d4edd;">ALT + J</strong></div>
+                <div>● ГОЛОС: <strong style="color: #00e676;">ДУБЛЯЖ BARANOV</strong></div>
+                <div>● МОЗГ: <strong style="color: #00f0ff;">GEMINI MULTIMODAL</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. ПРАВЫЕ ОРБИТАЛЬНЫЕ УЗЛЫ ДЕЙСТВИЙ -->
+    <div class="telemetry-right">
+        <div class="orbital-node" onclick="sendQuick('Посмотри на экран и скажи, что здесь открыто')">
+            <span class="node-icon">👁️</span>
+            <div>
+                <div class="node-label">Зрение Экрана</div>
+                <div class="node-sub">GEMINI VISION</div>
+            </div>
+        </div>
+
+        <div class="orbital-node" onclick="sendQuick('Прочитай документ на рабочем столе и расскажи суть')">
+            <span class="node-icon">📄</span>
+            <div>
+                <div class="node-label">Анализ Документов</div>
+                <div class="node-sub">PDF / DOCX / EXCEL</div>
+            </div>
+        </div>
+
+        <div class="orbital-node" onclick="sendQuick('Обрежь первые 30 секунд у видео')">
+            <span class="node-icon">🎬</span>
+            <div>
+                <div class="node-label">FFmpeg Студия</div>
+                <div class="node-sub">НАРЕЗКА И МОНТАЖ</div>
+            </div>
+        </div>
+
+        <div class="orbital-node" onclick="sendQuick('Создай видео полета Железного Человека')">
+            <span class="node-icon">✨</span>
+            <div>
+                <div class="node-label">Генерация Видео</div>
+                <div class="node-sub">AI VIDEO RENDER</div>
+            </div>
+        </div>
+
+        <div class="orbital-node" onclick="sendQuick('Наведи порядок на рабочем столе')">
+            <span class="node-icon">🧹</span>
+            <div>
+                <div class="node-label">Уборка Стола</div>
+                <div class="node-sub">FILE ORGANIZER</div>
+            </div>
+        </div>
+
+        <div class="orbital-node" onclick="sendQuick('Включи саундтрек Iron Man')">
+            <span class="node-icon">🎵</span>
+            <div>
+                <div class="node-label">Музыка и Звук</div>
+                <div class="node-sub">MEDIA CONTROL</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ЦЕНТРАЛЬНЫЙ ТЕРМИНАЛ И ПЛАВАЮЩИЕ ТИТРЫ -->
+    <div class="center-hud-core">
+        <div class="live-subtitle-capsule" id="subtitle-box">
+            Все протоколы активированы, сэр. Я подключен к вашей системе. Назовите команду или скажите «Джарвис».
+        </div>
+
+        <div class="quantum-input-bar">
+            <input type="text" class="quantum-input" id="cmd-input" placeholder="Введите команду или говорите голосом..." onkeydown="if(event.key==='Enter') sendText()">
+            <button class="btn-quantum-mic" id="mic-btn" onclick="toggleVoice()">🎙️ МИКРОФОН</button>
+        </div>
+    </div>
+
+    <script>
+        // ========================================================
+        // УНИКАЛЬНАЯ 3D-ВИЗУАЛИЗАЦИЯ: КВАНТОВЫЙ ТОРУС-РЕАКТОР (THREE.JS)
+        // Такого визуала нет ни в одном проекте на GitHub!
+        // ========================================================
+        let scene, camera, renderer, torusMesh, particleCore, rings = [];
+        let isSpeaking = false;
+        let isListening = false;
+        let mouseX = 0, mouseY = 0;
+
+        function initQuantum3D() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 210;
+
+            renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.body.appendChild(renderer.domElement);
+            renderer.domElement.id = 'quantum-canvas';
+
+            // 1. Создаем 3D Квантовый Торус из светящихся узлов
+            const torusGeo = new THREE.TorusGeometry(65, 18, 30, 120);
+            const torusMat = new THREE.PointsMaterial({
+                size: 1.6,
+                color: 0x00f0ff,
+                transparent: true,
+                opacity: 0.75,
+                blending: THREE.AdditiveBlending
+            });
+            torusMesh = new THREE.Points(torusGeo, torusMat);
+            scene.add(torusMesh);
+
+            // 2. Внутреннее пульсирующее ядро частиц
+            const coreGeo = new THREE.BufferGeometry();
+            const coreCount = 1200;
+            const corePos = new Float32Array(coreCount * 3);
+            for(let i = 0; i < coreCount * 3; i++) {
+                corePos[i] = (Math.random() - 0.5) * 60;
+            }
+            coreGeo.setAttribute('position', new THREE.BufferAttribute(corePos, 3));
+            const coreMat = new THREE.PointsMaterial({
+                size: 2.2,
+                color: 0x9d4edd,
+                transparent: true,
+                opacity: 0.85,
+                blending: THREE.AdditiveBlending
+            });
+            particleCore = new THREE.Points(coreGeo, coreMat);
+            scene.add(particleCore);
+
+            // 3. Кинетические орбитальные кольца
+            for (let i = 0; i < 3; i++) {
+                const ringGeo = new THREE.RingGeometry(85 + i * 14, 86 + i * 14, 80);
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: 0x00f0ff,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.35 - i * 0.08,
+                    blending: THREE.AdditiveBlending
+                });
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.x = Math.PI / (2.2 + i);
+                ring.rotation.y = (i * Math.PI) / 4;
+                scene.add(ring);
+                rings.push(ring);
+            }
+
+            // Слежение за мышкой
+            window.addEventListener('mousemove', (e) => {
+                mouseX = (e.clientX - window.innerWidth / 2) * 0.0008;
+                mouseY = (e.clientY - window.innerHeight / 2) * 0.0008;
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animateQuantum();
+        }
+
+        let clock = new THREE.Clock();
+
+        function animateQuantum() {
+            requestAnimationFrame(animateQuantum);
+            const time = clock.getElapsedTime();
+
+            // Сложное кинетическое 3D-вращение
+            torusMesh.rotation.x += 0.005;
+            torusMesh.rotation.y += 0.007;
+
+            // Следование за мышкой
+            torusMesh.rotation.x += (mouseY - torusMesh.rotation.x) * 0.05;
+            torusMesh.rotation.y += (mouseX - torusMesh.rotation.y) * 0.05;
+
+            particleCore.rotation.y -= 0.01;
+            particleCore.rotation.x += 0.006;
+
+            rings.forEach((r, idx) => {
+                r.rotation.z += 0.004 * (idx % 2 === 0 ? 1 : -1);
+                r.rotation.x += 0.002;
+            });
+
+            // Эффект пульсации при речи
+            let pulse = 1;
+            if (isSpeaking) {
+                pulse = 1 + Math.sin(time * 16) * 0.12;
+            } else if (isListening) {
+                pulse = 1 + Math.sin(time * 8) * 0.06;
+            }
+            torusMesh.scale.set(pulse, pulse, pulse);
+            particleCore.scale.set(pulse, pulse, pulse);
+
+            renderer.render(scene, camera);
+        }
+
+        initQuantum3D();
+
+        // ========================================================
+        // МОСТ К PYTHON & ТЕЛЕМЕТРИЯ
+        // ========================================================
+        function updateSystemGauges(cpu, ram, disk) {
+            document.getElementById('cpu-val').innerText = cpu + '%';
+            document.getElementById('cpu-bar').style.width = cpu + '%';
+
+            document.getElementById('ram-val').innerText = ram + '%';
+            document.getElementById('ram-bar').style.width = ram + '%';
+
+            document.getElementById('disk-val').innerText = disk + '%';
+            document.getElementById('disk-bar').style.width = disk + '%';
+        }
+
+        function setStatus(text, listening=false, speaking=false) {
+            isListening = listening;
+            isSpeaking = speaking;
+            const btn = document.getElementById('mic-btn');
+            if (listening) {
+                btn.classList.add('listening');
+                btn.innerText = '🔴 СЛУШАЮ СЭР...';
+                torusMesh.material.color.setHex(0xff9100);
+            } else if (speaking) {
+                btn.classList.remove('listening');
+                btn.innerText = '🔊 ОТВЕЧАЮ...';
+                torusMesh.material.color.setHex(0xff0055);
+            } else {
+                btn.classList.remove('listening');
+                btn.innerText = '🎙️ МИКРОФОН';
+                torusMesh.material.color.setHex(0x00f0ff);
+            }
+        }
+
+        function setSubtitle(text) {
+            document.getElementById('subtitle-box').innerHTML = text;
+        }
+
+        function addMessage(author, text, isUser) {
+            setSubtitle(`<strong>${author}:</strong> ${text}`);
+        }
+
+        function sendText() {
+            const input = document.getElementById('cmd-input');
+            const val = input.value.trim();
+            if (val) {
+                input.value = '';
+                setSubtitle(`<strong>СЭР:</strong> «${val}»`);
+                if (window.pywebview) window.pywebview.api.send_command(val);
+            }
+        }
+
+        function sendQuick(prompt) {
+            setSubtitle(`<strong>СЭР:</strong> «${prompt}»`);
+            if (window.pywebview) window.pywebview.api.send_command(prompt);
+        }
+
+        function toggleVoice() {
+            if (window.pywebview) window.pywebview.api.trigger_listen();
+        }
+
+        function toggleMiniOrb() {
+            if (window.pywebview) window.pywebview.api.switch_to_orb();
+        }
+
+        function closeApp() {
+            if (window.pywebview) window.pywebview.api.close_app();
+        }
+    </script>
+</body>
+</html>
