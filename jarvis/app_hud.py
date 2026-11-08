@@ -71,6 +71,15 @@ class JarvisBridge:
 
         threading.Thread(target=task, daemon=True).start()
 
+    def save_settings(self, new_settings: dict):
+        """Сохранение новых настроек из UI-окна"""
+        from jarvis.settings_manager import SettingsManager
+        current = SettingsManager.load()
+        current.update(new_settings)
+        SettingsManager.save(current)
+        if "voice" in new_settings:
+            self.voice.voice_name = new_settings["voice"]
+
     def send_command(self, prompt: str):
         def task():
             self.window.evaluate_js("setStatus('ОБРАБОТКА КОМАНДЫ...', false, false)")
@@ -104,7 +113,7 @@ def main():
         background_color='#030811'
     )
     bridge = JarvisBridge(window)
-    window.expose(bridge.trigger_listen, bridge.send_command)
+    window.expose(bridge.trigger_listen, bridge.send_command, bridge.save_settings)
     webview.start()
 
 if __name__ == "__main__":
