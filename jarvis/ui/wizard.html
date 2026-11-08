@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. Setup Wizard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0b0816;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .wizard-card {
+            width: 480px;
+            background: #130e24;
+            border: 1px solid rgba(157, 78, 221, 0.25);
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(157, 78, 221, 0.15);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Индикаторы шагов (точки) */
+        .step-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: #9d4edd;
+            box-shadow: 0 0 10px #9d4edd;
+            width: 18px;
+            border-radius: 6px;
+        }
+
+        .wizard-title {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wizard-subtitle {
+            font-size: 12px;
+            color: #8b85a3;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        /* Шаг 1: Варианты ИИ-движков */
+        .engine-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .engine-card {
+            background: rgba(26, 21, 48, 0.6);
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            border-radius: 12px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .engine-card:hover {
+            border-color: #00f0ff;
+            background: rgba(38, 31, 71, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .engine-card.selected {
+            border-color: #9d4edd;
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.25), rgba(0, 240, 255, 0.08));
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
+        }
+
+        .engine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .engine-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-rec {
+            font-size: 9px;
+            font-weight: 700;
+            background: rgba(157, 78, 221, 0.3);
+            color: #c77dff;
+            padding: 2px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .engine-desc {
+            font-size: 11px;
+            color: #8b85a3;
+            line-height: 1.4;
+        }
+
+        /* Поля ввода и выпадающие списки */
+        .form-select, .form-input {
+            width: 100%;
+            background: #0d0919;
+            border: 1px solid rgba(157, 78, 221, 0.3);
+            color: #ffffff;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        .form-select:focus, .form-input:focus {
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+        }
+
+        /* Выбор обращения (На ты / На вы) */
+        .tone-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .tone-card {
+            background: rgba(26, 21, 48, 0.6);
+            border: 1px solid rgba(157, 78, 221, 0.2);
+            border-radius: 12px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .tone-card.selected {
+            border-color: #9d4edd;
+            background: rgba(157, 78, 221, 0.2);
+        }
+
+        .tone-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .tone-example {
+            font-size: 11px;
+            color: #8b85a3;
+            line-height: 1.3;
+        }
+
+        /* Кнопки навигации снизу */
+        .wizard-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 25px;
+        }
+
+        .btn-skip, .btn-back {
+            background: transparent;
+            border: none;
+            color: #8b85a3;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-skip:hover, .btn-back:hover {
+            color: #ffffff;
+        }
+
+        .btn-next {
+            background: #9d4edd;
+            border: none;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.4);
+        }
+
+        .btn-next:hover {
+            background: #b5179e;
+            box-shadow: 0 0 25px rgba(181, 23, 158, 0.6);
+            transform: translateY(-1px);
+        }
+
+        /* Шаги формы */
+        .step-panel {
+            display: none;
+        }
+        .step-panel.active {
+            display: block;
+        }
+
+        /* Итоговая сводка шага 4 */
+        .summary-box {
+            background: rgba(26, 21, 48, 0.6);
+            border: 1px solid rgba(157, 78, 221, 0.25);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            font-size: 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            color: #8b85a3;
+        }
+
+        .summary-val {
+            color: #ffffff;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wizard-card">
+        <!-- Индикатор 4 шагов -->
+        <div class="step-dots">
+            <div class="dot active" id="dot-1"></div>
+            <div class="dot" id="dot-2"></div>
+            <div class="dot" id="dot-3"></div>
+            <div class="dot" id="dot-4"></div>
+        </div>
+
+        <!-- ШАГ 1: ВЫБОР AI-ДВИЖКА (1-в-1 как на скриншоте) -->
+        <div class="step-panel active" id="step-1">
+            <div class="wizard-title">Привет! Я Джарвис ⚡</div>
+            <div class="wizard-subtitle">Давай настроимся за минуту. Шаг 1 из 4: выбери AI-движок.</div>
+
+            <div class="engine-list">
+                <div class="engine-card selected" onclick="selectEngine(this, 'groq')">
+                    <div class="engine-header">
+                        <div class="engine-name">⚡ Groq + Llama 3.3 70B</div>
+                        <div class="badge-rec">РЕКОМЕНДУЕТСЯ</div>
+                    </div>
+                    <div class="engine-desc">Самый быстрый и бесплатный: 500 токенов/сек (в 10 раз быстрее) на чипах LPU. 14 400 запросов в день бесплатно. Карта не нужна.</div>
+                </div>
+
+                <div class="engine-card" onclick="selectEngine(this, 'gemini')">
+                    <div class="engine-header">
+                        <div class="engine-name">✨ Google Gemini 3.5 Flash</div>
+                        <div class="badge-rec" style="background: rgba(0, 240, 255, 0.2); color: #00f0ff;">МУЛЬТИМОДАЛЬНЫЙ</div>
+                    </div>
+                    <div class="engine-desc">Умный мозг с поддержкой компьютерного зрения (Screen Vision), анализом фото и видеомонтажом.</div>
+                </div>
+
+                <div class="engine-card" onclick="selectEngine(this, 'local')">
+                    <div class="engine-header">
+                        <div class="engine-name">🖥️ Локально (Ollama Llama 3)</div>
+                    </div>
+                    <div class="engine-desc">Свой AI на ПК, без интернета и API-ключей. Полная приватность ваших файлов и видео.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ШАГ 2: ВЫБОР МИКРОФОНА -->
+        <div class="step-panel" id="step-2">
+            <div class="wizard-title">Шаг 2 из 4: Микрофон 🎙️</div>
+            <div class="wizard-subtitle">Выбери микрофон, через который Джарвис будет слушать команды. Если не уверен — оставь по умолчанию.</div>
+
+            <select class="form-select" id="mic-select">
+                <option value="default">Микрофон по умолчанию (Системный Windows)</option>
+                <option value="headset">Наушники / Гарнитура</option>
+                <option value="fifine">Внешний USB-микрофон</option>
+            </select>
+            <div style="font-size: 11px; color: #8b85a3; margin-top: 15px; text-align: center;">Подсказка: можно поменять микрофон в любой момент в Настройках.</div>
+        </div>
+
+        <!-- ШАГ 3: ИМЯ И ОБРАЩЕНИЕ -->
+        <div class="step-panel" id="step-3">
+            <div class="wizard-title">Шаг 3 из 4: Как к тебе обращаться? 🤝</div>
+            <div class="wizard-subtitle">Я запомню имя и буду обращаться персонально.</div>
+
+            <input type="text" class="form-input" id="user-name" placeholder="Например: Сэр, Тони, Влад..." value="Сэр">
+
+            <div class="tone-row">
+                <div class="tone-card selected" onclick="selectTone(this, 'sir')">
+                    <div class="tone-title">🎩 «Сэр / Формально»</div>
+                    <div class="tone-example">«К вашим услугам, сэр. Все протоколы активированы.» — стиль Тони Старка</div>
+                </div>
+
+                <div class="tone-card" onclick="selectTone(this, 'you')">
+                    <div class="tone-title">💜 «На ты»</div>
+                    <div class="tone-example">«Привет! Что делаем сегодня?» — дружеский тон</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ШАГ 4: ГОТОВО (СВОДКА) -->
+        <div class="step-panel" id="step-4">
+            <div class="wizard-title">Готово! 🎉</div>
+            <div class="wizard-subtitle">Можно начинать. Вот что я запомнил:</div>
+
+            <div class="summary-box">
+                <div class="summary-row"><span>AI-движок:</span> <span class="summary-val" id="sum-engine">Groq Llama 3.3 70B</span></div>
+                <div class="summary-row"><span>Микрофон:</span> <span class="summary-val" id="sum-mic">Системный Windows</span></div>
+                <div class="summary-row"><span>Имя:</span> <span class="summary-val" id="sum-name">Сэр</span></div>
+                <div class="summary-row"><span>Обращение:</span> <span class="summary-val" id="sum-tone">Формально (Сэр)</span></div>
+            </div>
+
+            <div style="font-size: 11px; color: #8b85a3; margin-top: 15px; text-align: center;">
+                Всё можно поменять потом в Настройках. Просто скажи «Джарвис» и попробуй любую команду.
+            </div>
+        </div>
+
+        <!-- КНОПКИ НАВИГАЦИИ -->
+        <div class="wizard-footer">
+            <button class="btn-back" id="btn-back" onclick="prevStep()" style="visibility: hidden;">— Назад</button>
+            <button class="btn-skip" onclick="finishWizard()">Пропустить всё</button>
+            <button class="btn-next" id="btn-next" onclick="nextStep()">Далее →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let selectedEngine = 'groq';
+        let selectedTone = 'sir';
+
+        function selectEngine(el, engine) {
+            document.querySelectorAll('.engine-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedEngine = engine;
+        }
+
+        function selectTone(el, tone) {
+            document.querySelectorAll('.tone-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedTone = tone;
+        }
+
+        function updateStepView() {
+            // Переключаем точки
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById('dot-' + i);
+                const panel = document.getElementById('step-' + i);
+                if (i === currentStep) {
+                    dot.classList.add('active');
+                    panel.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                    panel.classList.remove('active');
+                }
+            }
+
+            // Кнопка назад
+            document.getElementById('btn-back').style.visibility = (currentStep > 1) ? 'visible' : 'hidden';
+
+            // На последнем шаге кнопка меняется на "Запустить"
+            const nextBtn = document.getElementById('btn-next');
+            if (currentStep === 4) {
+                nextBtn.innerText = 'Запустить ✨';
+                updateSummary();
+            } else {
+                nextBtn.innerText = 'Далее →';
+            }
+        }
+
+        function updateSummary() {
+            const engineNames = {
+                'groq': 'Groq + Llama 3.3 70B (Сверхбыстрый)',
+                'gemini': 'Google Gemini 3.5 Flash',
+                'local': 'Локальная Llama 3 (Ollama)'
+            };
+            document.getElementById('sum-engine').innerText = engineNames[selectedEngine] || 'Groq Llama 3.3';
+            document.getElementById('sum-name').innerText = document.getElementById('user-name').value || 'Сэр';
+            document.getElementById('sum-tone').innerText = (selectedTone === 'sir') ? 'Формально (Сэр)' : 'На «ты»';
+        }
+
+        function nextStep() {
+            if (currentStep < 4) {
+                currentStep++;
+                updateStepView();
+            } else {
+                finishWizard();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepView();
+            }
+        }
+
+        function finishWizard() {
+            const userName = document.getElementById('user-name').value || 'Сэр';
+            if (window.pywebview) {
+                window.pywebview.api.complete_onboarding({
+                    engine: selectedEngine,
+                    user_name: userName,
+                    tone: selectedTone
+                });
+            }
+        }
+    </script>
+</body>
+</html>

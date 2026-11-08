@@ -108,6 +108,25 @@ class UltimateBridge:
         except Exception:
             pass
 
+    def open_wizard(self):
+        """Открыть мастер быстрой настройки из скриншотов"""
+        wizard_path = os.path.join(os.path.dirname(__file__), "ui", "wizard.html")
+        webview.create_window(
+            title="J.A.R.V.I.S. Setup Wizard",
+            url=wizard_path,
+            width=540,
+            height=620,
+            background_color='#0b0816'
+        )
+
+    def complete_onboarding(self, data: dict):
+        """Сохранение результатов мастера настройки"""
+        from jarvis.settings_manager import SettingsManager
+        current = SettingsManager.load()
+        current.update(data)
+        SettingsManager.save(current)
+        self.window.evaluate_js(f"addMessage('СИСТЕМА', 'Мастер настройки завершен! Приятно познакомиться, {data.get('user_name', 'сэр')}.', false)")
+
     def save_settings(self, new_settings: dict):
         from jarvis.settings_manager import SettingsManager
         current = SettingsManager.load()
@@ -138,6 +157,8 @@ def start_ultimate_jarvis():
         bridge.send_command,
         bridge.switch_to_orb,
         bridge.save_settings,
+        bridge.open_wizard,
+        bridge.complete_onboarding,
         bridge.close_app
     )
     webview.start()
