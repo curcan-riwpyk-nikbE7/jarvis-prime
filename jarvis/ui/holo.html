@@ -521,10 +521,20 @@
             isMiniMode = !isMiniMode;
             if (isMiniMode) {
                 document.body.classList.add('mini-mode');
-                if (window.pywebview) window.pywebview.api.resize_to_mini();
+                // Убираем фоновую заливку
+                document.body.style.background = 'transparent';
+                document.body.style.boxShadow = 'none';
+                document.body.style.border = 'none';
+                if (window.pywebview && window.pywebview.api) {
+                    window.pywebview.api.resize_to_mini();
+                }
             } else {
                 document.body.classList.remove('mini-mode');
-                if (window.pywebview) window.pywebview.api.resize_to_full();
+                document.body.style.background = '#040914';
+                document.body.style.border = '1px solid rgba(0, 240, 255, 0.2)';
+                if (window.pywebview && window.pywebview.api) {
+                    window.pywebview.api.resize_to_full();
+                }
             }
         }
 

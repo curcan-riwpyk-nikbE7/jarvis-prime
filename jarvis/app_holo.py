@@ -88,11 +88,17 @@ class HoloBridge:
 
     def resize_to_mini(self):
         """Режим парящего компактного 3D-шара"""
-        self.window.resize(320, 320)
+        try:
+            self.window.resize(300, 300)
+        except Exception:
+            pass
 
     def resize_to_full(self):
         """Разворот в полный голографический интерфейс"""
-        self.window.resize(1000, 720)
+        try:
+            self.window.resize(1000, 720)
+        except Exception:
+            pass
 
     def close_app(self):
         self.window.destroy()
