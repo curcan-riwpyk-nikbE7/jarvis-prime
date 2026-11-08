@@ -78,6 +78,170 @@
             box-shadow: 0 0 15px #00f0ff;
         }
 
+        /* ПОЛНОЦЕННОЕ ГОЛОГРАФИЧЕСКОЕ ОКНО НАСТРОЕК */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 4, 10, 0.9);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .settings-box {
+            width: 820px;
+            max-height: 85vh;
+            background: #060b18;
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 60px rgba(0, 240, 255, 0.2), inset 0 0 30px rgba(0, 240, 255, 0.04);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: modalFadeIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 25px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            background: rgba(0, 240, 255, 0.03);
+        }
+
+        .settings-title {
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #00f0ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .settings-body {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Боковые табы настроек */
+        .settings-tabs {
+            background: rgba(3, 7, 16, 0.8);
+            border-right: 1px solid rgba(0, 240, 255, 0.15);
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: #8b9bb4;
+            text-align: left;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff;
+            background: rgba(0, 240, 255, 0.08);
+        }
+
+        .tab-btn.active {
+            background: rgba(0, 240, 255, 0.15);
+            border-left: 3px solid #00f0ff;
+            color: #00f0ff;
+            font-weight: bold;
+        }
+
+        /* Контентная зона выбранного таба */
+        .tab-content-zone {
+            padding: 25px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+
+        .setting-section {
+            display: none;
+        }
+        .setting-section.active {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .set-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .set-label {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            color: #00f0ff;
+            font-weight: bold;
+        }
+
+        .set-desc {
+            font-size: 11px;
+            color: #8b9bb4;
+            line-height: 1.4;
+        }
+
+        .set-input, .set-select {
+            width: 100%;
+            background: #030610;
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            color: #ffffff;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .set-input:focus, .set-select:focus {
+            border-color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .range-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .range-slider {
+            flex: 1;
+            accent-color: #00f0ff;
+        }
+
+        .settings-footer {
+            padding: 15px 25px;
+            border-top: 1px solid rgba(0, 240, 255, 0.2);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: rgba(3, 7, 16, 0.8);
+        }
+
         /* 3D WebGL Холст в центре */
         #quantum-canvas {
             position: absolute;
@@ -312,6 +476,7 @@
             <span style="font-size: 9px; border: 1px solid rgba(0, 240, 255, 0.3); padding: 2px 6px; border-radius: 4px; color: #80d8ff;">SYS.ACTIVE</span>
         </div>
         <div class="hud-controls">
+            <button class="btn-circle-action" onclick="openFullSettings()">⚙️ НАСТРОЙКИ</button>
             <button class="btn-circle-action" onclick="toggleMiniOrb()">🔮 ТОЛЬКО 3D ШАР</button>
             <button class="btn-circle-action" style="border-color: #ff5252; color: #ff8a80;" onclick="closeApp()">✕</button>
         </div>
@@ -417,6 +582,162 @@
         <div class="quantum-input-bar">
             <input type="text" class="quantum-input" id="cmd-input" placeholder="Введите команду или говорите голосом..." onkeydown="if(event.key==='Enter') sendText()">
             <button class="btn-quantum-mic" id="mic-btn" onclick="toggleVoice()">🎙️ МИКРОФОН</button>
+        </div>
+    </div>
+
+    <!-- ПОЛНОЦЕННОЕ ГОЛОГРАФИЧЕСКОЕ ОКНО НАСТРОЕК СО ВСЕМИ ПАРАМЕТРАМИ -->
+    <div class="settings-modal" id="settings-modal">
+        <div class="settings-box">
+            <div class="settings-header">
+                <div class="settings-title">⚙️ J.A.R.V.I.S. CONFIGURATION MATRIX</div>
+                <button class="btn-circle-action" onclick="closeFullSettings()">&times;</button>
+            </div>
+
+            <div class="settings-body">
+                <!-- Меню категорий настроек -->
+                <div class="settings-tabs">
+                    <button class="tab-btn active" onclick="switchSetTab('voice-tts', this)">🔊 Голос и Синтез</button>
+                    <button class="tab-btn" onclick="switchSetTab('mic-stt', this)">🎙️ Слух и Микрофон</button>
+                    <button class="tab-btn" onclick="switchSetTab('llm-models', this)">🧠 Модели и Мозг</button>
+                    <button class="tab-btn" onclick="switchSetTab('person-profile', this)">🎩 Персонализация</button>
+                    <button class="tab-btn" onclick="switchSetTab('skills-matrix', this)">🧩 Модули и Скилы</button>
+                </div>
+
+                <!-- Контент категорий -->
+                <div class="tab-content-zone">
+                    
+                    <!-- 1. ГОЛОС И СИНТЕЗ -->
+                    <div class="setting-section active" id="sec-voice-tts">
+                        <div class="set-row">
+                            <label class="set-label">ГОЛОС ДЖАРВИСА (NEURAL TTS):</label>
+                            <select class="set-select" id="set-voice-name">
+                                <option value="ru-RU-DmitryNeural">Русский кинодубляж Баранова (Мужской глубокий)</option>
+                                <option value="ru-RU-SvetlanaNeural">Женский голос ПЯТНИЦА / F.R.I.D.A.Y.</option>
+                                <option value="en-GB-RyanNeural">Оригинальный английский (Paul Bettany / Джентльмен)</option>
+                            </select>
+                            <div class="set-desc">Нейросетевой тембр с глубоким басом и кинематографичными интонациями.</div>
+                        </div>
+
+                        <div class="set-row">
+                            <label class="set-label">СКОРОСТЬ РЕЧИ (SPEED RATE):</label>
+                            <div class="range-slider-row">
+                                <input type="range" class="range-slider" id="set-voice-speed" min="-20" max="30" value="-2" oninput="document.getElementById('speed-val').innerText = this.value + '%'">
+                                <strong id="speed-val" style="color: #00f0ff; width: 45px;">-2%</strong>
+                            </div>
+                            <div class="set-desc">Регулировка темпа речи дворецкого (от размеренного до быстрого).</div>
+                        </div>
+
+                        <div class="set-row">
+                            <label class="set-label">ВЫСОТА ТОНА (PITCH BASS):</label>
+                            <div class="range-slider-row">
+                                <input type="range" class="range-slider" id="set-voice-pitch" min="-10" max="10" value="-3" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'">
+                                <strong id="pitch-val" style="color: #00f0ff; width: 45px;">-3Hz</strong>
+                            </div>
+                            <div class="set-desc">Понижение тона добавляет бархатный киношный бас.</div>
+                        </div>
+
+                        <div class="set-row">
+                            <label class="set-label">ЗВУКОВЫЕ ЭФФЕКТЫ РЕАКТОРА (SOUND FX):</label>
+                            <select class="set-select" id="set-sound-fx">
+                                <option value="true">Включены (Неоновый сигнал пинга и заряд реактора)</option>
+                                <option value="false">Выключены (Тихий режим)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 2. СЛУХ И МИКРОФОН -->
+                    <div class="setting-section" id="sec-mic-stt">
+                        <div class="set-row">
+                            <label class="set-label">ФОНОВЫЙ WAKE-WORD («ДЖАРВИС»):</label>
+                            <select class="set-select" id="set-wake-word">
+                                <option value="true">Включен (Активация голосом без нажатия кнопок)</option>
+                                <option value="false">Выключен (Только по нажатию кнопки или Alt+J)</option>
+                            </select>
+                            <div class="set-desc">Джарвис непрерывно ожидает кодовое слово в микрофоне.</div>
+                        </div>
+
+                        <div class="set-row">
+                            <label class="set-label">ГЛОБАЛЬНАЯ ГОРЯЧАЯ КЛАВИША:</label>
+                            <input type="text" class="set-input" id="set-hotkey-val" value="alt+j">
+                            <div class="set-desc">Комбинация клавиш для вызова из любой полноэкранной игры или софта.</div>
+                        </div>
+
+                        <div class="set-row">
+                            <label class="set-label">ЧУВСТВИТЕЛЬНОСТЬ МИКРОФОНА И ФИЛЬТР ШУМА:</label>
+                            <select class="set-select">
+                                <option value="0.4">Оптимальная калибровка (0.4 сек адаптации к фону)</option>
+                                <option value="0.8">Высокая фильтрация шума (для шумных комнат)</option>
+                                <option value="0.2">Мгновенный захват речи</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 3. МОДЕЛИ И МОЗГ -->
+                    <div class="setting-section" id="sec-llm-models">
+                        <div class="set-row">
+                            <label class="set-label">ОСНОВНОЙ LLM-ПРОВАЙДЕР:</label>
+                            <select class="set-select" id="set-llm-model">
+                                <option value="gemini-3.5-flash">Google Gemini 3.5 Flash (Рекомендуется: мультимодальный + быстрый)</option>
+                                <option value="gemini-3.8-flash">Google Gemini 3.8 Flash (Новейший)</option>
+                                <option value="groq-llama">Groq LPU (Llama 3.3 70B — сверхбыстрый 500 токенов/сек)</option>
+                                <option value="local-ollama">Локально (Ollama Llama 3 — без интернета)</option>
+                            </select>
+                        </div>
+
+                        <div class="set-row">
+                            <label class="set-label">API КЛЮЧ GEMINI / GROQ:</label>
+                            <input type="password" class="set-input" id="set-api-key" placeholder="Вставьте ваш ключ API...">
+                            <div class="set-desc">Ключ надежно сохраняется в локальной зашифрованной конфигурации .env</div>
+                        </div>
+                    </div>
+
+                    <!-- 4. ПЕРСОНАЛИЗАЦИЯ -->
+                    <div class="setting-section" id="sec-person-profile">
+                        <div class="set-row">
+                            <label class="set-label">КАК К ВАМ ОБРАЩАТЬСЯ:</label>
+                            <input type="text" class="set-input" id="set-user-name" value="Сэр">
+                            <div class="set-desc">Джарвис будет уважительно использовать это имя в диалоге.</div>
+                        </div>
+
+                        <div class="set-row">
+                            <label class="set-label">СТИЛЬ И ТОН ОБЩЕНИЯ:</label>
+                            <select class="set-select" id="set-user-tone">
+                                <option value="sir">Формальный британский джентльмен («На вы», тактично, остроумно)</option>
+                                <option value="friend">Дружеский тон («На ты», неформально)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 5. МОДУЛИ И СКИЛЫ -->
+                    <div class="setting-section" id="sec-skills-matrix">
+                        <div class="set-desc" style="margin-bottom: 10px;">Включение и отключение встроенных инструментов:</div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                                <span>🎬 FFmpeg Студия (Монтаж, нарезка, Shorts 9:16)</span> <input type="checkbox" checked disabled>
+                            </label>
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                                <span>📄 Анализ документов (PDF, Word, Excel)</span> <input type="checkbox" checked disabled>
+                            </label>
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                                <span>👁️ Зрение экрана (Gemini Vision)</span> <input type="checkbox" checked disabled>
+                            </label>
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                                <span>✨ Автономный генератор видео</span> <input type="checkbox" checked disabled>
+                            </label>
+                            <label style="display: flex; justify-content: space-between; font-size: 12px; background: rgba(0, 240, 255, 0.05); padding: 8px 12px; border-radius: 6px;">
+                                <span>🧹 Сортировка рабочего стола</span> <input type="checkbox" checked disabled>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Подвал настроек -->
+            <div class="settings-footer">
+                <button class="btn-circle-action" onclick="closeFullSettings()">ОТМЕНА</button>
+                <button class="btn-quantum-mic" style="padding: 6px 20px;" onclick="saveFullSettings()">СОХРАНИТЬ ПАРАМЕТРЫ</button>
+            </div>
         </div>
     </div>
 
@@ -606,6 +927,95 @@
 
         function closeApp() {
             if (window.pywebview) window.pywebview.api.close_app();
+        }
+
+        // ========================================================
+        // ЛОГИКА ОКНА ПОЛНЫХ НАСТРОЕК (SETTINGS MODAL)
+        // ========================================================
+        function openFullSettings() {
+            const modal = document.getElementById('full-settings-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                // Загрузить текущие настройки
+                if (window.pywebview && window.pywebview.api.get_settings) {
+                    window.pywebview.api.get_settings().then(data => {
+                        if (data) {
+                            if (data.voice) document.getElementById('set-voice-actor').value = data.voice;
+                            if (data.model) document.getElementById('set-model-engine').value = data.model;
+                            if (data.user_name) document.getElementById('set-user-name').value = data.user_name;
+                            if (data.user_tone) document.getElementById('set-user-tone').value = data.user_tone;
+                            if (data.gemini_api_key) document.getElementById('set-api-key').value = data.gemini_api_key;
+                            if (data.hotkey) document.getElementById('set-hotkey').value = data.hotkey;
+                            if (data.speech_rate) {
+                                const rateNum = parseInt(data.speech_rate) || 0;
+                                document.getElementById('set-rate-slider').value = rateNum;
+                                document.getElementById('rate-val').innerText = (rateNum >= 0 ? '+' : '') + rateNum + '%';
+                            }
+                            if (data.speech_pitch) {
+                                const pitchNum = parseInt(data.speech_pitch) || -3;
+                                document.getElementById('set-pitch-slider').value = pitchNum;
+                                document.getElementById('pitch-val').innerText = (pitchNum >= 0 ? '+' : '') + pitchNum + 'Hz';
+                            }
+                        }
+                    }).catch(e => console.log(e));
+                }
+            }
+        }
+
+        function closeFullSettings() {
+            const modal = document.getElementById('full-settings-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function switchSetTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.setting-section').forEach(sec => sec.classList.remove('active'));
+
+            const targetBtn = document.getElementById('tb-' + tabId);
+            const targetSec = document.getElementById('sec-' + tabId);
+            if (targetBtn) targetBtn.classList.add('active');
+            if (targetSec) targetSec.classList.add('active');
+        }
+
+        function updateSliderVal(sliderId, displayId, unit) {
+            const val = document.getElementById(sliderId).value;
+            const prefix = val > 0 ? '+' : '';
+            document.getElementById(displayId).innerText = prefix + val + unit;
+        }
+
+        function saveFullSettings() {
+            const voice = document.getElementById('set-voice-actor').value;
+            const rateVal = document.getElementById('set-rate-slider').value;
+            const pitchVal = document.getElementById('set-pitch-slider').value;
+            const wake = document.getElementById('set-wake-word').value;
+            const mic = document.getElementById('set-mic-select').value;
+            const hotkey = document.getElementById('set-hotkey').value;
+            const model = document.getElementById('set-model-engine').value;
+            const apiKey = document.getElementById('set-api-key').value;
+            const userName = document.getElementById('set-user-name').value;
+            const userTone = document.getElementById('set-user-tone').value;
+
+            const newSettings = {
+                voice: voice,
+                speech_rate: (rateVal >= 0 ? '+' : '') + rateVal + '%',
+                speech_pitch: (pitchVal >= 0 ? '+' : '') + pitchVal + 'Hz',
+                wake_word: wake,
+                mic_device: mic,
+                hotkey: hotkey,
+                model: model,
+                gemini_api_key: apiKey,
+                user_name: userName,
+                user_tone: userTone
+            };
+
+            if (window.pywebview && window.pywebview.api.save_settings) {
+                window.pywebview.api.save_settings(newSettings).then(() => {
+                    closeFullSettings();
+                    setSubtitle(`<strong>J.A.R.V.I.S.:</strong> Конфигурация успешно обновлена, сэр.`);
+                });
+            } else {
+                closeFullSettings();
+            }
         }
     </script>
 </body>

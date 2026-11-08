@@ -127,13 +127,33 @@ class UltimateBridge:
         SettingsManager.save(current)
         self.window.evaluate_js(f"addMessage('СИСТЕМА', 'Мастер настройки завершен! Приятно познакомиться, {data.get('user_name', 'сэр')}.', false)")
 
+    def get_settings(self):
+        """Получить текущие настройки для отображения в UI"""
+        from jarvis.settings_manager import SettingsManager
+        return SettingsManager.load()
+
     def save_settings(self, new_settings: dict):
         from jarvis.settings_manager import SettingsManager
         current = SettingsManager.load()
         current.update(new_settings)
         SettingsManager.save(current)
-        if "voice" in new_settings:
-            self.voice.voice_name = new_settings["voice"]
+        
+        # Обновление параметров голоса в реальном времени
+        voice_id = new_settings.get("voice")
+        rate = new_settings.get("speech_rate")
+        pitch = new_settings.get("speech_pitch")
+        self.voice.update_voice_params(voice_name=voice_id, rate=rate, pitch=pitch)
+
+        # Если обновлен API-ключ Gemini или модель
+        if "gemini_api_key" in new_settings and new_settings["gemini_api_key"]:
+            os.environ["GEMINI_API_KEY"] = new_settings["gemini_api_key"]
+            try:
+                from jarvis.core import JarvisCore
+                self.core = JarvisCore()
+            except Exception:
+                pass
+
+        return True
 
     def close_app(self):
         self.window.destroy()
@@ -156,6 +176,7 @@ def start_ultimate_jarvis():
         bridge.trigger_listen,
         bridge.send_command,
         bridge.switch_to_orb,
+        bridge.get_settings,
         bridge.save_settings,
         bridge.open_wizard,
         bridge.complete_onboarding,

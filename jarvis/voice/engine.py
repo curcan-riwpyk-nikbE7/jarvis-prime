@@ -12,6 +12,8 @@ class VoiceEngine:
     """Двухуровневый голосовой движок: Edge-TTS + нативный Windows SAPI5 (pyttsx3)"""
     def __init__(self):
         self.voice_name = Config.JARVIS_VOICE
+        self.rate = "-2%"
+        self.pitch = "-3Hz"
         self.recognizer = sr.Recognizer()
         pygame.mixer.init()
         try:
@@ -19,6 +21,14 @@ class VoiceEngine:
             self.sapi.setProperty('rate', 180)
         except Exception:
             self.sapi = None
+
+    def update_voice_params(self, voice_name=None, rate=None, pitch=None):
+        if voice_name:
+            self.voice_name = voice_name
+        if rate is not None:
+            self.rate = rate
+        if pitch is not None:
+            self.pitch = pitch
 
     def listen(self, timeout: int = 5, phrase_time_limit: int = 10) -> str:
         """Прослушивание микрофона с калибровкой шума"""
@@ -32,9 +42,8 @@ class VoiceEngine:
             return ""
 
     async def _async_speak_edge(self, text: str, output_path: str):
-        # Настройка русского дубляжа Джарвиса (Вячеслав Баранов):
-        # Глубокий, спокойный мужской тон (-3Hz), чуть замедленный темп речи (-2%)
-        communicate = edge_tts.Communicate(text, "ru-RU-DmitryNeural", rate="-2%", pitch="-3Hz")
+        # Настройка голоса с учетом параметров
+        communicate = edge_tts.Communicate(text, self.voice_name, rate=self.rate, pitch=self.pitch)
         await communicate.save(output_path)
 
     def speak(self, text: str):
