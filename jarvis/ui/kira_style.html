@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. PRIME — Ultimate OS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            user-select: none;
+        }
+
+        :root {
+            --bg-base: #0a0814;
+            --bg-sidebar: #0f0c1f;
+            --bg-card: rgba(26, 21, 48, 0.6);
+            --bg-card-hover: rgba(38, 31, 71, 0.8);
+            --accent-purple: #9d4edd;
+            --accent-cyan: #00f0ff;
+            --text-main: #f1f1f7;
+            --text-muted: #8b85a3;
+            --border-soft: rgba(157, 78, 221, 0.18);
+            --border-glow: rgba(0, 240, 255, 0.4);
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-radius: 14px;
+            border: 1px solid var(--border-soft);
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.95);
+        }
+
+        /* Верхняя шапка с кнопками окна */
+        .top-header {
+            height: 48px;
+            background: var(--bg-sidebar);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid var(--border-soft);
+            -webkit-app-region: drag;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .orb-icon {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 12px var(--accent-cyan);
+            animation: pulseOrb 2s infinite alternate;
+        }
+
+        @keyframes pulseOrb {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            100% { transform: scale(1.15); opacity: 1; }
+        }
+
+        .brand-name {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 3px;
+            color: #ffffff;
+        }
+
+        .brand-version {
+            font-size: 10px;
+            background: rgba(157, 78, 221, 0.2);
+            color: var(--accent-purple);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .window-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            -webkit-app-region: no-drag;
+        }
+
+        .btn-mini-mode {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        .btn-mini-mode:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        .btn-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .btn-close:hover {
+            color: #ff5252;
+            background: rgba(255, 82, 82, 0.1);
+        }
+
+        /* Главная трехколоночная рабочая сетка */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 220px 1fr 280px;
+            height: calc(100vh - 48px);
+            overflow: hidden;
+        }
+
+        /* 1. ЛЕВАЯ ПАНЕЛЬ НАВИГАЦИИ */
+        .sidebar {
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-soft);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 14px;
+        }
+
+        .nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: rgba(157, 78, 221, 0.12);
+            color: #ffffff;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.35), rgba(0, 240, 255, 0.15));
+            color: #ffffff;
+            border-left: 3px solid var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .status-pill {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* 2. ЦЕНТРАЛЬНАЯ КОЛОНКА (КОНТЕНТ) */
+        .main-content {
+            padding: 25px 30px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        /* Сетка карточек плагинов/скилов (как в Kira) */
+        .plugins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .plugin-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 140px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .plugin-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-glow);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-icon {
+            font-size: 22px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .card-category {
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: var(--accent-purple);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-status {
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            background: rgba(0, 230, 118, 0.15);
+            color: #00e676;
+            font-weight: 600;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* 3. ПРАВАЯ ПАНЕЛЬ СИСТЕМЫ И ИИ-ПОМОЩНИКА */
+        .sidebar-right {
+            background: var(--bg-sidebar);
+            border-left: 1px solid var(--border-soft);
+            padding: 22px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            overflow-y: auto;
+        }
+
+        /* Карточка Джарвиса со звуковой сферой */
+        .ai-assistant-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            text-align: center;
+        }
+
+        #mini-orb-canvas {
+            width: 140px;
+            height: 140px;
+        }
+
+        .ai-status-text {
+            font-size: 12px;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        /* Круговые датчики CPU / RAM / DISK */
+        .system-gauges {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .gauge-title {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            text-transform: uppercase;
+        }
+
+        .gauges-row {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .gauge-circle {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .circular-chart {
+            width: 58px;
+            height: 58px;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.08);
+            stroke-width: 3.8;
+        }
+
+        .circle {
+            fill: none;
+            stroke-width: 3.8;
+            stroke-linecap: round;
+            stroke: var(--accent-cyan);
+            transition: stroke-dasharray 0.5s ease;
+        }
+
+        .circle-purple {
+            stroke: var(--accent-purple);
+        }
+
+        .circle-pink {
+            stroke: #f72585;
+        }
+
+        .percentage {
+            fill: #ffffff;
+            font-size: 9px;
+            text-anchor: middle;
+            font-weight: bold;
+        }
+
+        .gauge-label {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* Активные процессы */
+        .process-list {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .proc-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .proc-name {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        /* Нижняя строка быстрой команды */
+        .bottom-command-bar {
+            grid-column: 2;
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .input-dark {
+            flex: 1;
+            background: rgba(26, 21, 48, 0.8);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 12px 18px;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .input-dark:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+        }
+
+        .btn-mic-bar {
+            background: linear-gradient(135deg, var(--accent-purple), #480ca8);
+            border: none;
+            color: #ffffff;
+            padding: 0 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-mic-bar:hover {
+            box-shadow: 0 0 20px var(--accent-purple);
+            transform: scale(1.03);
+        }
+
+        /* Панели вкладок (Студия, Чат, Настройки) */
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Чат-консоль */
+        .chat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 14px;
+            height: 380px;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .msg-bubble {
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: rgba(157, 78, 221, 0.25);
+            border: 1px solid var(--accent-purple);
+            color: #ffffff;
+        }
+
+        .msg-jarvis {
+            align-self: flex-start;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid var(--border-glow);
+            color: #b2ebf2;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ВЕРХНЯЯ ШАПКА -->
+    <div class="top-header">
+        <div class="brand-box">
+            <div class="orb-icon"></div>
+            <div class="brand-name">J . A . R . V . I . S</div>
+            <div class="brand-version">PRIME v3.0 ULTIMATE</div>
+        </div>
+        <div class="window-actions">
+            <button class="btn-mini-mode" onclick="toggleMiniOrb()">🔮 ТОЛЬКО 3D ШАР</button>
+            <button class="btn-close" onclick="closeApp()">✕</button>
+        </div>
+    </div>
+
+    <!-- ТРЕХКОЛОНОЧНЫЙ ИНТЕРФЕЙС (СТИЛЬ KIRA) -->
+    <div class="workspace">
+
+        <!-- 1. ЛЕВАЯ НАВИГАЦИЯ -->
+        <div class="sidebar">
+            <div class="nav-group">
+                <div class="nav-item active" onclick="switchTab('plugins', this)">🧩 Плагины и Скилы</div>
+                <div class="nav-item" onclick="switchTab('studio', this)">🎬 Студия Монтажа</div>
+                <div class="nav-item" onclick="switchTab('chat', this)">💬 Чат с Джарвисом</div>
+                <div class="nav-item" onclick="switchTab('pc-control', this)">💻 Управление ПК</div>
+                <div class="nav-item" onclick="switchTab('memory', this)">🧠 Память и Профиль</div>
+                <div class="nav-item" onclick="switchTab('settings', this)">⚙️ Настройки</div>
+            </div>
+
+            <!-- Статус устройств внизу сайдбара -->
+            <div class="status-pill">
+                <div class="status-row"><span>Голос:</span> <strong style="color: #00e676;">Активен (Neural)</strong></div>
+                <div class="status-row"><span>Микрофон:</span> <strong style="color: #00e676;">Слушает «Джарвис»</strong></div>
+                <div class="status-row"><span>Горячая клавиша:</span> <strong style="color: var(--accent-cyan);">Alt + J</strong></div>
+            </div>
+        </div>
+
+        <!-- 2. ЦЕНТРАЛЬНАЯ КОЛОНКА -->
+        <div class="main-content">
+            
+            <!-- ВКЛАДКА 1: ПЛАГИНЫ И СКИЛЫ (КАК В KIRA) -->
+            <div class="tab-panel active" id="tab-plugins">
+                <div class="section-title">Плагины и Скилы</div>
+                <div class="section-desc">Расширения возможностей Джарвиса — модули управления системой и медиа</div>
+
+                <div class="plugins-grid">
+                    <!-- Карточка 1: Видеомонтаж FFmpeg -->
+                    <div class="plugin-card" onclick="sendQuick('Обрежь первые 30 секунд у видео')">
+                        <div class="card-header">
+                            <div class="card-info">
+                                <span class="card-icon">🎬</span>
+                                <div>
+                                    <div class="card-title">FFmpeg Studio</div>
+                                    <div class="card-category">МЕДИА</div>
+                                </div>
+                            </div>
+                            <span class="badge-status">АКТИВЕН</span>
+                        </div>
+                        <div class="card-desc">Автоматическая нарезка, склейка, удаление тишины и создание Shorts (9:16)</div>
+                    </div>
+
+                    <!-- Карточка 2: Компьютерное зрение -->
+                    <div class="plugin-card" onclick="sendQuick('Посмотри на экран и скажи, что здесь открыто')">
+                        <div class="card-header">
+                            <div class="card-info">
+                                <span class="card-icon">👁️</span>
+                                <div>
+                                    <div class="card-title">Screen Vision</div>
+                                    <div class="card-category">МУЛЬТИМОДАЛЬНОСТЬ</div>
+                                </div>
+                            </div>
+                            <span class="badge-status">АКТИВЕН</span>
+                        </div>
+                        <div class="card-desc">Анализ экрана в реальном времени через нейросеть Gemini Vision</div>
+                    </div>
+
+                    <!-- Карточка 3: Управление музыкой -->
+                    <div class="plugin-card" onclick="sendQuick('Включи саундтрек Iron Man в музыке')">
+                        <div class="card-header">
+                            <div class="card-info">
+                                <span class="card-icon">🎵</span>
+                                <div>
+                                    <div class="card-title">Music & Volume</div>
+                                    <div class="card-category">ЗВУК</div>
+                                </div>
+                            </div>
+                            <span class="badge-status">АКТИВЕН</span>
+                        </div>
+                        <div class="card-desc">Управление системным звуком, YouTube Music и переключение треков</div>
+                    </div>
+
+                    <!-- Карточка 4: Уборка стола -->
+                    <div class="plugin-card" onclick="sendQuick('Наведи порядок на рабочем столе и рассортируй файлы')">
+                        <div class="card-header">
+                            <div class="card-info">
+                                <span class="card-icon">🧹</span>
+                                <div>
+                                    <div class="card-title">Disk Organizer</div>
+                                    <div class="card-category">СИСТЕМА</div>
+                                </div>
+                            </div>
+                            <span class="badge-status">АКТИВЕН</span>
+                        </div>
+                        <div class="card-desc">Умная сортировка файлов по категориям (Видео, Картинки, Документы)</div>
+                    </div>
+
+                    <!-- Карточка 5: Лаунчер программ -->
+                    <div class="plugin-card" onclick="sendQuick('Открой телеграм')">
+                        <div class="card-header">
+                            <div class="card-info">
+                                <span class="card-icon">🚀</span>
+                                <div>
+                                    <div class="card-title">App Launcher</div>
+                                    <div class="card-category">WINDOWS</div>
+                                </div>
+                            </div>
+                            <span class="badge-status">АКТИВЕН</span>
+                        </div>
+                        <div class="card-desc">Нечеткий запуск любого софта без консольных окон (понимает сленг «телега»)</div>
+                    </div>
+
+                    <!-- Карточка 6: Таймеры -->
+                    <div class="plugin-card" onclick="sendQuick('Поставь таймер на 5 минут проверить экспорт')">
+                        <div class="card-header">
+                            <div class="card-info">
+                                <span class="card-icon">⏰</span>
+                                <div>
+                                    <div class="card-title">Voice Reminders</div>
+                                    <div class="card-category">ПРОДУКТИВНОСТЬ</div>
+                                </div>
+                            </div>
+                            <span class="badge-status">АКТИВЕН</span>
+                        </div>
+                        <div class="card-desc">Голосовые напоминания и фоновые таймеры важных задач</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 2: ЧАТ С ДЖАРВИСОМ -->
+            <div class="tab-panel" id="tab-chat">
+                <div class="section-title">Диалог с Джарвисом</div>
+                <div class="section-desc">Прямой текстовый и голосовой терминал управления</div>
+                <div class="chat-box" id="chat-box">
+                    <div class="msg-bubble msg-jarvis">
+                        Все протоколы активированы, сэр. Я готов к работе. Скажите команду или обратитесь «Джарвис».
+                    </div>
+                </div>
+            </div>
+
+            <!-- ВКЛАДКА 3: НАСТРОЙКИ -->
+            <div class="tab-panel" id="tab-settings">
+                <div class="section-title">Настройки Системы</div>
+                <div class="section-desc">Конфигурация нейросети, синтезатора голоса и горячих клавиш</div>
+                <div style="background: var(--bg-card); padding: 20px; border-radius: 14px; border: 1px solid var(--border-soft); display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin-bottom: 5px;">МОДЕЛЬ НЕЙРОСЕТИ:</label>
+                        <select id="set-model" style="width: 100%; background: #0c0919; color: #fff; padding: 10px; border: 1px solid var(--border-soft); border-radius: 8px;">
+                            <option value="gemini-3.5-flash">Google Gemini 3.5 Flash (Стабильная и быстрая)</option>
+                            <option value="gemini-3.8-flash">Google Gemini 3.8 Flash (Новейшая)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 11px; color: var(--accent-cyan); display: block; margin-bottom: 5px;">ГОЛОС ДЖАРВИСА:</label>
+                        <select id="set-voice" style="width: 100%; background: #0c0919; color: #fff; padding: 10px; border: 1px solid var(--border-soft); border-radius: 8px;">
+                            <option value="ru-RU-DmitryNeural">Русский кинодубляж Баранова (Мужской глубокий)</option>
+                            <option value="ru-RU-SvetlanaNeural">Женский голос ПЯТНИЦА (F.R.I.D.A.Y.)</option>
+                            <option value="en-GB-RyanNeural">Оригинальный английский (Paul Bettany)</option>
+                        </select>
+                    </div>
+                    <button class="btn-mic-bar" style="align-self: flex-start; padding: 10px 20px;" onclick="saveSettings()">СОХРАНИТЬ НАСТРОЙКИ</button>
+                </div>
+            </div>
+
+            <!-- НИЖНЯЯ СТРОКА ВВОДА -->
+            <div class="bottom-command-bar">
+                <input type="text" class="input-dark" id="cmd-input" placeholder="Введите команду или скажите вслух «Джарвис»..." onkeydown="if(event.key==='Enter') sendText()">
+                <button class="btn-mic-bar" id="mic-btn" onclick="toggleVoice()">🎙️ МИКРОФОН</button>
+            </div>
+        </div>
+
+        <!-- 3. ПРАВАЯ ПАНЕЛЬ МОНИТОРИНГА (ВИДЖЕТЫ KIRA) -->
+        <div class="sidebar-right">
+            <!-- Голографический индикатор -->
+            <div class="ai-assistant-card">
+                <canvas id="mini-orb-canvas" width="140" height="140"></canvas>
+                <div class="ai-status-text" id="status-label">ГОТОВ К РАБОТЕ</div>
+            </div>
+
+            <!-- Круговые датчики загрузки железа -->
+            <div class="system-gauges">
+                <div class="gauge-title">Мониторинг ПК</div>
+                <div class="gauges-row">
+                    <!-- CPU -->
+                    <div class="gauge-circle">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="circle" id="cpu-circle" stroke-dasharray="15, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <text x="18" y="20.35" class="percentage" id="cpu-text">15%</text>
+                        </svg>
+                        <div class="gauge-label">CPU</div>
+                    </div>
+
+                    <!-- RAM -->
+                    <div class="gauge-circle">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="circle circle-purple" id="ram-circle" stroke-dasharray="45, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <text x="18" y="20.35" class="percentage" id="ram-text">45%</text>
+                        </svg>
+                        <div class="gauge-label">RAM</div>
+                    </div>
+
+                    <!-- DISK -->
+                    <div class="gauge-circle">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <path class="circle circle-pink" id="disk-circle" stroke-dasharray="70, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            <text x="18" y="20.35" class="percentage" id="disk-text">70%</text>
+                        </svg>
+                        <div class="gauge-label">ДИСК</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Список ключевых процессов -->
+            <div class="process-list">
+                <div class="gauge-title">Активные процессы</div>
+                <div class="proc-item"><span class="proc-name">JARVIS Core</span><span style="color: #00e676;">2.1%</span></div>
+                <div class="proc-item"><span class="proc-name">FFmpeg Engine</span><span style="color: var(--accent-cyan);">Ready</span></div>
+                <div class="proc-item"><span class="proc-name">Neural Voice</span><span style="color: var(--accent-purple);">Online</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Анимация мини 3D-сферы в правом блоке
+        const canvas = document.getElementById('mini-orb-canvas');
+        const ctx = canvas.getContext('2d');
+        let angle = 0;
+        let isSpeaking = false;
+        let isListening = false;
+
+        function drawOrb() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            let color = '#9d4edd';
+            if (isListening) color = '#00f0ff';
+            if (isSpeaking) color = '#ff7b00';
+
+            // Пульсирующие концентрические кольца
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 12;
+            ctx.lineWidth = 2;
+
+            for (let i = 1; i <= 3; i++) {
+                const r = 25 * i + 4 * Math.sin(angle * 0.1 + i);
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Центральное светящееся ядро
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+            angle += 1;
+            requestAnimationFrame(drawOrb);
+        }
+        drawOrb();
+
+        // Переключение табов
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            const target = document.getElementById('tab-' + tabId);
+            if (target) target.classList.add('active');
+            if (el) el.classList.add('active');
+        }
+
+        // Обновление метрик ПК из Python
+        function updateSystemGauges(cpu, ram, disk) {
+            document.getElementById('cpu-circle').setAttribute('stroke-dasharray', `${cpu}, 100`);
+            document.getElementById('cpu-text').innerText = cpu + '%';
+
+            document.getElementById('ram-circle').setAttribute('stroke-dasharray', `${ram}, 100`);
+            document.getElementById('ram-text').innerText = ram + '%';
+
+            document.getElementById('disk-circle').setAttribute('stroke-dasharray', `${disk}, 100`);
+            document.getElementById('disk-text').innerText = disk + '%';
+        }
+
+        function setStatus(text, listening=false, speaking=false) {
+            document.getElementById('status-label').innerText = text;
+            isListening = listening;
+            isSpeaking = speaking;
+            const btn = document.getElementById('mic-btn');
+            if (listening) {
+                btn.innerText = '🔴 СЛУШАЮ СЭР...';
+                btn.style.background = 'linear-gradient(135deg, #ffb300, #ff5722)';
+            } else {
+                btn.innerText = '🎙️ МИКРОФОН';
+                btn.style.background = 'linear-gradient(135deg, var(--accent-purple), #480ca8)';
+            }
+        }
+
+        function addMessage(author, text, isUser) {
+            const box = document.getElementById('chat-box');
+            const div = document.createElement('div');
+            div.className = 'msg-bubble ' + (isUser ? 'msg-user' : 'msg-jarvis');
+            div.innerHTML = `<strong>${author}:</strong> ${text}`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function sendText() {
+            const input = document.getElementById('cmd-input');
+            const val = input.value.trim();
+            if (val) {
+                input.value = '';
+                addMessage('СЭР', val, true);
+                if (window.pywebview) window.pywebview.api.send_command(val);
+            }
+        }
+
+        function sendQuick(prompt) {
+            addMessage('СЭР', prompt, true);
+            switchTab('chat');
+            if (window.pywebview) window.pywebview.api.send_command(prompt);
+        }
+
+        function toggleVoice() {
+            if (window.pywebview) window.pywebview.api.trigger_listen();
+        }
+
+        function toggleMiniOrb() {
+            if (window.pywebview) window.pywebview.api.switch_to_orb();
+        }
+
+        function closeApp() {
+            if (window.pywebview) window.pywebview.api.close_app();
+        }
+
+        function saveSettings() {
+            const model = document.getElementById('set-model').value;
+            const voice = document.getElementById('set-voice').value;
+            if (window.pywebview) window.pywebview.api.save_settings({ model, voice });
+            alert('Настройки сохранены, сэр.');
+        }
+    </script>
+</body>
+</html>
