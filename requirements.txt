@@ -8,3 +8,10 @@ pyautogui>=0.9.54
 pygetwindow>=0.0.9
 Pillow>=10.2.0
 requests>=2.31.0
+numpy>=1.26.0
+keyboard>=0.13.5
+pystray>=0.19.5
+pywebview>=5.0.0
+ttkbootstrap>=2.2.0
+pyttsx3>=2.90
+
