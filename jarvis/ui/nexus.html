@@ -878,9 +878,10 @@
         </div>
     </div>
 
-    <!-- ТРЕХМЕРНЫЙ РЕАКТОР И СКРИПТЫ ВЗАИМОДЕЙСТВИЯ -->
+    <!-- 3D ГОЛОГРАФИЧЕСКИЙ АНДРОИД-АВАТАР (THREE.JS) -->
     <script>
-        let scene, camera, renderer, coreMesh, particleSystem, rings = [];
+        let scene, camera, renderer;
+        let headGroup, neuralBrain, eyeL, eyeR, auraParticles;
         let isSpeaking = false;
         let isListening = false;
         let mouseX = 0, mouseY = 0;
@@ -888,67 +889,180 @@
         function init3DReactor() {
             const container = document.getElementById('reactor-canvas');
             scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 190;
-            camera.position.y = 15;
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 175;
+            camera.position.y = 8;
 
             renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(renderer.domElement);
 
-            // 1. Икосаэдрическое квантовое кристаллическое ядро
-            const icoGeo = new THREE.IcosahedronGeometry(32, 2);
-            const icoMat = new THREE.MeshBasicMaterial({
+            headGroup = new THREE.Group();
+            scene.add(headGroup);
+
+            // 1. ГОЛОВА КИБОРГА / АНДРОИДА (Граненый полупрозрачный каркас)
+            const skullGeo = new THREE.IcosahedronGeometry(24, 2);
+            // Немного деформируем для антропоморфной формы черепа
+            const posAttr = skullGeo.attributes.position;
+            for(let i = 0; i < posAttr.count; i++) {
+                let y = posAttr.getY(i);
+                let z = posAttr.getZ(i);
+                // сужаем подбородок снизу
+                if (y < -5) {
+                    posAttr.setX(i, posAttr.getX(i) * 0.75);
+                    posAttr.setZ(i, posAttr.getZ(i) * 0.85);
+                }
+                // чуть вытягиваем лоб
+                if (y > 10) {
+                    posAttr.setZ(i, z * 1.05);
+                }
+            }
+            skullGeo.computeVertexNormals();
+
+            // Внешняя полигональная кибер-оболочка
+            const skullWireMat = new THREE.MeshBasicMaterial({
                 color: 0x00f0ff,
                 wireframe: true,
                 transparent: true,
-                opacity: 0.7,
+                opacity: 0.65,
                 blending: THREE.AdditiveBlending
             });
-            coreMesh = new THREE.Mesh(icoGeo, icoMat);
-            scene.add(coreMesh);
+            const skullWire = new THREE.Mesh(skullGeo, skullWireMat);
+            headGroup.add(skullWire);
 
-            // 2. Внутреннее светящееся облако плазмы
-            const pCount = 800;
-            const pGeo = new THREE.BufferGeometry();
-            const pPos = new Float32Array(pCount * 3);
-            for(let i = 0; i < pCount * 3; i++) {
-                pPos[i] = (Math.random() - 0.5) * 45;
+            // Внутренняя полупрозрачная маска
+            const skullFaceMat = new THREE.MeshBasicMaterial({
+                color: 0x071b30,
+                transparent: true,
+                opacity: 0.45,
+                depthWrite: false
+            });
+            const skullFace = new THREE.Mesh(skullGeo, skullFaceMat);
+            skullFace.scale.set(0.98, 0.98, 0.98);
+            headGroup.add(skullFace);
+
+            // 2. НЕЙРОННЫЙ МОЗГ ИЗ СВЕТЯЩИХСЯ ЧАСТИЦ (Квантовые синапсы)
+            const brainCount = 950;
+            const brainGeo = new THREE.BufferGeometry();
+            const brainPositions = new Float32Array(brainCount * 3);
+            for(let i = 0; i < brainCount * 3; i += 3) {
+                // облако в верхней части черепа
+                brainPositions[i] = (Math.random() - 0.5) * 22;
+                brainPositions[i+1] = 4 + Math.random() * 16;
+                brainPositions[i+2] = (Math.random() - 0.5) * 22;
             }
-            pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
-            const pMat = new THREE.PointsMaterial({
+            brainGeo.setAttribute('position', new THREE.BufferAttribute(brainPositions, 3));
+            const brainMat = new THREE.PointsMaterial({
                 size: 2.2,
                 color: 0xa855f7,
                 transparent: true,
-                opacity: 0.8,
+                opacity: 0.85,
                 blending: THREE.AdditiveBlending
             });
-            particleSystem = new THREE.Points(pGeo, pMat);
-            scene.add(particleSystem);
+            neuralBrain = new THREE.Points(brainGeo, brainMat);
+            headGroup.add(neuralBrain);
 
-            // 3. Кинетические гироскопические кольца
-            const ringRadii = [48, 62, 76];
-            ringRadii.forEach((r, idx) => {
-                const ringGeo = new THREE.RingGeometry(r, r + 1.2, 90);
-                const ringMat = new THREE.MeshBasicMaterial({
-                    color: idx === 1 ? 0xa855f7 : 0x00f0ff,
-                    side: THREE.DoubleSide,
-                    transparent: true,
-                    opacity: 0.45 - idx * 0.1,
-                    blending: THREE.AdditiveBlending
-                });
-                const ring = new THREE.Mesh(ringGeo, ringMat);
-                ring.rotation.x = Math.PI / (2.2 + idx * 0.5);
-                ring.rotation.y = idx * Math.PI / 3;
-                scene.add(ring);
-                rings.push(ring);
+            // 3. НЕОНОВЫЕ ГЛАЗА-СЕНСОРЫ С ИНТЕЛЛЕКТУАЛЬНЫМ ВЗГЛЯДОМ
+            const eyeGeo = new THREE.SphereGeometry(2.6, 16, 16);
+            const eyeMat = new THREE.MeshBasicMaterial({
+                color: 0x00f0ff,
+                transparent: true,
+                opacity: 0.95
             });
 
-            // Мышь
+            eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+            eyeL.position.set(-7, 3, 19);
+            headGroup.add(eyeL);
+
+            eyeR = new THREE.Mesh(eyeGeo, eyeMat.clone());
+            eyeR.position.set(7, 3, 19);
+            headGroup.add(eyeR);
+
+            // Блики зрачков
+            const pupilGeo = new THREE.SphereGeometry(1.2, 12, 12);
+            const pupilMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const pL = new THREE.Mesh(pupilGeo, pupilMat);
+            pL.position.set(-7, 3.2, 20.8);
+            headGroup.add(pL);
+            const pR = new THREE.Mesh(pupilGeo, pupilMat);
+            pR.position.set(7, 3.2, 20.8);
+            headGroup.add(pR);
+
+            // 4. КИБЕРНЕТИЧЕСКАЯ ШЕЯ И ПЛЕЧЕВОЙ ПОЯС
+            const neckGeo = new THREE.CylinderGeometry(8, 14, 18, 12, 1, true);
+            const neckMat = new THREE.MeshBasicMaterial({
+                color: 0x00f0ff,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.35
+            });
+            const neck = new THREE.Mesh(neckGeo, neckMat);
+            neck.position.y = -22;
+            headGroup.add(neck);
+
+            // Плечевая дуга
+            const collarGeo = new THREE.TorusGeometry(32, 1.2, 8, 32, Math.PI);
+            const collarMat = new THREE.MeshBasicMaterial({
+                color: 0x00f0ff,
+                transparent: true,
+                opacity: 0.4
+            });
+            const collar = new THREE.Mesh(collarGeo, collarMat);
+            collar.rotation.x = Math.PI / 2;
+            collar.position.y = -30;
+            headGroup.add(collar);
+
+            // 5. ОРБИТАЛЬНЫЕ ГОЛОГРАФИЧЕСКИЕ ДУГИ ВОКРУГ ГОЛОВЫ
+            const haloGeo1 = new THREE.RingGeometry(38, 39, 64);
+            const haloMat1 = new THREE.MeshBasicMaterial({
+                color: 0x00f0ff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.3,
+                blending: THREE.AdditiveBlending
+            });
+            const halo1 = new THREE.Mesh(haloGeo1, haloMat1);
+            halo1.rotation.x = Math.PI / 2.3;
+            halo1.position.y = 5;
+            scene.add(halo1);
+
+            const haloGeo2 = new THREE.RingGeometry(44, 45, 64);
+            const haloMat2 = new THREE.MeshBasicMaterial({
+                color: 0xa855f7,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.25,
+                blending: THREE.AdditiveBlending
+            });
+            const halo2 = new THREE.Mesh(haloGeo2, haloMat2);
+            halo2.rotation.y = Math.PI / 4;
+            halo2.rotation.x = Math.PI / 2.8;
+            halo2.position.y = 5;
+            scene.add(halo2);
+
+            // 6. ПАРЯЩИЕ ЧАСТИЦЫ ДАННЫХ
+            const auraCount = 500;
+            const auraGeo = new THREE.BufferGeometry();
+            const auraPos = new Float32Array(auraCount * 3);
+            for(let i = 0; i < auraCount * 3; i++) {
+                auraPos[i] = (Math.random() - 0.5) * 160;
+            }
+            auraGeo.setAttribute('position', new THREE.BufferAttribute(auraPos, 3));
+            const auraMat = new THREE.PointsMaterial({
+                size: 1.8,
+                color: 0x00f0ff,
+                transparent: true,
+                opacity: 0.4,
+                blending: THREE.AdditiveBlending
+            });
+            auraParticles = new THREE.Points(auraGeo, auraMat);
+            scene.add(auraParticles);
+
+            // Движение мыши (голова следит за пользователем)
             window.addEventListener('mousemove', (e) => {
-                mouseX = (e.clientX - window.innerWidth / 2) * 0.0006;
-                mouseY = (e.clientY - window.innerHeight / 2) * 0.0006;
+                mouseX = (e.clientX - window.innerWidth / 2) * 0.0012;
+                mouseY = (e.clientY - window.innerHeight / 2) * 0.0012;
             });
 
             window.addEventListener('resize', () => {
@@ -966,29 +1080,37 @@
             requestAnimationFrame(renderLoop);
             const time = clock.getElapsedTime();
 
-            coreMesh.rotation.x += 0.006;
-            coreMesh.rotation.y += 0.009;
+            // Голова живо дышит и плавно следит за курсором мыши
+            const targetRotY = mouseX * 0.9;
+            const targetRotX = mouseY * 0.7;
 
-            coreMesh.rotation.x += (mouseY - coreMesh.rotation.x) * 0.05;
-            coreMesh.rotation.y += (mouseX - coreMesh.rotation.y) * 0.05;
+            headGroup.rotation.y += (targetRotY - headGroup.rotation.y) * 0.05;
+            headGroup.rotation.x += (targetRotX - headGroup.rotation.x) * 0.05;
+            headGroup.position.y = 6 + Math.sin(time * 2.5) * 1.5;
 
-            particleSystem.rotation.y -= 0.012;
-            particleSystem.rotation.x += 0.005;
-
-            rings.forEach((r, i) => {
-                r.rotation.z += 0.004 * (i % 2 === 0 ? 1 : -1);
-                r.rotation.x += 0.002;
-            });
-
-            // Пульсация
-            let scale = 1;
-            if (isSpeaking) {
-                scale = 1 + Math.sin(time * 16) * 0.12;
-            } else if (isListening) {
-                scale = 1 + Math.sin(time * 8) * 0.06;
+            // Живое мерцание нейросети в мозгу
+            neuralBrain.rotation.y -= 0.015;
+            const pBrain = neuralBrain.geometry.attributes.position.array;
+            for(let i = 1; i < pBrain.length; i += 3) {
+                pBrain[i] += Math.sin(time * 8 + i) * 0.03;
             }
-            coreMesh.scale.set(scale, scale, scale);
-            particleSystem.scale.set(scale, scale, scale);
+            neuralBrain.geometry.attributes.position.needsUpdate = true;
+
+            // Пульсация глаз и голоса при разговоре
+            let scalePulse = 1;
+            if (isSpeaking) {
+                scalePulse = 1 + Math.sin(time * 18) * 0.08;
+                eyeL.scale.set(1.2, 1.2, 1.2);
+                eyeR.scale.set(1.2, 1.2, 1.2);
+            } else if (isListening) {
+                scalePulse = 1 + Math.sin(time * 8) * 0.04;
+                eyeL.scale.set(1.05, 1.05, 1.05);
+                eyeR.scale.set(1.05, 1.05, 1.05);
+            } else {
+                eyeL.scale.set(1, 1, 1);
+                eyeR.scale.set(1, 1, 1);
+            }
+            headGroup.scale.set(scalePulse, scalePulse, scalePulse);
 
             renderer.render(scene, camera);
         }
@@ -1014,15 +1136,24 @@
             if (listening) {
                 btn.classList.add('listening');
                 btn.innerHTML = '<span>🔴</span><span>СЛУШАЮ...</span>';
-                coreMesh.material.color.setHex(0xf59e0b);
+                if (eyeL) {
+                    eyeL.material.color.setHex(0xf59e0b);
+                    eyeR.material.color.setHex(0xf59e0b);
+                }
             } else if (speaking) {
                 btn.classList.remove('listening');
                 btn.innerHTML = '<span>🔊</span><span>ОТВЕЧАЮ...</span>';
-                coreMesh.material.color.setHex(0xef4444);
+                if (eyeL) {
+                    eyeL.material.color.setHex(0xef4444);
+                    eyeR.material.color.setHex(0xef4444);
+                }
             } else {
                 btn.classList.remove('listening');
                 btn.innerHTML = '<span>🎙️</span><span>СЛУШАТЬ</span>';
-                coreMesh.material.color.setHex(0x00f0ff);
+                if (eyeL) {
+                    eyeL.material.color.setHex(0x00f0ff);
+                    eyeR.material.color.setHex(0x00f0ff);
+                }
             }
         }
 
