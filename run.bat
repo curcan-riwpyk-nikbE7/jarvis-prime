@@ -3,5 +3,5 @@ chcp 65001 >nul
 cd /d "%~dp0"
 
 set PYTHONPATH=%cd%
-start pythonw jarvis\gui_app.py
+start pythonw jarvis\app_hud.py
 exit

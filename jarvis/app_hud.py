@@ -1,0 +1,81 @@
+import os
+import sys
+import threading
+from pathlib import Path
+import webview
+
+# Добавляем корневую директорию проекта
+root_dir = str(Path(__file__).resolve().parent.parent)
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+
+from jarvis.config import Config
+from jarvis.voice.engine import VoiceEngine
+from jarvis.core import JarvisCore
+
+class JarvisBridge:
+    def __init__(self, window):
+        self.window = window
+        self.voice = VoiceEngine()
+        self.core = None
+        self._init_core()
+
+    def _init_core(self):
+        def load():
+            try:
+                self.core = JarvisCore()
+            except Exception as e:
+                print(f"[Bridge] Ошибка инициализации: {e}")
+        threading.Thread(target=load, daemon=True).start()
+
+    def trigger_listen(self):
+        def task():
+            self.window.evaluate_js("setStatus('СЛУШАЮ ВАС, СЭР...', true, false)")
+            user_text = self.voice.listen(timeout=6, phrase_time_limit=10)
+            self.window.evaluate_js("setStatus('СИСТЕМЫ В СТРОЮ // ГОТОВ К РАБОТЕ', false, false)")
+
+            if user_text:
+                clean_text = user_text.replace("'", "\\'").replace('"', '\\"')
+                self.window.evaluate_js(f"addMessage('СЭР', '{clean_text}', true)")
+                self.send_command(user_text)
+
+        threading.Thread(target=task, daemon=True).start()
+
+    def send_command(self, prompt: str):
+        def task():
+            self.window.evaluate_js("setStatus('ОБРАБОТКА КОМАНДЫ...', false, false)")
+
+            if self.core:
+                reply = self.core.process_request(prompt)
+            else:
+                reply = "Ядро Gemini пока загружается, сэр. Секунду."
+
+            clean_reply = reply.replace("'", "\\'").replace('"', '\\"').replace("\n", "<br>")
+            self.window.evaluate_js(f"addMessage('J.A.R.V.I.S.', '{clean_reply}', false)")
+            self.window.evaluate_js("setStatus('ОТВЕЧАЮ ГОЛОСОМ...', false, true)")
+
+            # Озвучка ответа
+            self.voice.speak(reply)
+            self.window.evaluate_js("setStatus('СИСТЕМЫ В СТРОЮ // ГОТОВ К РАБОТЕ', false, false)")
+
+        threading.Thread(target=task, daemon=True).start()
+
+
+def main():
+    html_path = os.path.join(os.path.dirname(__file__), "ui", "index.html")
+    
+    # Создаем безрамочное окно хай-тек терминала
+    window = webview.create_window(
+        title="J.A.R.V.I.S. PRIME — Stark HUD",
+        url=html_path,
+        width=1150,
+        height=720,
+        resizable=True,
+        background_color='#030811'
+    )
+    bridge = JarvisBridge(window)
+    window.expose(bridge.trigger_listen, bridge.send_command)
+    webview.start()
+
+if __name__ == "__main__":
+    main()

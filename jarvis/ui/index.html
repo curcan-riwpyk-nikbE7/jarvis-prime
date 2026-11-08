@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J.A.R.V.I.S. HUD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Consolas', monospace;
+            user-select: none;
+        }
+
+        body {
+            background-color: #030811;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 229, 255, 0.08) 0%, transparent 60%),
+                linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 30px 30px, 30px 30px;
+            color: #cbeef3;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Верхняя панель */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            border-bottom: 1px solid rgba(0, 240, 255, 0.2);
+            background: rgba(5, 15, 28, 0.6);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-title {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 5px;
+            color: #00f0ff;
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.6);
+        }
+
+        .sys-badge {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid #00f0ff;
+            color: #00f0ff;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            letter-spacing: 2px;
+        }
+
+        /* Главный экран */
+        .main-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 480px 1fr;
+            gap: 20px;
+            padding: 20px 30px;
+            height: calc(100vh - 70px);
+        }
+
+        /* Левая часть: Реактор и Голос */
+        .hud-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(8, 18, 35, 0.5);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: inset 0 0 30px rgba(0, 240, 255, 0.05), 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        #reactor-canvas {
+            width: 380px;
+            height: 380px;
+        }
+
+        .status-box {
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .status-text {
+            font-size: 14px;
+            letter-spacing: 3px;
+            color: #00f0ff;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+            font-weight: bold;
+        }
+
+        .btn-mic {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 119, 255, 0.4));
+            border: 1px solid #00f0ff;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            padding: 14px 35px;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .btn-mic:hover {
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(0, 119, 255, 0.6));
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.8);
+            transform: scale(1.03);
+        }
+
+        .btn-mic.listening {
+            background: linear-gradient(135deg, rgba(255, 179, 0, 0.3), rgba(255, 87, 34, 0.5));
+            border-color: #ffb300;
+            box-shadow: 0 0 30px rgba(255, 179, 0, 0.8);
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.05); }
+        }
+
+        /* Правая часть: Консоль операций и Чат */
+        .hud-right {
+            display: flex;
+            flex-direction: column;
+            background: rgba(8, 18, 35, 0.5);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: inset 0 0 30px rgba(0, 240, 255, 0.05);
+            overflow: hidden;
+        }
+
+        /* Панель быстрого монтажа */
+        .tools-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #80d8ff;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: rgba(0, 240, 255, 0.2);
+            color: #ffffff;
+            border-color: #00f0ff;
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Окно диалога */
+        .chat-logs {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 8px;
+            margin-bottom: 15px;
+        }
+
+        .chat-logs::-webkit-scrollbar {
+            width: 4px;
+        }
+        .chat-logs::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .msg {
+            padding: 12px 18px;
+            border-radius: 8px;
+            max-width: 85%;
+            font-size: 13px;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: rgba(0, 119, 255, 0.2);
+            border: 1px solid rgba(0, 119, 255, 0.4);
+            color: #e1f5fe;
+        }
+
+        .msg-jarvis {
+            align-self: flex-start;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            color: #b2ebf2;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.05);
+        }
+
+        .msg-author {
+            font-size: 10px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            color: #00f0ff;
+            font-weight: bold;
+        }
+
+        /* Строка ввода */
+        .input-bar {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cmd-input {
+            flex: 1;
+            background: rgba(3, 10, 22, 0.8);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            padding: 12px 18px;
+            color: #ffffff;
+            font-size: 13px;
+            border-radius: 8px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        .cmd-input:focus {
+            border-color: #00f0ff;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+
+        .btn-send {
+            background: #00f0ff;
+            border: none;
+            color: #030811;
+            font-weight: bold;
+            padding: 0 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-send:hover {
+            background: #ffffff;
+            box-shadow: 0 0 20px #00f0ff;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-box">
+            <div class="logo-title">J . A . R . V . I . S</div>
+            <div class="sys-badge">PRIME v2.0 // STARK HUD</div>
+        </div>
+        <div style="font-size: 12px; letter-spacing: 1px; color: #80d8ff;">
+            FFMPEG STUDIO & COMPUTER-USE ACTIVE
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Левая зона: 3D HUD ядро -->
+        <div class="hud-left">
+            <canvas id="reactor-canvas" width="380" height="380"></canvas>
+            
+            <div class="status-box">
+                <div class="status-text" id="status-label">СИСТЕМЫ В СТРОЮ // ГОТОВ К РАБОТЕ</div>
+            </div>
+
+            <button class="btn-mic" id="mic-btn" onclick="toggleMic()">
+                🎙️ СЛУШАТЬ КОМАНДУ
+            </button>
+        </div>
+
+        <!-- Правая зона: Студия и Чат -->
+        <div class="hud-right">
+            <!-- Быстрые действия монтажа -->
+            <div class="tools-bar">
+                <button class="tool-btn" onclick="sendQuick('Нарежь первые 30 секунд у видео')">✂️ Обрезать видео</button>
+                <button class="tool-btn" onclick="sendQuick('Переведи горизонтальное видео в вертикальный формат Shorts')">📱 Видео в Shorts (9:16)</button>
+                <button class="tool-btn" onclick="sendQuick('Наложи фоновую музыку на видео с тихим звуком')">🎵 Наложить музыку</button>
+                <button class="tool-btn" onclick="sendQuick('Сделай скриншот экрана')">📸 Скриншот экрана</button>
+                <button class="tool-btn" onclick="sendQuick('Найди все видеофайлы в папке Загрузки')">🔍 Видео в Загрузках</button>
+            </div>
+
+            <!-- История сообщений -->
+            <div class="chat-logs" id="chat-logs">
+                <div class="msg msg-jarvis">
+                    <div class="msg-author">J.A.R.V.I.S.</div>
+                    Все системы активированы, сэр. Я готов к монтажу видео и управлению компьютером.
+                </div>
+            </div>
+
+            <!-- Ввод команды -->
+            <div class="input-bar">
+                <input type="text" class="cmd-input" id="cmd-input" placeholder="Введите команду или говорите голосом..." onkeydown="if(event.key==='Enter') sendText()">
+                <button class="btn-send" onclick="sendText()">ОТПРАВИТЬ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Анимация Arc Reactor на Canvas
+        const canvas = document.getElementById('reactor-canvas');
+        const ctx = canvas.getContext('2d');
+        let angle = 0;
+        let isSpeaking = false;
+        let isListening = false;
+
+        function drawReactor() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            let color = '#00f0ff';
+            let glow = 'rgba(0, 240, 255, 0.4)';
+            if (isListening) {
+                color = '#ffb300';
+                glow = 'rgba(255, 179, 0, 0.4)';
+            } else if (isSpeaking) {
+                color = '#ff5722';
+                glow = 'rgba(255, 87, 34, 0.4)';
+            }
+
+            // Внешнее кольцо с делениями
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.shadowColor = glow;
+            ctx.shadowBlur = 15;
+            ctx.lineWidth = 1.5;
+
+            const ticks = 40;
+            for (let i = 0; i < ticks; i++) {
+                const rad = (i * (360 / ticks) + angle) * Math.PI / 180;
+                const r1 = 140;
+                const r2 = i % 4 === 0 ? 155 : 148;
+                ctx.beginPath();
+                ctx.moveTo(cx + r1 * Math.cos(rad), cy + r1 * Math.sin(rad));
+                ctx.lineTo(cx + r2 * Math.cos(rad), cy + r2 * Math.sin(rad));
+                ctx.stroke();
+            }
+
+            // Вращающиеся дуги
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 120, -angle * 2 * Math.PI / 180, (-angle * 2 + 140) * Math.PI / 180);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(cx, cy, 120, (-angle * 2 + 180) * Math.PI / 180, (-angle * 2 + 270) * Math.PI / 180);
+            ctx.stroke();
+
+            // Внутреннее светящееся кольцо
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 95, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Центральное ядро
+            const pulse = 6 * Math.sin(angle * 0.1);
+            const coreR = 60 + pulse + (isSpeaking ? Math.random() * 15 : 0);
+            ctx.beginPath();
+            ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Звуковые волны в центре
+            ctx.fillStyle = '#ffffff';
+            const bars = 11;
+            for (let i = 0; i < bars; i++) {
+                const bx = cx - 35 + (i * 7);
+                const h = (isSpeaking || isListening) ? Math.random() * 35 + 5 : 8 + 6 * Math.sin(angle * 0.15 + i);
+                ctx.fillRect(bx, cy - h / 2, 3, h);
+            }
+
+            ctx.restore();
+
+            angle += isSpeaking ? 3 : 1;
+            requestAnimationFrame(drawReactor);
+        }
+
+        drawReactor();
+
+        // Функции моста к Python
+        function addMessage(author, text, isUser) {
+            const logs = document.getElementById('chat-logs');
+            const div = document.createElement('div');
+            div.className = 'msg ' + (isUser ? 'msg-user' : 'msg-jarvis');
+            div.innerHTML = `<div class="msg-author">${author}</div>${text}`;
+            logs.appendChild(div);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function setStatus(text, listening=false, speaking=false) {
+            document.getElementById('status-label').innerText = text;
+            isListening = listening;
+            isSpeaking = speaking;
+            const btn = document.getElementById('mic-btn');
+            if (listening) {
+                btn.classList.add('listening');
+                btn.innerText = '🔴 СЛУШАЮ СЭР...';
+            } else {
+                btn.classList.remove('listening');
+                btn.innerText = '🎙️ СЛУШАТЬ КОМАНДУ';
+            }
+        }
+
+        function toggleMic() {
+            if (window.pywebview) {
+                window.pywebview.api.trigger_listen();
+            }
+        }
+
+        function sendText() {
+            const input = document.getElementById('cmd-input');
+            const text = input.value.trim();
+            if (text) {
+                input.value = '';
+                addMessage('СЭР', text, true);
+                if (window.pywebview) {
+                    window.pywebview.api.send_command(text);
+                }
+            }
+        }
+
+        function sendQuick(prompt) {
+            addMessage('СЭР', prompt, true);
+            if (window.pywebview) {
+                window.pywebview.api.send_command(prompt);
+            }
+        }
+    </script>
+</body>
+</html>
