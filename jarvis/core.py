@@ -14,6 +14,7 @@ from jarvis.tools.vision import VisionTool
 from jarvis.tools.media_control import MediaControlSkill
 from jarvis.tools.file_organizer import FileOrganizerSkill
 from jarvis.tools.reminders import ReminderSkill
+from jarvis.tools.app_launcher import AppLauncherSkill
 
 SYSTEM_PROMPT = """
 Ты — J.A.R.V.I.S. Prime, автономный ИИ-ассистент, управляющий компьютером пользователя (сэра).
@@ -57,6 +58,7 @@ class JarvisCore:
             MediaControlSkill.next_track,
             MediaControlSkill.play_youtube_music,
             FileOrganizerSkill.organize_desktop,
+            AppLauncherSkill.launch_app,
             ComputerUseTool.take_screenshot,
             ComputerUseTool.mouse_click,
             ComputerUseTool.type_text,
