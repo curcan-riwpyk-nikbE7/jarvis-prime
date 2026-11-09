@@ -3,149 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J.A.R.V.I.S. QUANTUM SYNAPSE HUD</title>
+    <title>J.A.R.V.I.S. NEURAL CORE HUD</title>
     <script src="three.min.js"></script>
     <script src="head_mesh.js"></script>
     <style>
         :root {
-            --cyan: #4deeea;
-            --blue-glow: #2874fc;
-            --magenta: #f000ff;
-            --bg-deep: #050814;
-            --glass-bg: rgba(10, 16, 35, 0.55);
-            --glass-border: rgba(77, 238, 234, 0.25);
-            --icon-glow: 0 0 20px rgba(77, 238, 234, 0.4);
+            --cyan: #00f0ff;
+            --cyan-glow: rgba(0, 240, 255, 0.45);
+            --cyan-dim: rgba(0, 240, 255, 0.15);
+            --cyan-border: rgba(0, 240, 255, 0.3);
+            --bg-deep: #03060d;
+            --card-bg: rgba(6, 12, 24, 0.72);
+            --card-border: rgba(0, 240, 255, 0.22);
+            --card-hover-border: rgba(0, 240, 255, 0.65);
+            --text-main: #f1f5f9;
+            --text-sub: #78909c;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Consolas', sans-serif;
             user-select: none;
         }
 
         body {
             background-color: var(--bg-deep);
-            color: #e2e8f0;
+            color: var(--text-main);
             height: 100vh;
             overflow: hidden;
             display: flex;
+            flex-direction: column;
             position: relative;
-            border-radius: 20px;
-            border: 1px solid rgba(77, 238, 234, 0.2);
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95), inset 0 0 120px rgba(40, 116, 252, 0.08);
+            border-radius: 18px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.95), inset 0 0 100px rgba(0, 240, 255, 0.03);
             background-image: 
-                radial-gradient(circle at 50% 40%, rgba(40, 116, 252, 0.12) 0%, transparent 60%),
-                radial-gradient(circle at 50% 80%, rgba(240, 0, 255, 0.06) 0%, transparent 50%),
-                linear-gradient(rgba(255, 255, 255, 0.01) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.01) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+                radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.05) 0%, transparent 65%),
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 36px 36px, 36px 36px;
         }
 
-        /* Верхняя полоса управления */
+        /* ==========================================
+           1. ВЕРХНЯЯ СТРОКА ТЕЛЕМЕТРИИ И ЗАГОЛОВКА
+           ========================================== */
         .titlebar {
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 52px;
+            height: 48px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 25px;
+            padding: 0 24px;
             z-index: 100;
             -webkit-app-region: drag;
-            background: linear-gradient(180deg, rgba(5, 8, 20, 0.85) 0%, transparent 100%);
-            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+            background: linear-gradient(180deg, rgba(4, 9, 20, 0.9) 0%, rgba(3, 6, 13, 0.4) 100%);
+            backdrop-filter: blur(14px);
         }
 
-        .brand-badge {
+        .brand-left {
             display: flex;
             align-items: center;
             gap: 12px;
         }
 
-        .synapse-pulsar {
-            width: 14px;
-            height: 14px;
+        .pulsar-dot {
+            width: 9px;
+            height: 9px;
             background: var(--cyan);
             border-radius: 50%;
-            box-shadow: 0 0 15px var(--cyan), 0 0 30px var(--blue-glow);
-            animation: pulseSynapse 2s infinite alternate;
+            box-shadow: 0 0 10px var(--cyan);
+            animation: pulseGlow 2s infinite alternate;
         }
 
-        @keyframes pulseSynapse {
-            from { transform: scale(0.9); opacity: 0.8; }
-            to { transform: scale(1.2); opacity: 1; box-shadow: 0 0 25px var(--magenta), 0 0 40px var(--cyan); }
+        @keyframes pulseGlow {
+            0% { transform: scale(0.9); opacity: 0.7; }
+            100% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 16px var(--cyan); }
         }
 
         .brand-title {
-            font-size: 14px;
+            font-size: 12.5px;
             font-weight: 800;
-            letter-spacing: 3px;
+            letter-spacing: 3.5px;
             color: #ffffff;
             text-transform: uppercase;
         }
-
-        .brand-sub {
-            font-size: 10px;
-            letter-spacing: 1.5px;
+        .brand-title span {
             color: var(--cyan);
-            padding: 3px 8px;
-            background: rgba(77, 238, 234, 0.1);
-            border-radius: 6px;
-            border: 1px solid rgba(77, 238, 234, 0.3);
+            margin-left: 4px;
         }
 
-        .controls-group {
+        .brand-tag {
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            color: var(--cyan);
+            padding: 2px 8px;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid var(--cyan-border);
+            border-radius: 4px;
+        }
+
+        /* Центральная телеметрия: SYNAPSE LOAD, LATENCY */
+        .center-telemetry {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 24px;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            color: #90a4ae;
+        }
+
+        .tele-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tele-item strong {
+            color: var(--cyan);
+        }
+
+        .tele-bar-box {
+            width: 70px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .tele-bar-fill {
+            height: 100%;
+            width: 34%;
+            background: var(--cyan);
+            box-shadow: 0 0 8px var(--cyan);
+            transition: width 0.5s;
+        }
+
+        /* Правые кнопки управления */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             -webkit-app-region: no-drag;
         }
 
-        .btn-ghost {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #cbd5e1;
-            font-size: 11.5px;
+        .btn-hud-tool {
+            background: rgba(0, 240, 255, 0.06);
+            border: 1px solid var(--cyan-border);
+            color: #b0bec5;
+            font-size: 11px;
             font-weight: 600;
-            padding: 7px 15px;
-            border-radius: 10px;
+            padding: 6px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.25s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-
-        .btn-ghost:hover {
-            background: rgba(77, 238, 234, 0.15);
+        .btn-hud-tool:hover {
+            background: rgba(0, 240, 255, 0.16);
             border-color: var(--cyan);
             color: #ffffff;
-            box-shadow: 0 0 20px rgba(77, 238, 234, 0.4);
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
         }
 
-        .btn-close {
+        .btn-hud-close {
             background: rgba(239, 68, 68, 0.1);
             border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
+            color: #ef5350;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.2s;
         }
-        .btn-close:hover {
+        .btn-hud-close:hover {
             background: #ef4444;
             color: #fff;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
         }
 
-        /* 3D Canvas трехмерного цифрового человека */
+        /* ==========================================
+           2. ЦЕНТРАЛЬНАЯ ОБЛАСТЬ (3D + ВИДЖЕТЫ ПО БОКАМ)
+           ========================================== */
+        .workspace-stage {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 36px 0 36px;
+            overflow: hidden;
+        }
+
+        /* Three.js холст по центру */
         #avatar-canvas {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -153,212 +211,325 @@
             pointer-events: none;
         }
 
-        /* ПАРИРУЮЩИЕ ИНТЕРАКТИВНЫЕ ВИДЖЕТЫ (ТОЧЬ-В-ТОЧЬ КАК НА РЕФЕРЕНСЕ) */
-        .hud-overlay {
+        /* Текстовые оверлеи вокруг 3D-аватара (как на референсе) */
+        .core-hud-meta-top {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9.5px;
+            letter-spacing: 2px;
+            color: rgba(0, 240, 255, 0.65);
+            background: rgba(0, 240, 255, 0.04);
+            border: 1px solid rgba(0, 240, 255, 0.15);
+            padding: 3px 12px;
+            border-radius: 4px;
+            z-index: 5;
             pointer-events: none;
         }
 
-        /* Стеклянные иконки-ноды нейросети */
-        .synapse-node {
+        .core-hud-meta-bottom {
             position: absolute;
-            background: rgba(14, 22, 48, 0.65);
-            border: 1px solid rgba(77, 238, 234, 0.3);
-            border-radius: 18px;
-            padding: 12px 16px;
+            bottom: 22px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: rgba(0, 240, 255, 0.5);
+            z-index: 5;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+
+        /* Левая и правая колонки виджетов */
+        .hud-side-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 260px;
+            z-index: 10;
+        }
+
+        /* Неоновые хай-тек карточки (1-в-1 как на скриншоте) */
+        .hud-pill-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+            position: relative;
+        }
+
+        .hud-pill-card:hover {
+            border-color: var(--card-hover-border);
+            background: rgba(9, 20, 42, 0.88);
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 240, 255, 0.35);
+        }
+
+        /* Угловые акцентные насечки для активных карточек (как на скриншоте у Зрение Экрана и Диалоговый Мозг) */
+        .hud-pill-card.active-bracket {
+            border-color: rgba(0, 240, 255, 0.55);
+            background: rgba(9, 22, 45, 0.85);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+        }
+        .hud-pill-card.active-bracket::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px;
+            width: 10px; height: 10px;
+            border-top: 2px solid var(--cyan);
+            border-left: 2px solid var(--cyan);
+            border-top-left-radius: 12px;
+        }
+        .hud-pill-card.active-bracket::after {
+            content: '';
+            position: absolute;
+            bottom: -2px; right: -2px;
+            width: 10px; height: 10px;
+            border-bottom: 2px solid var(--cyan);
+            border-right: 2px solid var(--cyan);
+            border-bottom-right-radius: 12px;
+        }
+
+        .card-main-col {
             display: flex;
             align-items: center;
             gap: 12px;
-            cursor: pointer;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 15px rgba(77, 238, 234, 0.05);
-            pointer-events: all;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: floatNode 6s ease-in-out infinite alternate;
         }
 
-        @keyframes floatNode {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .synapse-node:hover {
-            transform: scale(1.08) translateY(-4px);
-            border-color: var(--cyan);
-            background: rgba(20, 35, 75, 0.8);
-            box-shadow: 0 0 35px rgba(77, 238, 234, 0.5), inset 0 0 25px rgba(240, 0, 255, 0.2);
-        }
-
-        .node-icon-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .card-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.22);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 0 15px rgba(77, 238, 234, 0.2);
+            font-size: 17px;
+            box-shadow: inset 0 0 10px rgba(0, 240, 255, 0.1);
         }
 
-        .node-text-col {
+        .card-text-block {
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
 
-        .node-title {
-            font-size: 13px;
+        .card-title-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .card-title {
+            font-size: 12.5px;
             font-weight: 700;
             color: #ffffff;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
         }
 
-        .node-sub {
+        .card-badge {
+            font-size: 8.5px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 1px 5px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .badge-cyan {
+            background: rgba(0, 240, 255, 0.15);
+            color: var(--cyan);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+        }
+
+        .card-sub {
             font-size: 10px;
-            color: #8bb5e0;
-            letter-spacing: 0.5px;
+            color: var(--text-sub);
+            letter-spacing: 0.3px;
         }
 
-        /* Расположение плавающих нодов вокруг головы */
-        #node-vision   { top: 110px; left: 40px; animation-delay: 0s; }
-        #node-voice    { top: 220px; left: 30px; animation-delay: 1.2s; }
-        #node-docs     { top: 330px; left: 45px; animation-delay: 2.4s; }
-        #node-cloud    { top: 440px; left: 60px; animation-delay: 0.8s; }
-
-        #node-video-gen{ top: 110px; right: 40px; animation-delay: 0.5s; }
-        #node-chat     { top: 220px; right: 30px; animation-delay: 1.8s; }
-        #node-security { top: 330px; right: 45px; animation-delay: 2.8s; }
-        #node-media    { top: 440px; right: 60px; animation-delay: 1.4s; }
-
-        /* Линии коннекторов синапсов (SVG в фоне) */
-        #synapse-svg-lines {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2;
-            pointer-events: none;
+        .card-right-status {
+            font-size: 9.5px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: rgba(0, 240, 255, 0.6);
+            display: flex;
+            align-items: center;
         }
 
-        /* Нижний интерактивный пульт по центру */
-        .bottom-dock {
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
+        /* ==========================================
+           3. НИЖНЯЯ ПАНЕЛЬ С ТИТРАМИ, ВВОДОМ И ЧИПАМИ
+           ========================================== */
+        .bottom-panel-zone {
+            padding: 0 36px 18px 36px;
+            z-index: 30;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            z-index: 30;
-            width: 660px;
-            pointer-events: none;
+            gap: 8px;
         }
 
-        /* Индикатор речи Джарвиса */
-        .speech-capsule {
-            pointer-events: all;
-            width: 100%;
-            background: rgba(10, 16, 35, 0.88);
-            border: 1px solid rgba(77, 238, 234, 0.4);
+        .hud-dock-box {
+            width: 680px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
             border-radius: 14px;
-            padding: 12px 22px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(77, 238, 234, 0.2);
+            padding: 12px 18px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.75), 0 0 25px rgba(0, 240, 255, 0.15);
             backdrop-filter: blur(25px);
-            text-align: center;
-            font-size: 13.5px;
-            line-height: 1.5;
-            color: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .speech-tag {
-            font-size: 9px;
+        /* Строка статуса ответа */
+        .dock-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 9.5px;
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             color: var(--cyan);
-            margin-bottom: 4px;
             text-transform: uppercase;
         }
 
-        /* Командная строка с голосовой кнопкой */
-        .command-bar {
-            pointer-events: all;
-            width: 100%;
+        .dock-header-left {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(12, 19, 42, 0.85);
-            border: 1px solid rgba(77, 238, 234, 0.3);
-            border-radius: 14px;
-            padding: 6px 8px 6px 18px;
-            backdrop-filter: blur(25px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: all 0.25s;
+            gap: 6px;
         }
 
-        .command-bar:focus-within {
+        .dock-timestamp {
+            color: #607d8b;
+            font-weight: 600;
+        }
+
+        /* Текст ответа Джарвиса */
+        .dock-speech-text {
+            font-size: 13px;
+            color: #eceff1;
+            line-height: 1.45;
+            padding-left: 2px;
+        }
+
+        /* Поле ввода команды */
+        .dock-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(3, 8, 18, 0.75);
+            border: 1px solid rgba(0, 240, 255, 0.22);
+            border-radius: 10px;
+            padding: 4px 6px 4px 14px;
+            transition: all 0.2s;
+        }
+        .dock-input-row:focus-within {
             border-color: var(--cyan);
-            box-shadow: 0 0 35px rgba(77, 238, 234, 0.4);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
         }
 
-        .command-input {
+        .dock-input {
             flex: 1;
             background: transparent;
             border: none;
             outline: none;
             color: #ffffff;
-            font-size: 13.5px;
+            font-size: 13px;
             letter-spacing: 0.3px;
         }
-        .command-input::placeholder {
-            color: #7188a8;
+        .dock-input::placeholder {
+            color: #546e7a;
         }
 
-        .btn-mic-prime {
-            background: linear-gradient(135deg, var(--cyan), var(--blue-glow));
+        .btn-enter-key {
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            color: var(--cyan);
+            font-size: 9.5px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-enter-key:hover {
+            background: var(--cyan);
+            color: #030814;
+        }
+
+        .btn-mic-bar {
+            background: linear-gradient(135deg, #00f0ff, #0091ea);
             border: none;
-            color: #030818;
+            color: #020713;
             font-size: 11px;
             font-weight: 900;
             letter-spacing: 1px;
-            padding: 10px 22px;
-            border-radius: 10px;
+            padding: 8px 18px;
+            border-radius: 8px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 0 25px rgba(77, 238, 234, 0.5);
+            gap: 6px;
+            box-shadow: 0 0 18px rgba(0, 240, 255, 0.4);
             transition: all 0.2s;
         }
-
-        .btn-mic-prime:hover {
-            transform: scale(1.04);
-            box-shadow: 0 0 35px var(--cyan);
-            color: #fff;
+        .btn-mic-bar:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 25px var(--cyan);
         }
-
-        .btn-mic-prime.listening {
+        .btn-mic-bar.listening {
             background: linear-gradient(135deg, #f59e0b, #ef4444);
-            animation: pulseMic 1s infinite alternate;
             color: #fff;
+            animation: pulseMic 1s infinite alternate;
         }
-
         @keyframes pulseMic {
             from { transform: scale(1); box-shadow: 0 0 15px #f59e0b; }
-            to { transform: scale(1.06); box-shadow: 0 0 35px #ef4444; }
+            to { transform: scale(1.05); box-shadow: 0 0 30px #ef4444; }
         }
 
-        /* ПОЛНОЦЕННОЕ МОДАЛЬНОЕ ОКНО НАСТРОЕК */
+        /* Быстрые подсказки / чипсы под полем ввода (как на скриншоте) */
+        .suggestion-chips-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            color: #607d8b;
+        }
+        .suggestion-chip {
+            background: rgba(6, 14, 30, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.16);
+            color: #90a4ae;
+            padding: 4px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .suggestion-chip:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+            background: rgba(0, 240, 255, 0.08);
+        }
+
+        /* ==========================================
+           4. ПОЛНОЦЕННОЕ МОДАЛЬНОЕ ОКНО НАСТРОЕК
+           ========================================== */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(3, 6, 18, 0.9);
-            backdrop-filter: blur(30px);
+            background: rgba(2, 5, 12, 0.92);
+            backdrop-filter: blur(25px);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -367,19 +538,13 @@
         .modal-container {
             width: 840px;
             max-height: 85vh;
-            background: #090e24;
-            border: 1px solid rgba(77, 238, 234, 0.35);
-            border-radius: 18px;
-            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.85), 0 0 40px rgba(77, 238, 234, 0.3);
+            background: #060c1c;
+            border: 1px solid var(--cyan-border);
+            border-radius: 16px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(0, 240, 255, 0.2);
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalPop {
-            from { opacity: 0; transform: scale(0.96) translateY(-10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .modal-header {
@@ -388,11 +553,11 @@
             align-items: center;
             padding: 16px 24px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(0, 240, 255, 0.03);
         }
 
         .modal-title {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 800;
             letter-spacing: 2.5px;
             color: var(--cyan);
@@ -403,13 +568,13 @@
 
         .modal-body {
             display: grid;
-            grid-template-columns: 210px 1fr;
+            grid-template-columns: 220px 1fr;
             flex: 1;
             overflow: hidden;
         }
 
         .nav-tabs {
-            background: rgba(5, 9, 24, 0.7);
+            background: rgba(3, 7, 16, 0.8);
             border-right: 1px solid rgba(255, 255, 255, 0.08);
             padding: 16px 12px;
             display: flex;
@@ -421,7 +586,7 @@
             background: transparent;
             border: none;
             color: #94a3b8;
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 600;
             padding: 10px 14px;
             border-radius: 8px;
@@ -432,15 +597,13 @@
             align-items: center;
             gap: 10px;
         }
-
         .nav-tab-btn:hover {
             color: #ffffff;
             background: rgba(255, 255, 255, 0.05);
         }
-
         .nav-tab-btn.active {
             color: var(--cyan);
-            background: rgba(77, 238, 234, 0.12);
+            background: rgba(0, 240, 255, 0.1);
             border-left: 3px solid var(--cyan);
             font-weight: 700;
         }
@@ -481,7 +644,7 @@
         }
 
         .form-control {
-            background: #050918;
+            background: #030814;
             border: 1px solid rgba(255, 255, 255, 0.12);
             color: #ffffff;
             padding: 10px 14px;
@@ -490,10 +653,9 @@
             outline: none;
             transition: all 0.2s;
         }
-
         .form-control:focus {
             border-color: var(--cyan);
-            box-shadow: 0 0 15px rgba(77, 238, 234, 0.4);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
         }
 
         .slider-flex {
@@ -512,152 +674,203 @@
             display: flex;
             justify-content: flex-end;
             gap: 12px;
-            background: rgba(5, 9, 24, 0.5);
+            background: rgba(3, 7, 16, 0.6);
         }
     </style>
 </head>
 <body>
 
-    <!-- ВЕРХНЯЯ ШАПКА -->
+    <!-- 1. ВЕРХНЯЯ СТРОКА ТЕЛЕМЕТРИИ -->
     <div class="titlebar">
-        <div class="brand-badge">
-            <div class="synapse-pulsar"></div>
-            <div class="brand-title">J.A.R.V.I.S. QUANTUM SYNAPSE</div>
-            <div class="brand-sub">NEURAL CORE // ACTIVE</div>
+        <div class="brand-left">
+            <div class="pulsar-dot"></div>
+            <div class="brand-title">J . A . R . V . I . S . <span>NEURAL CORE</span></div>
+            <div class="brand-tag">V 4.8.2-PRO</div>
+            <div class="brand-tag" style="border-color: rgba(0,240,255,0.4); color: var(--cyan);">// ONLINE</div>
         </div>
 
-        <div class="controls-group">
-            <button class="btn-ghost" onclick="openFullSettings()">⚙️ Настройки</button>
-            <button class="btn-ghost" onclick="toggleMiniOrb()">🔮 Режим Сферы</button>
-            <button class="btn-close" onclick="closeApp()">✕</button>
+        <div class="center-telemetry">
+            <div class="tele-item">
+                <span>SYNAPSE LOAD:</span>
+                <span class="tele-bar-box"><div class="tele-bar-fill" id="tele-load-bar"></div></span>
+                <strong id="tele-load-val">34%</strong>
+            </div>
+            <div class="tele-item">
+                <span>LATENCY:</span>
+                <strong id="tele-latency-val">14ms</strong>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn-hud-tool" id="btn-toggle-orbits" onclick="toggleOrbits()">🪐 ОРБИТЫ: ВКЛ</button>
+            <button class="btn-hud-tool" onclick="openFullSettings()">⚙️ Настройки</button>
+            <button class="btn-hud-close" onclick="closeApp()">✕</button>
         </div>
     </div>
 
-    <!-- ТРЕХМЕРНЫЙ ЦИФРОВОЙ ЧЕЛОВЕК ИЗ ЧАСТИЦ (THREE.JS) -->
-    <div id="avatar-canvas"></div>
+    <!-- 2. ЦЕНТРАЛЬНАЯ ОБЛАСТЬ С 3D АВАТАРОМ И ВИДЖЕТАМИ ПО БОКАМ -->
+    <div class="workspace-stage">
+        
+        <!-- Верхняя и нижняя кибер-разметка по центру -->
+        <div class="core-hud-meta-top" id="freq-meta">NEURAL FREQ: 432.08 HZ // CORE AZIMUTH: 312°</div>
+        <div class="core-hud-meta-bottom">[ ВРАЩАЙТЕ ЯДРО МЫШЬЮ ИЛИ ТРЕКОМ ]</div>
 
-    <!-- SVG ЛИНИИ НЕЙРОННОЙ СЕТИ, СОЕДИНЯЮЩИЕ ГОЛОВУ С НОДАМИ -->
-    <svg id="synapse-svg-lines">
-        <defs>
-            <linearGradient id="grad-cyan-blue" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#4deeea" stop-opacity="0.6"/>
-                <stop offset="100%" stop-color="#2874fc" stop-opacity="0.1"/>
-            </linearGradient>
-            <linearGradient id="grad-pink-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#f000ff" stop-opacity="0.6"/>
-                <stop offset="100%" stop-color="#4deeea" stop-opacity="0.1"/>
-            </linearGradient>
-        </defs>
-        <!-- Левые синапсы -->
-        <path d="M 230 140 Q 360 160 480 230" fill="none" stroke="url(#grad-cyan-blue)" stroke-width="1.5" stroke-dasharray="4,4"/>
-        <path d="M 230 250 Q 360 260 490 280" fill="none" stroke="url(#grad-pink-cyan)" stroke-width="1.5"/>
-        <path d="M 230 360 Q 380 340 500 350" fill="none" stroke="url(#grad-cyan-blue)" stroke-width="1.5" stroke-dasharray="6,4"/>
-        <path d="M 230 470 Q 380 430 510 420" fill="none" stroke="url(#grad-pink-cyan)" stroke-width="1.5"/>
+        <!-- Холст Three.js для 3D человека -->
+        <div id="avatar-canvas"></div>
 
-        <!-- Правые синапсы -->
-        <path d="M 950 140 Q 820 160 700 230" fill="none" stroke="url(#grad-pink-cyan)" stroke-width="1.5" stroke-dasharray="4,4"/>
-        <path d="M 950 250 Q 820 260 690 280" fill="none" stroke="url(#grad-cyan-blue)" stroke-width="1.5"/>
-        <path d="M 950 360 Q 800 340 680 350" fill="none" stroke="url(#grad-pink-cyan)" stroke-width="1.5" stroke-dasharray="6,4"/>
-        <path d="M 950 470 Q 800 430 670 420" fill="none" stroke="url(#grad-cyan-blue)" stroke-width="1.5"/>
-    </svg>
-
-    <!-- ПЛАВАЮЩИЕ КАРТОЧКИ ИНСТРУМЕНТОВ (КАК НА РЕФЕРЕНСЕ) -->
-    <div class="hud-overlay">
-
-        <!-- ЛЕВАЯ ГРУППА НОДОВ -->
-        <div class="synapse-node" id="node-vision" onclick="sendQuick('Посмотри на экран и скажи, что здесь открыто')">
-            <div class="node-icon-box">👁️</div>
-            <div class="node-text-col">
-                <div class="node-title">Зрение Экрана</div>
-                <div class="node-sub">Gemini Vision AI</div>
+        <!-- ЛЕВАЯ КОЛОНКА ВИДЖЕТОВ (КАК НА РЕФЕРЕНСЕ) -->
+        <div class="hud-side-col">
+            
+            <div class="hud-pill-card active-bracket" id="card-vision" onclick="sendQuick('Посмотри на экран и скажи, что здесь открыто')">
+                <div class="card-main-col">
+                    <div class="card-icon-box">👁️</div>
+                    <div class="card-text-block">
+                        <div class="card-title-row">
+                            <span class="card-title">Зрение Экрана</span>
+                            <span class="card-badge badge-cyan">ACTIVE</span>
+                        </div>
+                        <div class="card-sub">Gemini 1.5 Pro Vision AI</div>
+                    </div>
+                </div>
+                <div class="card-right-status">〽️</div>
             </div>
+
+            <div class="hud-pill-card" id="card-voice" onclick="toggleVoice()">
+                <div class="card-main-col">
+                    <div class="card-icon-box">🎙️</div>
+                    <div class="card-text-block">
+                        <span class="card-title">Голосовой Канал</span>
+                        <div class="card-sub">Дубляж Баранова • HD</div>
+                    </div>
+                </div>
+                <div class="card-right-status">SYNC</div>
+            </div>
+
+            <div class="hud-pill-card" id="card-email" onclick="sendQuick('Проверь последние входящие письма на почте')">
+                <div class="card-main-col">
+                    <div class="card-icon-box">✉️</div>
+                    <div class="card-text-block">
+                        <span class="card-title">Почта & Письма</span>
+                        <div class="card-sub">Яндекс / Gmail IMAP</div>
+                    </div>
+                </div>
+                <div class="card-right-status">READY</div>
+            </div>
+
+            <div class="hud-pill-card" id="card-files" onclick="sendQuick('Наведи порядок на рабочем столе')">
+                <div class="card-main-col">
+                    <div class="card-icon-box">🗄️</div>
+                    <div class="card-text-block">
+                        <span class="card-title">Файловая Система</span>
+                        <div class="card-sub">Умная автосортировка</div>
+                    </div>
+                </div>
+                <div class="card-right-status">›</div>
+            </div>
+
         </div>
 
-        <div class="synapse-node" id="node-voice" onclick="toggleVoice()">
-            <div class="node-icon-box">🎙️</div>
-            <div class="node-text-col">
-                <div class="node-title">Голосовой Канал</div>
-                <div class="node-sub">Дубляж Баранова</div>
+        <!-- ПРАВАЯ КОЛОНКА ВИДЖЕТОВ (КАК НА РЕФЕРЕНСЕ) -->
+        <div class="hud-side-col">
+            
+            <div class="hud-pill-card" id="card-video" onclick="sendQuick('Создай видео полета Железного Человека')">
+                <div class="card-main-col">
+                    <div class="card-icon-box">✨</div>
+                    <div class="card-text-block">
+                        <span class="card-title">Генератор Видео</span>
+                        <div class="card-sub">60 FPS Ken Burns & FX</div>
+                    </div>
+                </div>
+                <div class="card-right-status">v2.1</div>
             </div>
-        </div>
 
-        <div class="synapse-node" id="node-docs" onclick="sendQuick('Проверь последние входящие письма на почте')">
-            <div class="node-icon-box">✉️</div>
-            <div class="node-text-col">
-                <div class="node-title">Почта & Письма</div>
-                <div class="node-sub">Яндекс / Gmail IMAP</div>
+            <div class="hud-pill-card active-bracket" id="card-brain" onclick="sendQuick('Расскажи интересную мысль или новость')">
+                <div class="card-main-col">
+                    <div class="card-icon-box">🧠</div>
+                    <div class="card-text-block">
+                        <div class="card-title-row">
+                            <span class="card-title">Диалоговый Мозг</span>
+                            <span class="card-badge badge-cyan">CORE</span>
+                        </div>
+                        <div class="card-sub">Gemini 3 Flash & reasoning</div>
+                    </div>
+                </div>
+                <div class="card-right-status">🔲</div>
             </div>
-        </div>
 
-        <div class="synapse-node" id="node-cloud" onclick="sendQuick('Включи Мою волну в Яндекс Музыке')">
-            <div class="node-icon-box">🎶</div>
-            <div class="node-text-col">
-                <div class="node-title">Яндекс Музыка</div>
-                <div class="node-sub">Моя волна & Поиск</div>
+            <div class="hud-pill-card" id="card-studio" onclick="sendQuick('Обрежь первые 30 секунд у видео')">
+                <div class="card-main-col">
+                    <div class="card-icon-box">🎬</div>
+                    <div class="card-text-block">
+                        <span class="card-title">FFmpeg Студия</span>
+                        <div class="card-sub">Монтаж & Shorts компиляция</div>
+                    </div>
+                </div>
+                <div class="card-right-status">IDLE</div>
             </div>
-        </div>
 
-        <!-- ПРАВАЯ ГРУППА НОДОВ -->
-        <div class="synapse-node" id="node-video-gen" onclick="sendQuick('Создай видео полета Железного Человека')">
-            <div class="node-icon-box">✨</div>
-            <div class="node-text-col">
-                <div class="node-title">Генератор Видео</div>
-                <div class="node-sub">60 FPS Ken Burns</div>
+            <div class="hud-pill-card" id="card-music" onclick="sendQuick('Включи Мою волну в Яндекс Музыке')">
+                <div class="card-main-col">
+                    <div class="card-icon-box">🎶</div>
+                    <div class="card-text-block">
+                        <span class="card-title">Медиа Контроль</span>
+                        <div class="card-sub">Фоновый эмбиент / Плеер</div>
+                    </div>
+                </div>
+                <div class="card-right-status">🔊</div>
             </div>
-        </div>
 
-        <div class="synapse-node" id="node-chat" onclick="sendQuick('Расскажи интересную новость из мира технологий')">
-            <div class="node-icon-box">💬</div>
-            <div class="node-text-col">
-                <div class="node-title">Диалоговый Мозг</div>
-                <div class="node-sub">Gemini 3.5 Flash</div>
-            </div>
-        </div>
-
-        <div class="synapse-node" id="node-security" onclick="sendQuick('Обрежь первые 30 секунд у видео')">
-            <div class="node-icon-box">🎬</div>
-            <div class="node-text-col">
-                <div class="node-title">FFmpeg Студия</div>
-                <div class="node-sub">Монтаж & Shorts</div>
-            </div>
-        </div>
-
-        <div class="synapse-node" id="node-media" onclick="sendQuick('Включи саундтрек Iron Man')">
-            <div class="node-icon-box">🎵</div>
-            <div class="node-text-col">
-                <div class="node-title">Медиа Контроль</div>
-                <div class="node-sub">Аудио и Плеер</div>
-            </div>
         </div>
 
     </div>
 
-    <!-- НИЖНИЙ ЦЕНТРАЛЬНЫЙ ПУЛЬТ: ТИТРЫ И ВВОД -->
-    <div class="bottom-dock">
-        <div class="speech-capsule" id="subtitle-box">
-            <div class="speech-tag">◆ J.A.R.V.I.S. Synapse Online ◆</div>
-            Здравствуйте, сэр. Все квантовые синапсы синхронизированы. Чем могу помочь?
+    <!-- 3. НИЖНЯЯ ПАНЕЛЬ: ТИТРЫ, ВВОД, БЫСТРЫЕ ЧИПСЫ -->
+    <div class="bottom-panel-zone">
+        
+        <div class="hud-dock-box">
+            
+            <div class="dock-header-row">
+                <div class="dock-header-left">
+                    <span>💠</span>
+                    <span>JARVIS SYNAPSE // RESPONSE</span>
+                </div>
+                <div class="dock-timestamp" id="dock-clock">08:05:31</div>
+            </div>
+
+            <div class="dock-speech-text" id="subtitle-box">
+                Здравствуйте, сэр. Все квантовые синапсы синхронизированы. Чем могу помочь?
+            </div>
+
+            <div class="dock-input-row">
+                <input type="text" class="dock-input" id="cmd-input" placeholder="Введите команду или выберите модуль..." onkeydown="if(event.key==='Enter') sendText()">
+                <button class="btn-enter-key" onclick="sendText()">ENTER</button>
+                <button class="btn-mic-bar" id="mic-btn" onclick="toggleVoice()">
+                    <span>🎙️</span>
+                    <span>СЛУШАТЬ</span>
+                </button>
+            </div>
+
         </div>
 
-        <div class="command-bar">
-            <input type="text" class="command-input" id="cmd-input" placeholder="Введите команду или скажите вслух «Джарвис»..." onkeydown="if(event.key==='Enter') sendText()">
-            <button class="btn-mic-prime" id="mic-btn" onclick="toggleVoice()">
-                <span>🎙️</span>
-                <span>СЛУШАТЬ</span>
-            </button>
+        <!-- Подсказки быстрых команд (как на скриншоте) -->
+        <div class="suggestion-chips-row">
+            <span>быстрые команды:</span>
+            <div class="suggestion-chip" onclick="sendQuick('Сделай шортс из папки')">"Сделай шортс из папки"</div>
+            <div class="suggestion-chip" onclick="sendQuick('Посмотри на экран и проанализируй')">"Проанализируй экран"</div>
+            <div class="suggestion-chip" onclick="sendQuick('Наведи порядок на рабочем столе')">"Сортировка рабочего стола"</div>
         </div>
+
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
+    <!-- 4. МОДАЛЬНОЕ ОКНО НАСТРОЕК -->
     <div class="modal-overlay" id="full-settings-modal">
         <div class="modal-container">
             <div class="modal-header">
                 <div class="modal-title">⚙️ J.A.R.V.I.S. MATRIX CONFIGURATION</div>
-                <button class="btn-close" onclick="closeFullSettings()">&times;</button>
+                <button class="btn-hud-close" onclick="closeFullSettings()">&times;</button>
             </div>
 
             <div class="modal-body">
-                <!-- Табы слева -->
                 <div class="nav-tabs">
                     <button class="nav-tab-btn active" id="tb-voice-tts" onclick="switchSetTab('voice-tts')">🔊 Голос и Синтез</button>
                     <button class="nav-tab-btn" id="tb-mic-stt" onclick="switchSetTab('mic-stt')">🎙️ Слух и Микрофон</button>
@@ -667,7 +880,6 @@
                     <button class="nav-tab-btn" id="tb-skills-matrix" onclick="switchSetTab('skills-matrix')">🧩 Модули и Скилы</button>
                 </div>
 
-                <!-- Контент табов справа -->
                 <div class="tab-pane-container">
                     
                     <!-- 1. ГОЛОС -->
@@ -699,7 +911,7 @@
                         </div>
                     </div>
 
-                    <!-- 2. СЛУХ И МИКРОФОН -->
+                    <!-- 2. СЛУХ -->
                     <div class="settings-pane" id="sec-mic-stt">
                         <div class="form-row">
                             <label class="form-label">Wake-Word активация («Джарвис»):</label>
@@ -734,11 +946,11 @@
                         </div>
                     </div>
 
-                    <!-- 3.5 СЕРВИСЫ: МУЗЫКА И ПОЧТА -->
+                    <!-- 4. СЕРВИСЫ: МУЗЫКА И ПОЧТА -->
                     <div class="settings-pane" id="sec-services">
                         <div class="form-row">
                             <label class="form-label">🎵 Яндекс Музыка (OAuth Токен):</label>
-                            <input type="password" class="form-control" id="set-ym-token" placeholder="Токен yandex-music (или останется веб-авторизация)">
+                            <input type="password" class="form-control" id="set-ym-token" placeholder="Токен yandex-music (или веб-авторизация)">
                             <div class="form-sub">Позволяет включать персональные плейлисты и Мою волну прямо через API.</div>
                         </div>
 
@@ -750,7 +962,6 @@
                         <div class="form-row">
                             <label class="form-label">🔑 Пароль приложения почты:</label>
                             <input type="password" class="form-control" id="set-email-pass" placeholder="Пароль приложений Яндекса/Gmail">
-                            <div class="form-sub">Для безопасности используйте специальный «Пароль приложений» из настроек безопасности почты.</div>
                         </div>
 
                         <div class="form-row">
@@ -763,7 +974,7 @@
                         </div>
                     </div>
 
-                    <!-- 4. ПЕРСОНАЛИЗАЦИЯ -->
+                    <!-- 5. ПЕРСОНАЛИЗАЦИЯ -->
                     <div class="settings-pane" id="sec-person-profile">
                         <div class="form-row">
                             <label class="form-label">Как к вам обращаться:</label>
@@ -779,7 +990,7 @@
                         </div>
                     </div>
 
-                    <!-- 5. МОДУЛИ -->
+                    <!-- 6. МОДУЛИ -->
                     <div class="settings-pane" id="sec-skills-matrix">
                         <div class="form-sub" style="margin-bottom: 8px;">Активные инструменты ассистента:</div>
                         <div style="display: flex; flex-direction: column; gap: 8px;">
@@ -805,27 +1016,29 @@
             </div>
 
             <div class="modal-footer">
-                <button class="btn-ghost" onclick="closeFullSettings()">Отмена</button>
-                <button class="btn-mic-prime" onclick="saveFullSettings()">Сохранить настройки</button>
+                <button class="btn-hud-tool" onclick="closeFullSettings()">Отмена</button>
+                <button class="btn-mic-bar" style="padding: 8px 20px;" onclick="saveFullSettings()">Сохранить настройки</button>
             </div>
         </div>
     </div>
 
-    <!-- ТРЕХМЕРНЫЙ ЦИФРОВОЙ ЧЕЛОВЕК (СИНАПТИЧЕСКАЯ НЕЙРОННАЯ СЕТЬ) -->
+    <!-- ==========================================
+         5. THREE.JS 3D ЧЕЛОВЕК + ОРБИТАЛЬНЫЕ ЭЛЛИПСЫ
+         ========================================== -->
     <script>
-        let scene, camera, renderer, humanGroup, cyanPoints, magentaPoints, wireLines, auraCloud;
+        let scene, camera, renderer, humanGroup, orbitRingsGroup;
+        let headShaderMat, eyeLeft, eyeRight, brainMesh, auraCloud;
         let isSpeaking = false;
         let isListening = false;
+        let orbitsVisible = true;
         let mouseX = 0, mouseY = 0;
-
-        let headShaderMat, eyeLeft, eyeRight, brainMesh;
 
         function init3DHuman() {
             const container = document.getElementById('avatar-canvas');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 7.0;
-            camera.position.y = 0.1;
+            camera.position.y = 0.05;
 
             renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -835,28 +1048,41 @@
             humanGroup = new THREE.Group();
             scene.add(humanGroup);
 
-            // 1. Парящие кристаллические полигоны вокруг головы (как на фото)
-            const crystalGeo = new THREE.TetrahedronGeometry(0.12, 0);
-            for(let i = 0; i < 18; i++) {
-                const crystalMat = new THREE.MeshBasicMaterial({
-                    color: i % 2 === 0 ? 0x4deeea : 0xf000ff,
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.55,
-                    blending: THREE.AdditiveBlending
-                });
-                const crystal = new THREE.Mesh(crystalGeo, crystalMat);
-                crystal.position.set(
-                    (Math.random() - 0.5) * 4.5,
-                    (Math.random() - 0.5) * 3.8,
-                    (Math.random() - 0.5) * 2.5
-                );
-                crystal.rotation.set(Math.random()*3, Math.random()*3, Math.random()*3);
-                humanGroup.add(crystal);
-            }
+            // 1. ОРБИТАЛЬНЫЕ ЭЛЛИПСЫ ВОКРУГ ЧЕЛОВЕКА (КАК НА СКРИНШОТЕ)
+            orbitRingsGroup = new THREE.Group();
+            
+            // Эллиптическая орбита 1 (горизонтально-наклонная)
+            const ring1Curve = new THREE.EllipseCurve(0, 0, 2.7, 2.0, 0, 2 * Math.PI, false, 0);
+            const ring1Points = ring1Curve.getPoints(120);
+            const ring1Geo = new THREE.BufferGeometry().setFromPoints(ring1Points);
+            const ring1Mat = new THREE.LineBasicMaterial({
+                color: 0x00f0ff,
+                transparent: true,
+                opacity: 0.65
+            });
+            const ring1 = new THREE.Line(ring1Geo, ring1Mat);
+            ring1.rotation.x = Math.PI / 3;
+            ring1.rotation.y = -0.3;
+            orbitRingsGroup.add(ring1);
 
-            // 2. Облако эфирных световых квантов
-            const auraCount = 600;
+            // Эллиптическая орбита 2 (второй угол)
+            const ring2Curve = new THREE.EllipseCurve(0, 0, 2.5, 1.8, 0, 2 * Math.PI, false, 0);
+            const ring2Points = ring2Curve.getPoints(120);
+            const ring2Geo = new THREE.BufferGeometry().setFromPoints(ring2Points);
+            const ring2Mat = new THREE.LineBasicMaterial({
+                color: 0x00f0ff,
+                transparent: true,
+                opacity: 0.35
+            });
+            const ring2 = new THREE.Line(ring2Geo, ring2Mat);
+            ring2.rotation.x = -Math.PI / 4;
+            ring2.rotation.y = 0.4;
+            orbitRingsGroup.add(ring2);
+
+            scene.add(orbitRingsGroup);
+
+            // 2. ОБЛАКО ЭФИРНЫХ КВАНТОВ (СВЕТОВЫЕ ТОЧКИ)
+            const auraCount = 500;
             const auraPos = [];
             for(let i = 0; i < auraCount; i++) {
                 auraPos.push(
@@ -868,23 +1094,23 @@
             const auraGeo = new THREE.BufferGeometry();
             auraGeo.setAttribute('position', new THREE.Float32BufferAttribute(auraPos, 3));
             const auraMat = new THREE.PointsMaterial({
-                color: 0x4deeea,
-                size: 0.03,
+                color: 0x00f0ff,
+                size: 0.028,
                 transparent: true,
-                opacity: 0.35,
+                opacity: 0.4,
                 blending: THREE.AdditiveBlending
             });
             auraCloud = new THREE.Points(auraGeo, auraMat);
             scene.add(auraCloud);
 
-            // 3. ПОСТРОЕНИЕ ГОЛОГРАФИЧЕСКОГО ЧЕЛОВЕКА С КРАСИВЫМ ЖИВЫМ ВЗГЛЯДОМ
+            // 3. ПОСТРОЕНИЕ ГОЛОГРАФИЧЕСКОГО ЧЕЛОВЕКА
             if (window.HEAD_VERTS && window.HEAD_INDICES) {
                 const headGeo = new THREE.BufferGeometry();
                 headGeo.setAttribute('position', new THREE.Float32BufferAttribute(window.HEAD_VERTS, 3));
                 headGeo.setAttribute('normal', new THREE.Float32BufferAttribute(window.HEAD_NORMALS, 3));
                 headGeo.setIndex(window.HEAD_INDICES);
 
-                // А. ВНУТРЕННЕЕ ГЛУБОКОЕ ЗАТЕМНЕНИЕ
+                // А. Внутреннее глубокое затемнение (основа)
                 const innerDarkMat = new THREE.MeshBasicMaterial({
                     color: 0x030712,
                     depthWrite: true
@@ -892,14 +1118,14 @@
                 const innerDarkMesh = new THREE.Mesh(headGeo, innerDarkMat);
                 innerDarkMesh.scale.set(0.99, 0.99, 0.99);
 
-                // Б. ШЕЙДЕР ГОЛОГРАФИЧЕСКОГО КИБОРГА (FRESNEL GLOW + МЯГКИЕ НЕОНОВЫЕ СИНАПСЫ)
+                // Б. Шейдер голографического киборга (Fresnel Glow + кинетические сканлинии)
                 headShaderMat = new THREE.ShaderMaterial({
                     transparent: true,
                     depthWrite: false,
                     uniforms: {
                         uTime: { value: 0.0 },
                         uColor: { value: new THREE.Color(0x00f0ff) },
-                        uBase: { value: new THREE.Color(0x061124) }
+                        uBase: { value: new THREE.Color(0x040d1a) }
                     },
                     vertexShader: `
                         varying vec3 vNormal;
@@ -927,11 +1153,11 @@
                             vec3 viewDir = normalize(vViewPosition);
 
                             float fresnel = 1.0 - max(0.0, dot(viewDir, normal));
-                            fresnel = pow(fresnel, 2.5);
+                            fresnel = pow(fresnel, 2.4);
 
-                            float scan = sin(vWorldPos.y * 50.0 - uTime * 3.0) * 0.5 + 0.5;
-                            vec3 finalColor = mix(uBase, uColor, fresnel * 0.9 + scan * 0.1);
-                            float alpha = 0.45 + fresnel * 0.5;
+                            float scan = sin(vWorldPos.y * 45.0 - uTime * 2.8) * 0.5 + 0.5;
+                            vec3 finalColor = mix(uBase, uColor, fresnel * 0.92 + scan * 0.08);
+                            float alpha = 0.42 + fresnel * 0.52;
 
                             gl_FragColor = vec4(finalColor, alpha);
                         }
@@ -939,9 +1165,9 @@
                 });
                 const skinMesh = new THREE.Mesh(headGeo, headShaderMat);
 
-                // В. ТОНКИЕ СВЕТЯЩИЕСЯ ТОЧКИ-СИНАПСЫ
+                // В. Тонкие светящиеся точки-синапсы на поверхности лица
                 const pointMat = new THREE.PointsMaterial({
-                    color: 0x4deeea,
+                    color: 0x00f0ff,
                     size: 0.012,
                     transparent: true,
                     opacity: 0.55,
@@ -949,11 +1175,9 @@
                 });
                 const pMesh = new THREE.Points(headGeo, pointMat);
 
-                // Г. ИНТЕЛЛЕКТУАЛЬНЫЕ КИБЕР-ГЛАЗА ТОЧНО В ГЛАЗНИЦАХ
+                // Г. Интеллектуальные кибер-глаза точно в глазницах
                 const eyeGeo = new THREE.SphereGeometry(0.14, 16, 16);
-                const eyeMat = new THREE.MeshBasicMaterial({
-                    color: 0x00f0ff
-                });
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0x00f0ff });
                 const pupilGeo = new THREE.SphereGeometry(0.06, 12, 12);
                 const pupilMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
@@ -973,13 +1197,13 @@
                 eyeRight.add(pR);
                 eyeRight.position.set(0.68, 1.67, 1.76);
 
-                // Д. ПУЛЬСИРУЮЩИЙ НЕЙРОННЫЙ МОЗГ ВНУТРИ
-                const brainGeo = new THREE.IcosahedronGeometry(1.6, 2);
+                // Д. Пульсирующий нейронный мозг внутри
+                const brainGeo = new THREE.IcosahedronGeometry(1.5, 2);
                 const brainMat = new THREE.PointsMaterial({
-                    color: 0xf000ff,
-                    size: 0.025,
+                    color: 0x00f0ff,
+                    size: 0.024,
                     transparent: true,
-                    opacity: 0.85,
+                    opacity: 0.8,
                     blending: THREE.AdditiveBlending
                 });
                 brainMesh = new THREE.Points(brainGeo, brainMat);
@@ -993,16 +1217,14 @@
                 headG.add(eyeRight);
                 headG.add(brainMesh);
 
-                // Масштаб и подгонка
                 headG.scale.set(0.55, 0.55, 0.55);
                 headG.position.y = -0.2;
                 humanGroup.add(headG);
             }
 
-            // Поворот в красивый полупрофиль 3/4
-            humanGroup.rotation.y = -0.52;
+            humanGroup.rotation.y = -0.25;
 
-            // Мышь (интеллектуальное слежение за курсором)
+            // Слежение за курсором
             window.addEventListener('mousemove', (e) => {
                 mouseX = (e.clientX - window.innerWidth / 2) * 0.0006;
                 mouseY = (e.clientY - window.innerHeight / 2) * 0.0006;
@@ -1027,17 +1249,31 @@
                 headShaderMat.uniforms.uTime.value = time;
             }
 
-            // Плавное слежение головой за пользователем
-            const targetRotY = mouseX * 0.85;
-            const targetRotX = mouseY * 0.65;
+            // Плавное слежение за курсором
+            const targetRotY = mouseX * 0.75;
+            const targetRotX = mouseY * 0.55;
 
             humanGroup.rotation.y += (targetRotY - humanGroup.rotation.y) * 0.05;
             humanGroup.rotation.x += (targetRotX - humanGroup.rotation.x) * 0.05;
 
-            // Живое дыхание человека
-            humanGroup.position.y = Math.sin(time * 2.2) * 0.15;
+            // Дыхание
+            humanGroup.position.y = Math.sin(time * 2.2) * 0.12;
 
-            // Пульсация глаз при диалоге
+            // Вращение орбитальных колец
+            if (orbitRingsGroup && orbitsVisible) {
+                orbitRingsGroup.rotation.z += 0.003;
+                orbitRingsGroup.rotation.y += 0.002;
+            }
+
+            // Вращение мозга внутри
+            if (brainMesh) {
+                brainMesh.rotation.y -= 0.015;
+            }
+
+            // Мерцание ауры
+            if (auraCloud) auraCloud.rotation.y += 0.0008;
+
+            // Динамика глаз при диалоге
             if (eyeLeft && eyeRight) {
                 if (isSpeaking) {
                     eyeLeft.children[0].material.color.setHex(0xff0055);
@@ -1051,20 +1287,12 @@
                 }
             }
 
-            // Вращение внутреннего нейронного мозга
-            if (brainMesh) {
-                brainMesh.rotation.y -= 0.015;
-            }
-
-            // Пульсация ауры частиц
-            if (auraCloud) auraCloud.rotation.y += 0.001;
-
-            // Пульсация при диалоге
+            // Пульсация масштаба при диалоге
             let scalePulse = 1;
             if (isSpeaking) {
-                scalePulse = 1 + Math.sin(time * 16) * 0.05;
+                scalePulse = 1 + Math.sin(time * 16) * 0.04;
             } else if (isListening) {
-                scalePulse = 1 + Math.sin(time * 8) * 0.03;
+                scalePulse = 1 + Math.sin(time * 8) * 0.025;
             }
             humanGroup.scale.set(scalePulse, scalePulse, scalePulse);
 
@@ -1073,9 +1301,24 @@
 
         init3DHuman();
 
+        // Переключение видимости орбит
+        function toggleOrbits() {
+            orbitsVisible = !orbitsVisible;
+            if (orbitRingsGroup) orbitRingsGroup.visible = orbitsVisible;
+            const btn = document.getElementById('btn-toggle-orbits');
+            btn.innerText = orbitsVisible ? '🪐 ОРБИТЫ: ВКЛ' : '🪐 ОРБИТЫ: ВЫКЛ';
+        }
+
         // ==========================================
         // МОСТ К СИСТЕМЕ И СОБЫТИЯ
         // ==========================================
+        function updateSystemGauges(cpu, ram, disk) {
+            const loadVal = document.getElementById('tele-load-val');
+            const loadBar = document.getElementById('tele-load-bar');
+            if (loadVal) loadVal.innerText = cpu + '%';
+            if (loadBar) loadBar.style.width = Math.max(10, Math.min(100, cpu)) + '%';
+        }
+
         function setStatus(text, listening=false, speaking=false) {
             isListening = listening;
             isSpeaking = speaking;
@@ -1083,15 +1326,12 @@
             if (listening) {
                 btn.classList.add('listening');
                 btn.innerHTML = '<span>🔴</span><span>СЛУШАЮ...</span>';
-                if (cyanPoints) cyanPoints.material.color.setHex(0xf59e0b);
             } else if (speaking) {
                 btn.classList.remove('listening');
                 btn.innerHTML = '<span>🔊</span><span>ОТВЕЧАЮ...</span>';
-                if (cyanPoints) cyanPoints.material.color.setHex(0xef4444);
             } else {
                 btn.classList.remove('listening');
                 btn.innerHTML = '<span>🎙️</span><span>СЛУШАТЬ</span>';
-                if (cyanPoints) cyanPoints.material.color.setHex(0x4deeea);
             }
         }
 
@@ -1100,7 +1340,7 @@
         }
 
         function addMessage(author, text, isUser) {
-            setSubtitle(`<div class="speech-tag">◆ ${author} ◆</div>${text}`);
+            setSubtitle(`<strong>${author}:</strong> ${text}`);
         }
 
         function sendText() {
@@ -1108,13 +1348,13 @@
             const val = input.value.trim();
             if (val) {
                 input.value = '';
-                setSubtitle(`<div class="speech-tag">◆ ВЫ ◆</div>${val}`);
+                setSubtitle(`<strong>ВЫ:</strong> «${val}»`);
                 if (window.pywebview) window.pywebview.api.send_command(val);
             }
         }
 
         function sendQuick(prompt) {
-            setSubtitle(`<div class="speech-tag">◆ ВЫ ◆</div>${prompt}`);
+            setSubtitle(`<strong>ВЫ:</strong> «${prompt}»`);
             if (window.pywebview) window.pywebview.api.send_command(prompt);
         }
 
@@ -1122,13 +1362,21 @@
             if (window.pywebview) window.pywebview.api.trigger_listen();
         }
 
-        function toggleMiniOrb() {
-            if (window.pywebview) window.pywebview.api.switch_to_orb();
-        }
-
         function closeApp() {
             if (window.pywebview) window.pywebview.api.close_app();
         }
+
+        // Обновление часов в доке
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const clk = document.getElementById('dock-clock');
+            if (clk) clk.innerText = `${h}:${m}:${s}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
         // Настройки
         function openFullSettings() {
@@ -1207,7 +1455,7 @@
             if (window.pywebview && window.pywebview.api.save_settings) {
                 window.pywebview.api.save_settings(newSettings).then(() => {
                     closeFullSettings();
-                    setSubtitle(`<div class="speech-tag">◆ J.A.R.V.I.S. Core ◆</div>Конфигурация успешно обновлена, сэр.`);
+                    setSubtitle(`<strong>J.A.R.V.I.S.:</strong> Конфигурация успешно обновлена, сэр.`);
                 });
             } else {
                 closeFullSettings();
