@@ -191,6 +191,21 @@ class UltimateBridge:
 
         return True
 
+    def get_morning_briefing(self):
+        """Запуск утреннего брифинга (как в видеоролике) с озвучкой и выдачей данных"""
+        from jarvis.tools.morning_briefing import MorningBriefingSkill
+        res = MorningBriefingSkill.generate_briefing()
+        speech = res.get("speech", "")
+        def speak_task():
+            self.voice.speak(speech)
+        threading.Thread(target=speak_task, daemon=True).start()
+        return res
+
+    def generate_new_script(self):
+        from jarvis.tools.content_factory import ContentFactorySkill
+        res = ContentFactorySkill.generate_scripts()
+        return res
+
     def close_app(self):
         self.window.destroy()
         os._exit(0)

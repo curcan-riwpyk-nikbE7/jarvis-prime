@@ -226,7 +226,17 @@
 
     <!-- Right Controls -->
     <div class="flex items-center space-x-2.5" style="-webkit-app-region: no-drag;">
-      <button onclick="openFullSettings()" class="flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-medium text-slate-300 bg-slate-900/75 border border-slate-700/60 hover:border-cyan-400/50 hover:text-white transition shadow-lg backdrop-blur-md">
+      <button onclick="triggerBriefing()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-amber-300 bg-amber-950/40 border border-amber-500/50 hover:bg-amber-900/50 hover:text-white transition shadow-lg backdrop-blur-md">
+        <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span>Брифинг</span>
+      </button>
+
+      <button onclick="toggleContentFactory()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-950/40 border border-purple-500/50 hover:bg-purple-900/50 hover:text-white transition shadow-lg backdrop-blur-md">
+        <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-purple-400"></i>
+        <span>Фабрика Контента</span>
+      </button>
+
+      <button onclick="openFullSettings()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-300 bg-slate-900/75 border border-slate-700/60 hover:border-cyan-400/50 hover:text-white transition shadow-lg backdrop-blur-md">
         <i data-lucide="settings" class="w-3.5 h-3.5 text-cyan-400"></i>
         <span>Настройки</span>
       </button>
@@ -416,6 +426,140 @@
     </div>
 
   </footer>
+
+  <!-- ================= ПАНЕЛЬ АВТОНОМНОЙ ФАБРИКИ КОНТЕНТА (КАК В ВИДЕО) ================= -->
+  <div class="modal-overlay" id="content-factory-modal" style="display: none;">
+    <div class="modal-container" style="max-width: 900px; width: 95%;">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-purple-500/30 bg-purple-950/20">
+        <div class="text-sm font-bold tracking-widest text-purple-300 flex items-center gap-2">
+          <span>🎬</span> J.A.R.V.I.S. CONTENT FACTORY // АВТОНОМНЫЙ ПРОДЮСЕР
+        </div>
+        <button onclick="toggleContentFactory()" class="text-red-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="p-6 space-y-6 overflow-y-auto" style="max-height: 80vh;">
+        <!-- Top Metrics Row (Точь-в-точь как на ультравайд мониторе в видео) -->
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-black/60 border border-purple-500/30 rounded-2xl p-4 flex flex-col justify-center">
+            <span class="text-[10px] text-slate-400 tracking-wider uppercase">ОБЩИЕ ПРОСМОТРЫ ЗА НОЧЬ</span>
+            <div class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mt-1" id="cf-views-val">
+              205 798
+            </div>
+            <span class="text-[10px] text-emerald-400 font-code mt-1">▲ +45 800 за последние 8 часов</span>
+          </div>
+
+          <div class="bg-black/60 border border-cyan-500/30 rounded-2xl p-4 flex flex-col justify-center">
+            <span class="text-[10px] text-slate-400 tracking-wider uppercase">ПРИРОСТ TELEGRAM КАНАЛА</span>
+            <div class="text-2xl sm:text-3xl font-extrabold text-cyan-400 mt-1" id="cf-tg-val">
+              +198 подписчиков
+            </div>
+            <span class="text-[10px] text-cyan-300 font-code mt-1">Всего: 1 420 резидентов</span>
+          </div>
+
+          <div class="bg-black/60 border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-center">
+            <span class="text-[10px] text-slate-400 tracking-wider uppercase">АВТОМАТИЧЕСКИЙ ВЫПУСК</span>
+            <div class="text-2xl sm:text-3xl font-extrabold text-amber-400 mt-1" id="cf-pub-val">
+              9 роликов
+            </div>
+            <span class="text-[10px] text-amber-300 font-code mt-1">Shorts, Reels, TikTok</span>
+          </div>
+        </div>
+
+        <!-- 3 Перспективных сценария (Правый экран из видео) -->
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-xs font-bold text-cyan-400 tracking-widest uppercase flex items-center gap-2">
+              <span>📝</span> 3 ПЕРСПЕКТИВНЫХ СЦЕНАРИЯ НА СЕГОДНЯ (ПРАВЫЙ ЭКРАН)
+            </h3>
+            <button onclick="generateMoreScripts()" class="px-3 py-1 text-[11px] font-semibold text-purple-300 bg-purple-900/40 border border-purple-500/40 rounded-lg hover:bg-purple-800/60 transition">
+              + Сгенерировать новый сценарий
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="cf-scripts-container">
+            <div class="bg-black/50 border border-white/10 rounded-xl p-3 hover:border-cyan-400/50 transition">
+              <span class="text-[9px] font-code px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">ПРОГНОЗ: 250K+</span>
+              <h4 class="text-xs font-semibold text-white mt-2">ИИ заменил программистов в 2026?</h4>
+              <p class="text-[11px] text-slate-400 mt-1 italic">«Только что OpenAI показала модель, которая пишет 99% кода сама...»</p>
+              <button onclick="sendQuick('Смонтируй ролик по сценарию ИИ заменил программистов')" class="mt-3 w-full py-1 text-[10px] font-bold text-black bg-cyan-400 rounded hover:bg-cyan-300 transition">
+                РЕКЛАМА / МОНТАЖ
+              </button>
+            </div>
+
+            <div class="bg-black/50 border border-white/10 rounded-xl p-3 hover:border-purple-400/50 transition">
+              <span class="text-[9px] font-code px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">ПРОГНОЗ: 500K+</span>
+              <h4 class="text-xs font-semibold text-white mt-2">Как Джарвис контролирует ПК ночью</h4>
+              <p class="text-[11px] text-slate-400 mt-1 italic">«Пока я спал, мой голосовой ассистент смонтировал 9 роликов и выложил их в сеть...»</p>
+              <button onclick="sendQuick('Смонтируй ролик по сценарию Джарвис контролирует ПК')" class="mt-3 w-full py-1 text-[10px] font-bold text-black bg-purple-400 rounded hover:bg-purple-300 transition">
+                РЕКЛАМА / МОНТАЖ
+              </button>
+            </div>
+
+            <div class="bg-black/50 border border-white/10 rounded-xl p-3 hover:border-amber-400/50 transition">
+              <span class="text-[9px] font-code px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">ПРОГНОЗ: 180K+</span>
+              <h4 class="text-xs font-semibold text-white mt-2">3 скрытые функции Windows 11</h4>
+              <p class="text-[11px] text-slate-400 mt-1 italic">«Если нажать эти 2 кнопки, твой компьютер начнет работать в 2 раза быстрее...»</p>
+              <button onclick="sendQuick('Смонтируй ролик по сценарию 3 скрытые функции Windows')" class="mt-3 w-full py-1 text-[10px] font-bold text-black bg-amber-400 rounded hover:bg-amber-300 transition">
+                РЕКЛАМА / МОНТАЖ
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Опубликованная лента видео -->
+        <div>
+          <h3 class="text-xs font-bold text-slate-400 tracking-widest uppercase mb-3 flex items-center gap-2">
+            <span>📺</span> ОПУБЛИКОВАННЫЕ НОЧНЫЕ РОЛИКИ (ЛЕНТА ВИДЕО)
+          </h3>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="cf-recent-videos">
+            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
+              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
+                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
+              </div>
+              <div class="text-[11px] font-medium text-white truncate">Jarvis Auto #1</div>
+              <div class="text-[10px] text-purple-300 font-code">42.5K views</div>
+            </div>
+            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
+              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
+                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
+              </div>
+              <div class="text-[11px] font-medium text-white truncate">GPT-7 Тренды</div>
+              <div class="text-[10px] text-purple-300 font-code">31.2K views</div>
+            </div>
+            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
+              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
+                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
+              </div>
+              <div class="text-[11px] font-medium text-white truncate">AI Монтаж</div>
+              <div class="text-[10px] text-purple-300 font-code">58.9K views</div>
+            </div>
+            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
+              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
+                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
+              </div>
+              <div class="text-[11px] font-medium text-white truncate">Автоматизация</div>
+              <div class="text-[10px] text-purple-300 font-code">28.4K views</div>
+            </div>
+            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
+              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
+                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
+              </div>
+              <div class="text-[11px] font-medium text-white truncate">Будущее ИИ</div>
+              <div class="text-[10px] text-purple-300 font-code">44.7K views</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex justify-end p-4 border-t border-white/10 bg-black/40">
+        <button onclick="triggerBriefing(); toggleContentFactory();" class="px-5 py-2 text-xs font-bold text-black bg-amber-400 rounded hover:bg-amber-300 transition flex items-center gap-1.5">
+          <i data-lucide="volume-2" class="w-4 h-4"></i>
+          <span>Озвучить утренний отчет</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ================= МОДАЛЬНОЕ ОКНО НАСТРОЕК ================= -->
   <div class="modal-overlay" id="full-settings-modal">
@@ -949,6 +1093,37 @@
         });
       } else {
         closeFullSettings();
+      }
+    }
+
+    function toggleContentFactory() {
+      const modal = document.getElementById('content-factory-modal');
+      if (modal) {
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+      }
+    }
+
+    function triggerBriefing() {
+      if (window.pywebview && window.pywebview.api.get_morning_briefing) {
+        window.pywebview.api.get_morning_briefing().then(res => {
+          if (res && res.speech) {
+            setSubtitle(`<strong>J.A.R.V.I.S.:</strong> ${res.speech}`);
+          }
+        });
+      } else {
+        sendQuick('Сделай утренний отчет и покажи статистику роликов');
+      }
+    }
+
+    function generateMoreScripts() {
+      if (window.pywebview && window.pywebview.api.generate_new_script) {
+        window.pywebview.api.generate_new_script().then(res => {
+          if (res && res.message) {
+            setSubtitle(`<strong>J.A.R.V.I.S.:</strong> ${res.message}`);
+          }
+        });
+      } else {
+        sendQuick('Сгенерируй новый вирусный сценарий для Shorts');
       }
     }
 

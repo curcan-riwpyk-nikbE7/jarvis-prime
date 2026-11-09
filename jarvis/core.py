@@ -24,6 +24,8 @@ from jarvis.tools.web_search import WebSearchSkill
 from jarvis.tools.media_downloader import MediaDownloader
 from jarvis.tools.organizer import OrganizerManager
 from jarvis.tools.security_sentry import SecuritySentry
+from jarvis.tools.content_factory import ContentFactorySkill
+from jarvis.tools.morning_briefing import MorningBriefingSkill
 
 SYSTEM_PROMPT = """
 Ты — J.A.R.V.I.S. Prime, автономный ИИ-ассистент, полностью контролирующий компьютер пользователя (сэра).
@@ -85,6 +87,11 @@ SYSTEM_PROMPT = """
    - disarm_security: отключить охрану.
    - capture_security_photo: сделать мгновенное фото нарушителя.
 
+9. АВТОНОМНАЯ ФАБРИКА КОНТЕНТА И УТРЕННИЙ БРИФИНГ:
+   - generate_briefing: сформировать утренний голосовой доклад по роликам, просмотрам, Telegram и задачам на день.
+   - generate_scripts: придумать вирусные сценарии для Shorts/Reels на любую тему.
+   - get_dashboard_data: показать аналитику ночных публикаций.
+
 Правила:
 - Веди себя как британский джентльмен и преданный ИИ-помощник Тони Старка (всегда обращайся «сэр»).
 - Если сэр спрашивает новости, курсы валют, погоду или просит что-то найти в интернете — ВСЕГДА ВЫЗЫВАЙ search_web или search_news, а затем кратко пересказывай суть своими словами!
@@ -139,6 +146,9 @@ class JarvisCore:
             SecuritySentry.arm,
             SecuritySentry.disarm,
             SecuritySentry.capture_photo,
+            MorningBriefingSkill.generate_briefing,
+            ContentFactorySkill.get_dashboard_data,
+            ContentFactorySkill.generate_scripts,
             FileOrganizerSkill.organize_desktop,
             AppLauncherSkill.launch_app,
             ComputerUseTool.minimize_window,
