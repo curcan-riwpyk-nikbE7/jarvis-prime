@@ -6,35 +6,47 @@ class MediaControlSkill:
 
     @staticmethod
     def play_pause():
+        """Переключает воспроизведение и паузу медиа (музыки, видео, браузера)"""
         pyautogui.press("playpause")
         return "Воспроизведение/Пауза переключено, сэр."
 
     @staticmethod
     def next_track():
+        """Переключает на следующий музыкальный трек в любом запущенном плеере или браузере"""
         pyautogui.press("nexttrack")
-        return "Следующий трек, сэр."
+        return "Включен следующий трек, сэр."
 
     @staticmethod
     def prev_track():
+        """Переключает на предыдущий трек"""
         pyautogui.press("prevtrack")
-        return "Предыдущий трек, сэр."
+        return "Включен предыдущий трек, сэр."
 
     @staticmethod
     def volume_up(steps: int = 5):
+        """Увеличивает системную громкость Windows на указанное число шагов (по умолчанию 5)"""
         for _ in range(steps):
             pyautogui.press("volumeup")
-        return "Громкость увеличена, сэр."
+        return f"Громкость увеличена (+{steps * 2}%), сэр."
 
     @staticmethod
     def volume_down(steps: int = 5):
+        """Уменьшает системную громкость Windows на указанное число шагов (по умолчанию 5)"""
         for _ in range(steps):
             pyautogui.press("volumedown")
-        return "Громкость уменьшена, сэр."
+        return f"Громкость уменьшена (-{steps * 2}%), сэр."
 
     @staticmethod
     def volume_mute():
+        """Полностью выключает или включает звук Windows (Mute)"""
         pyautogui.press("volumemute")
-        return "Звук отключен, сэр."
+        return "Режим звука переключен (Mute), сэр."
+
+    @staticmethod
+    def stop_media():
+        """Останавливает воспроизведение медиа"""
+        pyautogui.press("stop")
+        return "Воспроизведение остановлено, сэр."
 
     @staticmethod
     def play_youtube_music(query: str):
