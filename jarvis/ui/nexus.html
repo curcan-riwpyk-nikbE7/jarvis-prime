@@ -920,28 +920,28 @@
                 const pMesh = new THREE.Points(headGeo, pointMat);
 
                 // Г. ИНТЕЛЛЕКТУАЛЬНЫЕ КИБЕР-ГЛАЗА ТОЧНО В ГЛАЗНИЦАХ
-                const eyeGeo = new THREE.SphereGeometry(0.18, 16, 16);
+                const eyeGeo = new THREE.SphereGeometry(0.14, 16, 16);
                 const eyeMat = new THREE.MeshBasicMaterial({
                     color: 0x00f0ff
                 });
-                const pupilGeo = new THREE.SphereGeometry(0.08, 12, 12);
+                const pupilGeo = new THREE.SphereGeometry(0.06, 12, 12);
                 const pupilMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
                 eyeLeft = new THREE.Group();
                 const eL = new THREE.Mesh(eyeGeo, eyeMat);
                 const pL = new THREE.Mesh(pupilGeo, pupilMat);
-                pL.position.z = 0.16;
+                pL.position.z = 0.12;
                 eyeLeft.add(eL);
                 eyeLeft.add(pL);
-                eyeLeft.position.set(-0.57, 0.51, 1.88);
+                eyeLeft.position.set(-0.68, 1.67, 1.76);
 
                 eyeRight = new THREE.Group();
                 const eR = new THREE.Mesh(eyeGeo, eyeMat);
                 const pR = new THREE.Mesh(pupilGeo, pupilMat);
-                pR.position.z = 0.16;
+                pR.position.z = 0.12;
                 eyeRight.add(eR);
                 eyeRight.add(pR);
-                eyeRight.position.set(0.57, 0.51, 1.88);
+                eyeRight.position.set(0.68, 1.67, 1.76);
 
                 // Д. ПУЛЬСИРУЮЩИЙ НЕЙРОННЫЙ МОЗГ ВНУТРИ
                 const brainGeo = new THREE.IcosahedronGeometry(1.6, 2);
