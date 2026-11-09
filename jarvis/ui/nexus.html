@@ -958,23 +958,24 @@
             humanGroup.rotation.x += (targetRotX - humanGroup.rotation.x) * 0.05;
 
             // Живое дыхание человека
-            humanGroup.position.y = 4 + Math.sin(time * 2.2) * 1.4;
+            humanGroup.position.y = Math.sin(time * 2.2) * 0.15;
 
             // Волновое мерцание синапсов в мозгу
-            const pMag = magentaPoints.geometry.attributes.position.array;
-            for(let i = 1; i < pMag.length; i += 6) {
-                pMag[i] += Math.sin(time * 6 + i) * 0.02;
+            if (magentaPoints && magentaPoints.geometry && magentaPoints.geometry.attributes.position) {
+                const pMag = magentaPoints.geometry.attributes.position.array;
+                for(let i = 1; i < Math.min(pMag.length, 300); i += 6) {
+                    pMag[i] += Math.sin(time * 6 + i) * 0.005;
+                }
+                magentaPoints.geometry.attributes.position.needsUpdate = true;
             }
-            magentaPoints.geometry.attributes.position.needsUpdate = true;
 
             // Пульсация ауры частиц
-            auraCloud.rotation.y += 0.001;
+            if (auraCloud) auraCloud.rotation.y += 0.001;
 
             // Пульсация при диалоге
             let scalePulse = 1;
             if (isSpeaking) {
                 scalePulse = 1 + Math.sin(time * 16) * 0.05;
-                matCyanPulse = 0.95;
             } else if (isListening) {
                 scalePulse = 1 + Math.sin(time * 8) * 0.03;
             }
