@@ -11,7 +11,7 @@ root_dir = str(Path(__file__).resolve().parent.parent)
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-from jarvis.config import Config
+from jarvis.config import Config, get_ui_path
 from jarvis.voice.engine import VoiceEngine
 from jarvis.core import JarvisCore
 from jarvis.sound_fx import SoundFX
@@ -160,7 +160,7 @@ class UltimateBridge:
 
     def open_wizard(self):
         """Открыть мастер быстрой настройки из скриншотов"""
-        wizard_path = os.path.join(os.path.dirname(__file__), "ui", "wizard.html")
+        wizard_path = get_ui_path("wizard.html")
         webview.create_window(
             title="J.A.R.V.I.S. Setup Wizard",
             url=wizard_path,
@@ -269,7 +269,7 @@ class UltimateBridge:
 
 
 def start_ultimate_jarvis():
-    html_path = os.path.join(os.path.dirname(__file__), "ui", "nexus.html")
+    html_path = get_ui_path("nexus.html")
     window = webview.create_window(
         title="J.A.R.V.I.S. PRIME — Quantum Nexus HUD",
         url=html_path,

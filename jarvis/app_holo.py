@@ -9,7 +9,7 @@ root_dir = str(Path(__file__).resolve().parent.parent)
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-from jarvis.config import Config
+from jarvis.config import Config, get_ui_path
 from jarvis.voice.engine import VoiceEngine
 from jarvis.core import JarvisCore
 from jarvis.sound_fx import SoundFX
@@ -106,7 +106,7 @@ class HoloBridge:
 
 
 def start_holo_jarvis():
-    html_path = os.path.join(os.path.dirname(__file__), "ui", "holo.html")
+    html_path = get_ui_path("holo.html")
     
     # Создаем безрамочное окно в глубоком премиальном темном стиле
     window = webview.create_window(
