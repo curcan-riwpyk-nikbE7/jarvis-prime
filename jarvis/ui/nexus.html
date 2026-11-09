@@ -581,19 +581,19 @@
             </div>
         </div>
 
-        <div class="synapse-node" id="node-docs" onclick="sendQuick('Прочитай документ на рабочем столе и расскажи суть')">
-            <div class="node-icon-box">📄</div>
+        <div class="synapse-node" id="node-docs" onclick="sendQuick('Проверь последние входящие письма на почте')">
+            <div class="node-icon-box">✉️</div>
             <div class="node-text-col">
-                <div class="node-title">Анализ Файлов</div>
-                <div class="node-sub">PDF / Excel / DOCX</div>
+                <div class="node-title">Почта & Письма</div>
+                <div class="node-sub">Яндекс / Gmail IMAP</div>
             </div>
         </div>
 
-        <div class="synapse-node" id="node-cloud" onclick="sendQuick('Наведи порядок на рабочем столе')">
-            <div class="node-icon-box">☁️</div>
+        <div class="synapse-node" id="node-cloud" onclick="sendQuick('Включи Мою волну в Яндекс Музыке')">
+            <div class="node-icon-box">🎶</div>
             <div class="node-text-col">
-                <div class="node-title">Файловая Система</div>
-                <div class="node-sub">Сортировка стола</div>
+                <div class="node-title">Яндекс Музыка</div>
+                <div class="node-sub">Моя волна & Поиск</div>
             </div>
         </div>
 
@@ -662,6 +662,7 @@
                     <button class="nav-tab-btn active" id="tb-voice-tts" onclick="switchSetTab('voice-tts')">🔊 Голос и Синтез</button>
                     <button class="nav-tab-btn" id="tb-mic-stt" onclick="switchSetTab('mic-stt')">🎙️ Слух и Микрофон</button>
                     <button class="nav-tab-btn" id="tb-llm-models" onclick="switchSetTab('llm-models')">🧠 Модели и Мозг</button>
+                    <button class="nav-tab-btn" id="tb-services" onclick="switchSetTab('services')">🎶 Сервисы (Музыка & Почта)</button>
                     <button class="nav-tab-btn" id="tb-person-profile" onclick="switchSetTab('person-profile')">🎩 Персонализация</button>
                     <button class="nav-tab-btn" id="tb-skills-matrix" onclick="switchSetTab('skills-matrix')">🧩 Модули и Скилы</button>
                 </div>
@@ -730,6 +731,35 @@
                         <div class="form-row">
                             <label class="form-label">API Ключ:</label>
                             <input type="password" class="form-control" id="set-api-key" placeholder="Вставьте ваш API ключ...">
+                        </div>
+                    </div>
+
+                    <!-- 3.5 СЕРВИСЫ: МУЗЫКА И ПОЧТА -->
+                    <div class="settings-pane" id="sec-services">
+                        <div class="form-row">
+                            <label class="form-label">🎵 Яндекс Музыка (OAuth Токен):</label>
+                            <input type="password" class="form-control" id="set-ym-token" placeholder="Токен yandex-music (или останется веб-авторизация)">
+                            <div class="form-sub">Позволяет включать персональные плейлисты и Мою волну прямо через API.</div>
+                        </div>
+
+                        <div class="form-row">
+                            <label class="form-label">✉️ Почтовый ящик (Email):</label>
+                            <input type="email" class="form-control" id="set-email-user" placeholder="например user@yandex.ru или user@gmail.com">
+                        </div>
+
+                        <div class="form-row">
+                            <label class="form-label">🔑 Пароль приложения почты:</label>
+                            <input type="password" class="form-control" id="set-email-pass" placeholder="Пароль приложений Яндекса/Gmail">
+                            <div class="form-sub">Для безопасности используйте специальный «Пароль приложений» из настроек безопасности почты.</div>
+                        </div>
+
+                        <div class="form-row">
+                            <label class="form-label">Сервер IMAP / SMTP:</label>
+                            <select class="form-control" id="set-email-provider">
+                                <option value="yandex">Яндекс Почта (imap.yandex.ru / smtp.yandex.ru)</option>
+                                <option value="gmail">Google Gmail (imap.gmail.com / smtp.gmail.com)</option>
+                                <option value="mailru">Mail.ru (imap.mail.ru / smtp.mail.ru)</option>
+                            </select>
                         </div>
                     </div>
 
