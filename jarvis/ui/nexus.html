@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>J.A.R.V.I.S. QUANTUM SYNAPSE HUD</title>
     <script src="three.min.js"></script>
-    <script src="head_verts.js"></script>
+    <script src="head_mesh.js"></script>
     <style>
         :root {
             --cyan: #4deeea;
@@ -788,12 +788,14 @@
         let isListening = false;
         let mouseX = 0, mouseY = 0;
 
+        let headShaderMat;
+
         function init3DHuman() {
             const container = document.getElementById('avatar-canvas');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 7.5;
-            camera.position.y = 0.0;
+            camera.position.z = 7.2;
+            camera.position.y = 0.2;
 
             renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -824,7 +826,7 @@
             }
 
             // 2. Облако эфирных световых квантов
-            const auraCount = 800;
+            const auraCount = 600;
             const auraPos = [];
             for(let i = 0; i < auraCount; i++) {
                 auraPos.push(
@@ -837,7 +839,7 @@
             auraGeo.setAttribute('position', new THREE.Float32BufferAttribute(auraPos, 3));
             const auraMat = new THREE.PointsMaterial({
                 color: 0x4deeea,
-                size: 0.04,
+                size: 0.03,
                 transparent: true,
                 opacity: 0.35,
                 blending: THREE.AdditiveBlending
@@ -845,88 +847,100 @@
             auraCloud = new THREE.Points(auraGeo, auraMat);
             scene.add(auraCloud);
 
-            // 3. ПОСТРОЕНИЕ 3D ЧЕЛОВЕКА НАПРЯМУЮ ИЗ АНАТОМИЧЕСКОГО 3D СКАНА
-            if (window.HEAD_VERTS && window.HEAD_VERTS.length > 0) {
-                const verts = window.HEAD_VERTS;
-                const cyanPos = [];
-                const magPos = [];
+            // 3. ПОСТРОЕНИЕ ГОЛОГРАФИЧЕСКОГО ЧЕЛОВЕКА С ШЕЙДЕРОМ FRESNEL RIM GLOW
+            if (window.HEAD_VERTS && window.HEAD_INDICES) {
+                const headGeo = new THREE.BufferGeometry();
+                headGeo.setAttribute('position', new THREE.Float32BufferAttribute(window.HEAD_VERTS, 3));
+                headGeo.setAttribute('normal', new THREE.Float32BufferAttribute(window.HEAD_NORMALS, 3));
+                headGeo.setIndex(window.HEAD_INDICES);
 
-                for (let i = 0; i < verts.length; i += 3) {
-                    let x = verts[i];
-                    let y = verts[i+1];
-                    let z = verts[i+2];
+                // А. КИБЕР-ШЕЙДЕР СВЕТЯЩЕГОСЯ КОНТУРА FRESNEL (КАК В IRON MAN & BLADE RUNNER)
+                headShaderMat = new THREE.ShaderMaterial({
+                    transparent: true,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending,
+                    uniforms: {
+                        uTime: { value: 0.0 },
+                        uColor: { value: new THREE.Color(0x00f0ff) },
+                        uColorInner: { value: new THREE.Color(0xa855f7) }
+                    },
+                    vertexShader: `
+                        uniform float uTime;
+                        varying vec3 vNormal;
+                        varying vec3 vViewPosition;
+                        varying vec3 vWorldPos;
 
-                    if (Math.random() > 0.25) {
-                        cyanPos.push(x, y, z);
-                    } else {
-                        magPos.push(x, y, z);
-                    }
-                }
+                        void main() {
+                            vNormal = normalize(normalMatrix * normal);
+                            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                            vViewPosition = -mvPosition.xyz;
+                            vWorldPos = position;
+                            gl_Position = projectionMatrix * mvPosition;
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float uTime;
+                        uniform vec3 uColor;
+                        uniform vec3 uColorInner;
+                        varying vec3 vNormal;
+                        varying vec3 vViewPosition;
+                        varying vec3 vWorldPos;
 
-                // Внешние синапсы электрического циана
-                const gCyan = new THREE.BufferGeometry();
-                gCyan.setAttribute('position', new THREE.Float32BufferAttribute(cyanPos, 3));
-                const mCyan = new THREE.PointsMaterial({
+                        void main() {
+                            vec3 normal = normalize(vNormal);
+                            vec3 viewDir = normalize(vViewPosition);
+
+                            // Эффект Френеля: свечение по контуру лица
+                            float fresnel = 1.0 - abs(dot(viewDir, normal));
+                            fresnel = pow(fresnel, 2.5);
+
+                            // Голографические скан-линии
+                            float scanline = sin(vWorldPos.y * 35.0 - uTime * 4.0) * 0.5 + 0.5;
+                            scanline = pow(scanline, 3.0);
+
+                            // Смешивание неонового циана и пурпура
+                            vec3 glowColor = mix(uColorInner, uColor, fresnel);
+                            float alpha = fresnel * 0.85 + scanline * 0.25;
+
+                            gl_FragColor = vec4(glowColor, clamp(alpha, 0.0, 0.95));
+                        }
+                    `
+                });
+
+                const holographicMesh = new THREE.Mesh(headGeo, headShaderMat);
+
+                // Б. ТОНКАЯ КИБЕРНЕТИЧЕСКАЯ СЕТКА (WIREFRAME)
+                const wireMat = new THREE.MeshBasicMaterial({
+                    color: 0x00f0ff,
+                    wireframe: true,
+                    transparent: true,
+                    opacity: 0.18,
+                    blending: THREE.AdditiveBlending
+                });
+                const wireMesh = new THREE.Mesh(headGeo, wireMat);
+
+                // В. ДЕЛИКАТНЫЕ СВЕТОВЫЕ СИНАПСЫ (POINTS)
+                const pointMat = new THREE.PointsMaterial({
                     color: 0x4deeea,
-                    size: 0.065,
+                    size: 0.022,
                     transparent: true,
-                    opacity: 0.9,
+                    opacity: 0.6,
                     blending: THREE.AdditiveBlending
                 });
-                cyanPoints = new THREE.Points(gCyan, mCyan);
-
-                // Внутренние неоновые нейро-синапсы пурпура
-                const gMag = new THREE.BufferGeometry();
-                gMag.setAttribute('position', new THREE.Float32BufferAttribute(magPos, 3));
-                const mMag = new THREE.PointsMaterial({
-                    color: 0xf000ff,
-                    size: 0.085,
-                    transparent: true,
-                    opacity: 0.95,
-                    blending: THREE.AdditiveBlending
-                });
-                magentaPoints = new THREE.Points(gMag, mMag);
-
-                // Сетка связей
-                const linePositions = [];
-                for (let i = 0; i < 900; i++) {
-                    let idxA = Math.floor(Math.random() * (cyanPos.length / 3)) * 3;
-                    let idxB = Math.floor(Math.random() * (cyanPos.length / 3)) * 3;
-
-                    let dx = cyanPos[idxA] - cyanPos[idxB];
-                    let dy = cyanPos[idxA+1] - cyanPos[idxB+1];
-                    let dz = cyanPos[idxA+2] - cyanPos[idxB+2];
-                    let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-
-                    if (dist > 0.1 && dist < 0.6) {
-                        linePositions.push(
-                            cyanPos[idxA], cyanPos[idxA+1], cyanPos[idxA+2],
-                            cyanPos[idxB], cyanPos[idxB+1], cyanPos[idxB+2]
-                        );
-                    }
-                }
-                const lineGeo = new THREE.BufferGeometry();
-                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-                const lineMat = new THREE.LineBasicMaterial({
-                    color: 0x2874fc,
-                    transparent: true,
-                    opacity: 0.45,
-                    blending: THREE.AdditiveBlending
-                });
-                const netMesh = new THREE.LineSegments(lineGeo, lineMat);
+                const pMesh = new THREE.Points(headGeo, pointMat);
 
                 const headG = new THREE.Group();
-                headG.add(cyanPoints);
-                headG.add(magentaPoints);
-                headG.add(netMesh);
+                headG.add(holographicMesh);
+                headG.add(wireMesh);
+                headG.add(pMesh);
 
-                // Центрирование и масштаб
+                // Идеальный масштаб и поворот в полупрофиль (как на референсе)
                 headG.scale.set(0.55, 0.55, 0.55);
-                headG.position.y = -0.1;
+                headG.position.y = -0.2;
                 humanGroup.add(headG);
             }
 
-            // Поворот в полупрофиль (как на референсе)
+            // Поворот в полупрофиль 3/4 (как на фото)
             humanGroup.rotation.y = -0.42;
 
             // Мышь (интеллектуальное слежение за курсором)
@@ -949,6 +963,10 @@
         function animateLoop() {
             requestAnimationFrame(animateLoop);
             const time = clock.getElapsedTime();
+
+            if (headShaderMat && headShaderMat.uniforms) {
+                headShaderMat.uniforms.uTime.value = time;
+            }
 
             // Плавное слежение головой за пользователем
             const targetRotY = mouseX * 0.85;
