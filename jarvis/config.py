@@ -8,3 +8,5 @@ class Config:
     GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
     JARVIS_VOICE = os.getenv("JARVIS_VOICE", "ru-RU-DmitryNeural")
     DEFAULT_INPUT_MODE = os.getenv("DEFAULT_INPUT_MODE", "voice")
+    TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    TELEGRAM_ALLOWED_USER_ID = os.getenv("TELEGRAM_ALLOWED_USER_ID", "")

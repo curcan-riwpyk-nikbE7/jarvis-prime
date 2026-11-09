@@ -15,25 +15,39 @@ from jarvis.config import Config
 from jarvis.voice.engine import VoiceEngine
 from jarvis.core import JarvisCore
 from jarvis.sound_fx import SoundFX
+from jarvis.tools.telegram_bridge import TelegramBridge
 
 class UltimateBridge:
     def __init__(self, window):
         self.window = window
         self.voice = VoiceEngine()
         self.core = None
+        self.tg_bridge = None
         self._init_core()
         self._setup_hotkeys()
         self._start_wake_word()
         self._start_system_monitor()
+        self._start_telegram_bridge()
         SoundFX.play_startup_sound()
 
     def _init_core(self):
         def load():
             try:
                 self.core = JarvisCore()
+                if self.tg_bridge:
+                    self.tg_bridge.core = self.core
             except Exception as e:
                 print(f"[Core Init]: {e}")
         threading.Thread(target=load, daemon=True).start()
+
+    def _start_telegram_bridge(self):
+        def start_tg():
+            try:
+                self.tg_bridge = TelegramBridge(self.core)
+                self.tg_bridge.start()
+            except Exception as e:
+                print(f"[Telegram Bridge Init]: {e}")
+        threading.Thread(target=start_tg, daemon=True).start()
 
     def _setup_hotkeys(self):
         try:
@@ -152,6 +166,12 @@ class UltimateBridge:
                 self.core = JarvisCore()
             except Exception:
                 pass
+
+        # Если обновлен токен Telegram
+        if "telegram_bot_token" in new_settings:
+            if self.tg_bridge:
+                self.tg_bridge.stop()
+            self._start_telegram_bridge()
 
         return True
 
