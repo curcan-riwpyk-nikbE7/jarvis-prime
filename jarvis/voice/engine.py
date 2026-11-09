@@ -63,11 +63,12 @@ class VoiceEngine:
 
     async def _async_speak_edge(self, text: str, output_path: str, voice_override: str = None):
         v = voice_override or self.voice_name
-        communicate = edge_tts.Communicate(text, v, rate=self.rate, pitch=self.pitch)
+        # Для максимальной стабильности на стороне серверов Microsoft не передаем крайние pitch/rate
+        communicate = edge_tts.Communicate(text, v)
         await communicate.save(output_path)
 
     def speak(self, text: str):
-        """Озвучивание текста: приоритет на Edge-TTS (Dmitry -> Svetlana -> gTTS -> pyttsx3)"""
+        """Озвучивание текста: приоритет на нейронный русский голос Edge-TTS (без робота Windows)"""
         if not text:
             return
 
@@ -79,10 +80,17 @@ class VoiceEngine:
             temp_path = f.name
 
         success = False
-        # 1. Попытка синтеза через Edge-TTS (сначала выбранный голос, затем запасной Svetlana)
-        for voice_candidate in [self.voice_name, "ru-RU-SvetlanaNeural"]:
+        # Кандидаты нейросетевых голосов (мужской глубокий Ostap / Dmitry / Svetlana / gTTS)
+        voice_candidates = [
+            self.voice_name,
+            "ru-RU-DmitryNeural",
+            "uk-UA-OstapNeural",
+            "ru-RU-SvetlanaNeural"
+        ]
+
+        for voice_candidate in voice_candidates:
             try:
-                asyncio.run(asyncio.wait_for(self._async_speak_edge(clean_text, temp_path, voice_candidate), timeout=6.0))
+                asyncio.run(asyncio.wait_for(self._async_speak_edge(clean_text, temp_path, voice_candidate), timeout=5.0))
                 if os.path.exists(temp_path) and os.path.getsize(temp_path) > 300:
                     pygame.mixer.music.load(temp_path)
                     pygame.mixer.music.play()
@@ -90,18 +98,23 @@ class VoiceEngine:
                         pygame.time.Clock().tick(10)
                     success = True
                     break
-            except Exception as e:
+            except Exception:
                 pass
 
-        # 2. Если Edge-TTS не ответил (например, таймаут Microsoft) — мгновенный оффлайн fallback через Windows SAPI5 / pyttsx3
+        # 2. Если Edge-TTS не ответил из-за сети — используем естественный Google Neural TTS (gTTS), а НЕ старого робота Windows!
         if not success:
             try:
-                if self.sapi:
-                    self.sapi.say(clean_text)
-                    self.sapi.runAndWait()
+                from gtts import gTTS
+                tts = gTTS(clean_text, lang='ru')
+                tts.save(temp_path)
+                if os.path.exists(temp_path) and os.path.getsize(temp_path) > 300:
+                    pygame.mixer.music.load(temp_path)
+                    pygame.mixer.music.play()
+                    while pygame.mixer.music.get_busy():
+                        pygame.time.Clock().tick(10)
                     success = True
             except Exception as e:
-                print(f"[Offline SAPI Error]: {e}")
+                print(f"[gTTS Fallback Error]: {e}")
 
         # Удаляем временный файл
         if os.path.exists(temp_path):
