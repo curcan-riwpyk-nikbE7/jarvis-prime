@@ -23,6 +23,17 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
+    /* ПОЛНАЯ ЛИКВИДАЦИЯ БЕЛОГО СКРОЛЛБАРА WINDOWS 98 */
+    * {
+      scrollbar-width: none !important;
+      -ms-overflow-style: none !important;
+    }
+    *::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
     /* Ambient sci-fi grid overlay */
     .space-grid {
       background-image: 
@@ -525,6 +536,7 @@
           <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-slate-400 hover:text-white" id="tb-services" onclick="switchSetTab('services')">🎶 Сервисы</button>
           <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-slate-400 hover:text-white" id="tb-telegram" onclick="switchSetTab('telegram')">📱 Telegram Мост</button>
           <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-slate-400 hover:text-white" id="tb-person-profile" onclick="switchSetTab('person-profile')">🎩 Персонализация</button>
+          <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-emerald-400 bg-emerald-950/30 border-l-2 border-emerald-400" id="tb-system-updates" onclick="switchSetTab('system-updates')">🔄 Обновления</button>
         </div>
 
         <div class="col-span-3 p-6 overflow-y-auto">
@@ -547,6 +559,12 @@
               <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Высота тона / Бас:</label>
               <input type="range" id="set-pitch-slider" min="-10" max="10" value="-3" class="w-full accent-cyan-400" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'">
               <div id="pitch-val" class="text-xs text-cyan-300 font-code mt-1">-3Hz</div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-white/10">
+              <button onclick="testVoiceAudio()" class="w-full py-2 text-xs font-bold text-black bg-cyan-400 rounded-lg hover:bg-cyan-300 transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+                <i data-lucide="volume-2" class="w-4 h-4"></i>
+                <span>▶ Проверить звучание голоса прямо сейчас</span>
+              </button>
             </div>
           </div>
 
@@ -625,6 +643,34 @@
             </div>
           </div>
 
+          <!-- 6. АВТООБНОВЛЕНИЕ СИСТЕМЫ -->
+          <div class="settings-pane" id="sec-system-updates">
+            <div class="bg-black/40 border border-emerald-500/30 rounded-xl p-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold text-white flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    СИСТЕМА АВТООБНОВЛЕНИЯ J.A.R.V.I.S.
+                  </h4>
+                  <p class="text-[11px] text-slate-400 mt-1" id="update-status-desc">
+                    Проверка обновлений напрямую с официального GitHub-репозитория...
+                  </p>
+                </div>
+                <button onclick="checkUpdatesManual()" class="px-3 py-1.5 text-xs font-bold text-black bg-emerald-400 rounded-lg hover:bg-emerald-300 transition">
+                  Проверить сейчас
+                </button>
+              </div>
+
+              <div id="update-action-box" class="p-3 bg-slate-900/60 rounded-lg border border-white/10 text-xs text-slate-300 hidden">
+                <div class="font-bold text-cyan-400 mb-1" id="update-version-label">Новая версия готова к установке!</div>
+                <div class="text-[11px] text-slate-400 mb-3" id="update-changelog-box"></div>
+                <button onclick="applyUpdateNow()" class="w-full py-2 text-xs font-bold text-black bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-lg hover:brightness-110 transition shadow-lg shadow-emerald-500/20">
+                  ⚡ Обновить и перезапустить Джарвиса
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -688,7 +734,8 @@
       for (let i = 0; i < count; i++) {
         const scale = 1.05;
         const x = -rawVerts[i * 3] * scale;
-        const y = (rawVerts[i * 3 + 1] * scale) - 0.2;
+        // Приподнимаем лицо на +0.55 чтобы подбородок не уходил под нижний диалоговый док
+        const y = (rawVerts[i * 3 + 1] * scale) + 0.35;
         const z = (rawVerts[i * 3 + 2] * scale) + 0.3;
 
         positions.push(x, y, z);
@@ -715,8 +762,8 @@
       particlesMesh = new THREE.Points(pointGeo, particleMat);
       headGroup.add(particlesMesh);
 
-      // Кибернетический глаз точно на анатомической левой глазнице
-      attachOcularImplant(0.72, 1.62, 1.85);
+      // Кибернетический глаз точно на анатомической левой глазнице с учетом нового Y (+0.55)
+      attachOcularImplant(0.72, 2.17, 1.85);
     }
 
     function attachOcularImplant(x, y, z) {
@@ -1134,6 +1181,41 @@
         });
       } else {
         closeAddAgentModal();
+      }
+    }
+
+    function checkUpdatesManual() {
+      const desc = document.getElementById('update-status-desc');
+      const box = document.getElementById('update-action-box');
+      desc.innerText = 'Соединение с GitHub и проверка новых коммитов...';
+      if (window.pywebview && window.pywebview.api.check_updates) {
+        window.pywebview.api.check_updates().then(res => {
+          if (res.has_update) {
+            desc.innerText = `Доступна новая версия: ${res.remote_version}`;
+            document.getElementById('update-changelog-box').innerText = res.changelog;
+            box.classList.remove('hidden');
+          } else {
+            desc.innerText = res.message || 'У вас установлена самая актуальная версия!';
+            box.classList.add('hidden');
+          }
+        });
+      }
+    }
+
+    function applyUpdateNow() {
+      const desc = document.getElementById('update-status-desc');
+      desc.innerText = 'Загрузка обновления из репозитория (git pull) и переустановка... Пожалуйста, подождите.';
+      if (window.pywebview && window.pywebview.api.apply_update) {
+        window.pywebview.api.apply_update().then(res => {
+          alert(res.message || 'Обновление успешно завершено!');
+        });
+      }
+    }
+
+    function testVoiceAudio() {
+      const v = document.getElementById('set-voice-actor').value;
+      if (window.pywebview && window.pywebview.api.test_voice_sample) {
+        window.pywebview.api.test_voice_sample(v);
       }
     }
 

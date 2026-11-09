@@ -32,6 +32,15 @@ class UltimateBridge:
         self._start_telegram_bridge()
         self._setup_organizer_listener()
         SoundFX.play_startup_sound()
+        self._say_greeting_on_start()
+
+    def _say_greeting_on_start(self):
+        """Озвучивание приветствия сразу при запуске приложения"""
+        def greet():
+            time.sleep(1.2)  # Даем окну загрузиться
+            greeting_msg = "Здравствуйте, сэр. Все квантовые синапсы синхронизированы, системы в строю. Чем могу помочь?"
+            self.voice.speak(greeting_msg)
+        threading.Thread(target=greet, daemon=True).start()
 
     def _init_core(self):
         def load():
@@ -225,6 +234,24 @@ class UltimateBridge:
         from jarvis.agents.registry import AgentRegistry
         return AgentRegistry.install_github_agent(repo, name, role, prompt)
 
+    def check_updates(self):
+        """Проверить обновления на GitHub"""
+        from jarvis.tools.updater import AutoUpdater
+        return AutoUpdater.check_for_updates()
+
+    def apply_update(self):
+        """Применить обновления (git pull)"""
+        from jarvis.tools.updater import AutoUpdater
+        return AutoUpdater.apply_update()
+
+    def test_voice_sample(self, voice_name=None):
+        """Проверить голос прямо из настроек"""
+        sample_text = "Сэр, аудиосистема откалибрована. Все протоколы в строю."
+        def speak_task():
+            self.voice.speak(sample_text)
+        threading.Thread(target=speak_task, daemon=True).start()
+        return True
+
     def close_app(self):
         self.window.destroy()
         os._exit(0)
@@ -250,6 +277,12 @@ def start_ultimate_jarvis():
         bridge.save_settings,
         bridge.open_wizard,
         bridge.complete_onboarding,
+        bridge.get_swarm_agents,
+        bridge.switch_agent,
+        bridge.install_agent,
+        bridge.check_updates,
+        bridge.apply_update,
+        bridge.test_voice_sample,
         bridge.close_app
     )
     webview.start()
