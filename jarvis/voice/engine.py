@@ -80,11 +80,11 @@ class VoiceEngine:
             temp_path = f.name
 
         success = False
-        # Кандидаты нейросетевых голосов (мужской глубокий Ostap / Dmitry / Svetlana / gTTS)
+        # Кандидаты нейросетевых голосов строго на чистом русском языке:
+        # 1. Русский мужской дубляж Баранова (Dmitry)
+        # 2. Русский женский дубляж F.R.I.D.A.Y. (Svetlana)
         voice_candidates = [
-            self.voice_name,
             "ru-RU-DmitryNeural",
-            "uk-UA-OstapNeural",
             "ru-RU-SvetlanaNeural"
         ]
 
