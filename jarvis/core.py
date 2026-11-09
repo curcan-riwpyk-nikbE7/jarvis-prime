@@ -21,6 +21,9 @@ from jarvis.tools.music_player import MusicTool
 from jarvis.tools.email_assistant import EmailTool
 from jarvis.tools.system_power import SystemPowerSkill
 from jarvis.tools.web_search import WebSearchSkill
+from jarvis.tools.media_downloader import MediaDownloader
+from jarvis.tools.organizer import OrganizerManager
+from jarvis.tools.security_sentry import SecuritySentry
 
 SYSTEM_PROMPT = """
 Ты — J.A.R.V.I.S. Prime, автономный ИИ-ассистент, полностью контролирующий компьютер пользователя (сэра).
@@ -68,6 +71,20 @@ SYSTEM_PROMPT = """
    - generate_video: сгенерировать видеоролик по промпту.
    - trim_video / convert_to_shorts_9_16: видеомонтаж через FFmpeg.
 
+6. АВТОЗАГРУЗЧИК МЕДИА (YOUTUBE, RUTUBE, VK, TIKTOK):
+   - download_media: скачать любое видео или извлечь аудиодорожку в MP3 прямо по URL-ссылке в папку Загрузки (через yt-dlp).
+
+7. УМНЫЙ ОРГАНАЙЗЕР (ЗАМЕТКИ, БУДИЛЬНИКИ, НАПОМИНАНИЯ):
+   - add_note: быстро записать важную мысль или заметку.
+   - add_reminder: поставить напоминание через X минут или на конкретное время.
+   - set_alarm: установить будильник.
+   - list_notes / list_reminders: показать активные заметки или задачи.
+
+8. ОХРАННЫЙ РЕЖИМ (VISION SENTRY):
+   - arm_security: включить охранный режим компьютера (сканирование веб-камерой присутствия посторонних с отправкой фото в Telegram).
+   - disarm_security: отключить охрану.
+   - capture_security_photo: сделать мгновенное фото нарушителя.
+
 Правила:
 - Веди себя как британский джентльмен и преданный ИИ-помощник Тони Старка (всегда обращайся «сэр»).
 - Если сэр спрашивает новости, курсы валют, погоду или просит что-то найти в интернете — ВСЕГДА ВЫЗЫВАЙ search_web или search_news, а затем кратко пересказывай суть своими словами!
@@ -113,6 +130,15 @@ class JarvisCore:
             WebSearchSkill.search_web,
             WebSearchSkill.search_news,
             WebSearchSkill.read_webpage,
+            MediaDownloader.download,
+            OrganizerManager.add_note,
+            OrganizerManager.add_reminder,
+            OrganizerManager.set_alarm,
+            OrganizerManager.list_notes,
+            OrganizerManager.list_pending,
+            SecuritySentry.arm,
+            SecuritySentry.disarm,
+            SecuritySentry.capture_photo,
             FileOrganizerSkill.organize_desktop,
             AppLauncherSkill.launch_app,
             ComputerUseTool.minimize_window,

@@ -71,6 +71,28 @@ class TelegramBridge:
             except Exception:
                 pass
 
+    def send_alert(self, text: str, photo_path: str = None):
+        """Отправляет тревожное уведомление с фотографией владельцу в Telegram"""
+        if not self.bot or not self.allowed_user_id:
+            return
+        try:
+            if photo_path and os.path.exists(photo_path):
+                with open(photo_path, 'rb') as f:
+                    self.bot.send_photo(self.allowed_user_id, f, caption=text)
+            else:
+                self.bot.send_message(self.allowed_user_id, text)
+        except Exception as e:
+            print(f"[Telegram send_alert error]: {e}")
+
+    def send_notification(self, text: str):
+        """Отправляет текстовое уведомление владельцу в Telegram"""
+        if not self.bot or not self.allowed_user_id:
+            return
+        try:
+            self.bot.send_message(self.allowed_user_id, text)
+        except Exception as e:
+            print(f"[Telegram send_notification error]: {e}")
+
     def _is_authorized(self, user_id: int) -> bool:
         if not self.allowed_user_id:
             # Если ID еще не задан, запоминаем первого написавшего как владельца
@@ -93,6 +115,8 @@ class TelegramBridge:
 
             markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
             markup.row("📸 Скриншот экрана", "🔒 Блокировка ПК")
+            markup.row("🛡️ Охрана: Вкл", "🛡️ Охрана: Выкл")
+            markup.row("⏰ Мои напоминания", "📝 Заметки")
             markup.row("✉️ Проверить почту", "🎵 Моя волна")
             markup.row("📊 Статус ПК", "⏹️ Отмена выключения")
 
@@ -178,6 +202,35 @@ class TelegramBridge:
                 from jarvis.tools.system_power import SystemPowerSkill
                 res = SystemPowerSkill.cancel_shutdown()
                 bot.reply_to(message, res)
+                return
+            elif text == "🛡️ Охрана: Вкл":
+                from jarvis.tools.security_sentry import SecuritySentry
+                SecuritySentry.set_telegram_bridge(self)
+                res = SecuritySentry.arm()
+                bot.reply_to(message, res.get("message", "Охрана включена."))
+                return
+            elif text == "🛡️ Охрана: Выкл":
+                from jarvis.tools.security_sentry import SecuritySentry
+                res = SecuritySentry.disarm()
+                bot.reply_to(message, res.get("message", "Охрана выключена."))
+                return
+            elif text == "⏰ Мои напоминания":
+                from jarvis.tools.organizer import OrganizerManager
+                reminders = OrganizerManager.list_pending()
+                if not reminders:
+                    bot.reply_to(message, "Активных напоминаний нет, сэр.")
+                else:
+                    lines = [f"• {r.get('target_time', '')}: {r.get('text', '')}" for r in reminders]
+                    bot.reply_to(message, "⏰ Список активных напоминаний:\n" + "\n".join(lines))
+                return
+            elif text == "📝 Заметки":
+                from jarvis.tools.organizer import OrganizerManager
+                notes = OrganizerManager.list_notes()
+                if not notes:
+                    bot.reply_to(message, "Заметок пока нет, сэр.")
+                else:
+                    lines = [f"• [{n.get('date', '')}] {n.get('text', '')}" for n in notes[-5:]]
+                    bot.reply_to(message, "📝 Последние заметки:\n" + "\n".join(lines))
                 return
             elif text == "✉️ Проверить почту":
                 text = "Проверь последние входящие письма на почте"

@@ -7,6 +7,7 @@ import edge_tts
 import pyttsx3
 import speech_recognition as sr
 from jarvis.config import Config
+from jarvis.voice.whisper_listener import WhisperRecognizer
 
 class VoiceEngine:
     """Двухуровневый голосовой движок: Edge-TTS + нативный Windows SAPI5 (pyttsx3)"""
@@ -30,12 +31,20 @@ class VoiceEngine:
         if pitch is not None:
             self.pitch = pitch
 
-    def listen(self, timeout: int = 5, phrase_time_limit: int = 10) -> str:
-        """Прослушивание микрофона с калибровкой шума"""
+    def listen(self, timeout: int = 5, phrase_time_limit: int = 10, use_whisper: bool = True) -> str:
+        """Прослушивание микрофона с локальным Whisper AI или Google fallback"""
         try:
             with sr.Microphone() as source:
-                self.recognizer.adjust_for_ambient_noise(source, duration=0.4)
+                self.recognizer.adjust_for_ambient_noise(source, duration=0.3)
                 audio = self.recognizer.listen(source, timeout=timeout, phrase_time_limit=phrase_time_limit)
+                
+                # Приоритет 1: Сверхточный локальный слух Whisper AI
+                if use_whisper:
+                    whisper_text = WhisperRecognizer.transcribe_audio_data(audio, language="ru")
+                    if whisper_text:
+                        return whisper_text
+
+                # Fallback: Google Speech Recognition
                 text = self.recognizer.recognize_google(audio, language="ru-RU")
                 return text.strip()
         except Exception:

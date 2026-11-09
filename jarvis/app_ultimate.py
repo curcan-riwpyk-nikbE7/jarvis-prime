@@ -16,6 +16,8 @@ from jarvis.voice.engine import VoiceEngine
 from jarvis.core import JarvisCore
 from jarvis.sound_fx import SoundFX
 from jarvis.tools.telegram_bridge import TelegramBridge
+from jarvis.tools.organizer import OrganizerManager
+from jarvis.tools.security_sentry import SecuritySentry
 
 class UltimateBridge:
     def __init__(self, window):
@@ -28,6 +30,7 @@ class UltimateBridge:
         self._start_wake_word()
         self._start_system_monitor()
         self._start_telegram_bridge()
+        self._setup_organizer_listener()
         SoundFX.play_startup_sound()
 
     def _init_core(self):
@@ -44,10 +47,23 @@ class UltimateBridge:
         def start_tg():
             try:
                 self.tg_bridge = TelegramBridge(self.core)
+                SecuritySentry.set_telegram_bridge(self.tg_bridge)
                 self.tg_bridge.start()
             except Exception as e:
                 print(f"[Telegram Bridge Init]: {e}")
         threading.Thread(target=start_tg, daemon=True).start()
+
+    def _setup_organizer_listener(self):
+        def on_notify(msg):
+            try:
+                self.window.evaluate_js(f"addMessage('ОРГАНАЙЗЕР', '{msg}', false)")
+                self.voice.speak(msg)
+                if self.tg_bridge:
+                    self.tg_bridge.send_notification(msg)
+            except Exception:
+                pass
+        OrganizerManager.add_notification_listener(on_notify)
+        OrganizerManager.ensure_monitor_running()
 
     def _setup_hotkeys(self):
         try:
