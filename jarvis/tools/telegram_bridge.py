@@ -51,10 +51,16 @@ class TelegramBridge:
                 print("[Telegram Bridge]: Telegram-мост успешно активирован. Бот на связи!")
                 while self.is_running:
                     try:
-                        self.bot.infinity_polling(timeout=10, long_polling_timeout=5)
+                        self.bot.infinity_polling(timeout=10, long_polling_timeout=5, skip_pending=True)
                     except Exception as e:
-                        print(f"[Telegram Polling error]: {e}")
-                        time.sleep(3)
+                        err_text = str(e)
+                        if "409" in err_text:
+                            # Конфликт с другим экземпляром бота: пауза перед повторной попыткой
+                            print(f"[Telegram Polling Conflict]: Другой сеанс бота активен, ожидание 10с...")
+                            time.sleep(10)
+                        else:
+                            print(f"[Telegram Polling error]: {e}")
+                            time.sleep(3)
 
             self._thread = threading.Thread(target=polling_loop, daemon=True)
             self._thread.start()
