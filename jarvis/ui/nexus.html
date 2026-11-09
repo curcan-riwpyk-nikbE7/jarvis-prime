@@ -226,14 +226,9 @@
 
     <!-- Right Controls -->
     <div class="flex items-center space-x-2.5" style="-webkit-app-region: no-drag;">
-      <button onclick="triggerBriefing()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-amber-300 bg-amber-950/40 border border-amber-500/50 hover:bg-amber-900/50 hover:text-white transition shadow-lg backdrop-blur-md">
-        <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
-        <span>Брифинг</span>
-      </button>
-
-      <button onclick="toggleContentFactory()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-purple-300 bg-purple-950/40 border border-purple-500/50 hover:bg-purple-900/50 hover:text-white transition shadow-lg backdrop-blur-md">
-        <i data-lucide="clapperboard" class="w-3.5 h-3.5 text-purple-400"></i>
-        <span>Фабрика Контента</span>
+      <button onclick="toggleAgentsSwarm()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-emerald-300 bg-emerald-950/40 border border-emerald-500/50 hover:bg-emerald-900/50 hover:text-white transition shadow-lg backdrop-blur-md">
+        <i data-lucide="bot" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span>Агенты (Swarm)</span>
       </button>
 
       <button onclick="openFullSettings()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-300 bg-slate-900/75 border border-slate-700/60 hover:border-cyan-400/50 hover:text-white transition shadow-lg backdrop-blur-md">
@@ -427,136 +422,87 @@
 
   </footer>
 
-  <!-- ================= ПАНЕЛЬ АВТОНОМНОЙ ФАБРИКИ КОНТЕНТА (КАК В ВИДЕО) ================= -->
-  <div class="modal-overlay" id="content-factory-modal" style="display: none;">
-    <div class="modal-container" style="max-width: 900px; width: 95%;">
-      <div class="flex justify-between items-center px-6 py-4 border-b border-purple-500/30 bg-purple-950/20">
-        <div class="text-sm font-bold tracking-widest text-purple-300 flex items-center gap-2">
-          <span>🎬</span> J.A.R.V.I.S. CONTENT FACTORY // АВТОНОМНЫЙ ПРОДЮСЕР
+  <!-- ================= СТИЛЬНЫЙ МЕНЕДЖЕР ОТКРЫТЫХ ИИ-АГЕНТОВ (SWARM & GITHUB) ================= -->
+  <div class="modal-overlay" id="agents-swarm-modal" style="display: none;">
+    <div class="modal-container" style="max-width: 960px; width: 95%;">
+      <div class="flex justify-between items-center px-6 py-4 border-b border-emerald-500/30 bg-emerald-950/20">
+        <div class="text-sm font-bold tracking-widest text-emerald-400 flex items-center gap-2">
+          <span>🧠</span> J.A.R.V.I.S. MULTI-AGENT SWARM // НЕЙРОСЕТЕВОЙ РОЙ
         </div>
-        <button onclick="toggleContentFactory()" class="text-red-400 hover:text-white">&times;</button>
+        <button onclick="toggleAgentsSwarm()" class="text-red-400 hover:text-white">&times;</button>
       </div>
 
       <div class="p-6 space-y-6 overflow-y-auto" style="max-height: 80vh;">
-        <!-- Top Metrics Row (Точь-в-точь как на ультравайд мониторе в видео) -->
-        <div class="grid grid-cols-3 gap-4">
-          <div class="bg-black/60 border border-purple-500/30 rounded-2xl p-4 flex flex-col justify-center">
-            <span class="text-[10px] text-slate-400 tracking-wider uppercase">ОБЩИЕ ПРОСМОТРЫ ЗА НОЧЬ</span>
-            <div class="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 mt-1" id="cf-views-val">
-              205 798
-            </div>
-            <span class="text-[10px] text-emerald-400 font-code mt-1">▲ +45 800 за последние 8 часов</span>
-          </div>
-
-          <div class="bg-black/60 border border-cyan-500/30 rounded-2xl p-4 flex flex-col justify-center">
-            <span class="text-[10px] text-slate-400 tracking-wider uppercase">ПРИРОСТ TELEGRAM КАНАЛА</span>
-            <div class="text-2xl sm:text-3xl font-extrabold text-cyan-400 mt-1" id="cf-tg-val">
-              +198 подписчиков
-            </div>
-            <span class="text-[10px] text-cyan-300 font-code mt-1">Всего: 1 420 резидентов</span>
-          </div>
-
-          <div class="bg-black/60 border border-amber-500/30 rounded-2xl p-4 flex flex-col justify-center">
-            <span class="text-[10px] text-slate-400 tracking-wider uppercase">АВТОМАТИЧЕСКИЙ ВЫПУСК</span>
-            <div class="text-2xl sm:text-3xl font-extrabold text-amber-400 mt-1" id="cf-pub-val">
-              9 роликов
-            </div>
-            <span class="text-[10px] text-amber-300 font-code mt-1">Shorts, Reels, TikTok</span>
-          </div>
-        </div>
-
-        <!-- 3 Перспективных сценария (Правый экран из видео) -->
-        <div>
-          <div class="flex justify-between items-center mb-3">
-            <h3 class="text-xs font-bold text-cyan-400 tracking-widest uppercase flex items-center gap-2">
-              <span>📝</span> 3 ПЕРСПЕКТИВНЫХ СЦЕНАРИЯ НА СЕГОДНЯ (ПРАВЫЙ ЭКРАН)
+        <!-- Header Info Banner -->
+        <div class="bg-slate-900/80 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Активный специализированный агент: <span id="current-agent-badge" class="text-emerald-300">J.A.R.V.I.S. Prime (Командир)</span>
             </h3>
-            <button onclick="generateMoreScripts()" class="px-3 py-1 text-[11px] font-semibold text-purple-300 bg-purple-900/40 border border-purple-500/40 rounded-lg hover:bg-purple-800/60 transition">
-              + Сгенерировать новый сценарий
-            </button>
+            <p class="text-xs text-slate-400 mt-1">
+              Джарвис может привлекать бесплатных ИИ-агентов с открытым исходным кодом под конкретные задачи: кодинг, веб-исследования, аудит безопасности и аналитика.
+            </p>
           </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="cf-scripts-container">
-            <div class="bg-black/50 border border-white/10 rounded-xl p-3 hover:border-cyan-400/50 transition">
-              <span class="text-[9px] font-code px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">ПРОГНОЗ: 250K+</span>
-              <h4 class="text-xs font-semibold text-white mt-2">ИИ заменил программистов в 2026?</h4>
-              <p class="text-[11px] text-slate-400 mt-1 italic">«Только что OpenAI показала модель, которая пишет 99% кода сама...»</p>
-              <button onclick="sendQuick('Смонтируй ролик по сценарию ИИ заменил программистов')" class="mt-3 w-full py-1 text-[10px] font-bold text-black bg-cyan-400 rounded hover:bg-cyan-300 transition">
-                РЕКЛАМА / МОНТАЖ
-              </button>
-            </div>
-
-            <div class="bg-black/50 border border-white/10 rounded-xl p-3 hover:border-purple-400/50 transition">
-              <span class="text-[9px] font-code px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">ПРОГНОЗ: 500K+</span>
-              <h4 class="text-xs font-semibold text-white mt-2">Как Джарвис контролирует ПК ночью</h4>
-              <p class="text-[11px] text-slate-400 mt-1 italic">«Пока я спал, мой голосовой ассистент смонтировал 9 роликов и выложил их в сеть...»</p>
-              <button onclick="sendQuick('Смонтируй ролик по сценарию Джарвис контролирует ПК')" class="mt-3 w-full py-1 text-[10px] font-bold text-black bg-purple-400 rounded hover:bg-purple-300 transition">
-                РЕКЛАМА / МОНТАЖ
-              </button>
-            </div>
-
-            <div class="bg-black/50 border border-white/10 rounded-xl p-3 hover:border-amber-400/50 transition">
-              <span class="text-[9px] font-code px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">ПРОГНОЗ: 180K+</span>
-              <h4 class="text-xs font-semibold text-white mt-2">3 скрытые функции Windows 11</h4>
-              <p class="text-[11px] text-slate-400 mt-1 italic">«Если нажать эти 2 кнопки, твой компьютер начнет работать в 2 раза быстрее...»</p>
-              <button onclick="sendQuick('Смонтируй ролик по сценарию 3 скрытые функции Windows')" class="mt-3 w-full py-1 text-[10px] font-bold text-black bg-amber-400 rounded hover:bg-amber-300 transition">
-                РЕКЛАМА / МОНТАЖ
-              </button>
-            </div>
-          </div>
+          <button onclick="openAddAgentModal()" class="px-4 py-2 text-xs font-bold text-black bg-emerald-400 rounded-xl hover:bg-emerald-300 transition shrink-0 shadow-lg shadow-emerald-500/20">
+            + Добавить агента с GitHub
+          </button>
         </div>
 
-        <!-- Опубликованная лента видео -->
-        <div>
-          <h3 class="text-xs font-bold text-slate-400 tracking-widest uppercase mb-3 flex items-center gap-2">
-            <span>📺</span> ОПУБЛИКОВАННЫЕ НОЧНЫЕ РОЛИКИ (ЛЕНТА ВИДЕО)
-          </h3>
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="cf-recent-videos">
-            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
-              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
-                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
-              </div>
-              <div class="text-[11px] font-medium text-white truncate">Jarvis Auto #1</div>
-              <div class="text-[10px] text-purple-300 font-code">42.5K views</div>
-            </div>
-            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
-              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
-                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
-              </div>
-              <div class="text-[11px] font-medium text-white truncate">GPT-7 Тренды</div>
-              <div class="text-[10px] text-purple-300 font-code">31.2K views</div>
-            </div>
-            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
-              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
-                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
-              </div>
-              <div class="text-[11px] font-medium text-white truncate">AI Монтаж</div>
-              <div class="text-[10px] text-purple-300 font-code">58.9K views</div>
-            </div>
-            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
-              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
-                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
-              </div>
-              <div class="text-[11px] font-medium text-white truncate">Автоматизация</div>
-              <div class="text-[10px] text-purple-300 font-code">28.4K views</div>
-            </div>
-            <div class="bg-slate-900/80 border border-white/10 rounded-lg p-2 text-center">
-              <div class="w-full h-16 bg-slate-800 rounded flex items-center justify-center text-slate-500 mb-1">
-                <i data-lucide="play-circle" class="w-6 h-6 text-purple-400"></i>
-              </div>
-              <div class="text-[11px] font-medium text-white truncate">Будущее ИИ</div>
-              <div class="text-[10px] text-purple-300 font-code">44.7K views</div>
-            </div>
-          </div>
+        <!-- Grid of Swarm Agents -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="agents-grid">
+          <!-- Заполняется динамически из registry.js / get_agents -->
         </div>
 
+        <!-- Terminal Output / Agent Dialogue View -->
+        <div class="bg-black/70 border border-white/10 rounded-xl p-4">
+          <div class="flex items-center justify-between text-[11px] font-code text-slate-400 border-b border-white/10 pb-2 mb-2">
+            <span>TERMINAL // AGENT EXECUTION LOG</span>
+            <span class="text-emerald-400">READY</span>
+          </div>
+          <div id="agent-log-output" class="text-xs font-code text-slate-300 space-y-1">
+            <p class="text-emerald-400">● [Swarm Core]: Все 6 специализированных агентов инициализированы и готовы к автономной работе.</p>
+            <p class="text-slate-500">Для передачи задачи агенту выберите его карточку или скажите: «Джарвис, подключи АвтоКодера для рефакторинга».</p>
+          </div>
+        </div>
       </div>
 
       <div class="flex justify-end p-4 border-t border-white/10 bg-black/40">
-        <button onclick="triggerBriefing(); toggleContentFactory();" class="px-5 py-2 text-xs font-bold text-black bg-amber-400 rounded hover:bg-amber-300 transition flex items-center gap-1.5">
-          <i data-lucide="volume-2" class="w-4 h-4"></i>
-          <span>Озвучить утренний отчет</span>
+        <button onclick="toggleAgentsSwarm()" class="px-5 py-2 text-xs font-bold text-slate-300 bg-slate-800 rounded hover:bg-slate-700 transition">
+          Закрыть
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка добавления агента с GitHub -->
+  <div class="modal-overlay" id="add-agent-modal" style="display: none; z-index: 1000;">
+    <div class="modal-container" style="max-width: 500px; width: 90%;">
+      <div class="p-5 border-b border-white/10 flex justify-between items-center">
+        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Добавить открытого агента с GitHub</h4>
+        <button onclick="closeAddAgentModal()" class="text-red-400">&times;</button>
+      </div>
+      <div class="p-5 space-y-3">
+        <div>
+          <label class="text-[11px] text-slate-400 block mb-1">Имя агента:</label>
+          <input type="text" id="new-agent-name" placeholder="Например: Pentest Sentinel" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400 block mb-1">Репозиторий / Источник GitHub:</label>
+          <input type="text" id="new-agent-repo" placeholder="например: open-source/security-scanner" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400 block mb-1">Роль и специализация:</label>
+          <input type="text" id="new-agent-role" placeholder="Аудит портов, поиск утечек API..." class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
+        </div>
+        <div>
+          <label class="text-[11px] text-slate-400 block mb-1">Системный промпт (инструкция мозга):</label>
+          <textarea id="new-agent-prompt" rows="3" placeholder="Ты — специалист по..." class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white"></textarea>
+        </div>
+      </div>
+      <div class="p-4 border-t border-white/10 flex justify-end gap-2 bg-black/40">
+        <button onclick="closeAddAgentModal()" class="px-4 py-1.5 text-xs text-slate-400 bg-slate-800 rounded">Отмена</button>
+        <button onclick="submitNewAgent()" class="px-4 py-1.5 text-xs font-bold text-black bg-emerald-400 rounded">Установить</button>
       </div>
     </div>
   </div>
@@ -1096,34 +1042,98 @@
       }
     }
 
-    function toggleContentFactory() {
-      const modal = document.getElementById('content-factory-modal');
+    function toggleAgentsSwarm() {
+      const modal = document.getElementById('agents-swarm-modal');
       if (modal) {
-        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+        const isHidden = (modal.style.display === 'none' || !modal.style.display);
+        modal.style.display = isHidden ? 'flex' : 'none';
+        if (isHidden) loadAgentsGrid();
       }
     }
 
-    function triggerBriefing() {
-      if (window.pywebview && window.pywebview.api.get_morning_briefing) {
-        window.pywebview.api.get_morning_briefing().then(res => {
-          if (res && res.speech) {
-            setSubtitle(`<strong>J.A.R.V.I.S.:</strong> ${res.speech}`);
-          }
+    function loadAgentsGrid() {
+      if (window.pywebview && window.pywebview.api.get_swarm_agents) {
+        window.pywebview.api.get_swarm_agents().then(agents => {
+          renderAgents(agents);
         });
       } else {
-        sendQuick('Сделай утренний отчет и покажи статистику роликов');
+        // Fallback demo agents
+        renderAgents([
+          {id: 'commander', name: 'J.A.R.V.I.S. Prime', icon: 'shield', color: 'cyan', role: 'Главный координатор системы, голос и контроль ПК', status: 'ACTIVE'},
+          {id: 'coder_devin', name: 'AutoCoder (Devin / Aider)', icon: 'terminal', color: 'emerald', role: 'Автономный разработчик ПО, рефакторинг и тесты', status: 'READY'},
+          {id: 'web_researcher', name: 'Web Scout (Crawl4AI)', icon: 'globe', color: 'sky', role: 'Глубокий поиск фактов, анализ сайтов без рекламы', status: 'READY'},
+          {id: 'cyber_sentry', name: 'Security Sentinel', icon: 'lock', color: 'red', role: 'Аудит безопасности ПК, проверка процессов', status: 'READY'},
+          {id: 'creative_director', name: 'Creative Producer', icon: 'sparkles', color: 'purple', role: 'Генерация вирусных идей и сценариев для YouTube', status: 'READY'},
+          {id: 'data_analyst', name: 'Quant Analyst', icon: 'bar-chart-2', color: 'amber', role: 'Анализ Excel таблиц, тренды и расчеты', status: 'READY'}
+        ]);
       }
     }
 
-    function generateMoreScripts() {
-      if (window.pywebview && window.pywebview.api.generate_new_script) {
-        window.pywebview.api.generate_new_script().then(res => {
-          if (res && res.message) {
-            setSubtitle(`<strong>J.A.R.V.I.S.:</strong> ${res.message}`);
-          }
+    function renderAgents(agents) {
+      const grid = document.getElementById('agents-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      agents.forEach(a => {
+        const isActive = a.status === 'ACTIVE';
+        const card = document.createElement('div');
+        card.className = `module-card p-4 flex flex-col justify-between cursor-pointer transition ${isActive ? 'border-emerald-400 bg-emerald-950/20' : 'hover:border-white/30'}`;
+        card.onclick = () => selectAgent(a.id, a.name);
+        
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-[9px] font-code px-2 py-0.5 rounded-full ${isActive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400' : 'bg-slate-800 text-slate-400'}">
+                ${isActive ? '● АКТИВЕН' : 'ГОТОВ К ВЫЗОВУ'}
+              </span>
+              <span class="text-[9px] font-code text-slate-500">${a.github_source || 'GitHub OSS'}</span>
+            </div>
+            <h4 class="text-xs font-bold text-white mb-1">${a.name}</h4>
+            <p class="text-[11px] text-slate-400 leading-snug">${a.role}</p>
+          </div>
+          <div class="mt-4 pt-2 border-t border-white/10 flex justify-between items-center">
+            <span class="text-[10px] text-cyan-400 font-code">ВЫБРАТЬ МОЗГ</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-cyan-400"></i>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    function selectAgent(agentId, agentName) {
+      if (window.pywebview && window.pywebview.api.switch_agent) {
+        window.pywebview.api.switch_agent(agentId).then(res => {
+          document.getElementById('current-agent-badge').innerText = agentName;
+          document.getElementById('agent-log-output').innerHTML += `<p class="text-emerald-400">● [Swarm]: Фокус переключен на «${agentName}». Готов к выполнению задач.</p>`;
+          setSubtitle(`<strong>J.A.R.V.I.S.:</strong> Активирован специализированный агент «${agentName}», сэр.`);
+          loadAgentsGrid();
+        });
+      }
+    }
+
+    function openAddAgentModal() {
+      document.getElementById('add-agent-modal').style.display = 'flex';
+    }
+
+    function closeAddAgentModal() {
+      document.getElementById('add-agent-modal').style.display = 'none';
+    }
+
+    function submitNewAgent() {
+      const name = document.getElementById('new-agent-name').value.trim();
+      const repo = document.getElementById('new-agent-repo').value.trim();
+      const role = document.getElementById('new-agent-role').value.trim();
+      const prompt = document.getElementById('new-agent-prompt').value.trim();
+      if (!name || !role) return;
+
+      if (window.pywebview && window.pywebview.api.install_agent) {
+        window.pywebview.api.install_agent(repo, name, role, prompt).then(() => {
+          closeAddAgentModal();
+          loadAgentsGrid();
+          setSubtitle(`<strong>J.A.R.V.I.S.:</strong> Новый агент «${name}» успешно подключен из ${repo}.`);
         });
       } else {
-        sendQuick('Сгенерируй новый вирусный сценарий для Shorts');
+        closeAddAgentModal();
       }
     }
 

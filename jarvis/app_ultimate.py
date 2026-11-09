@@ -206,6 +206,25 @@ class UltimateBridge:
         res = ContentFactorySkill.generate_scripts()
         return res
 
+    def get_swarm_agents(self):
+        """Получить список всех доступных бесплатных агентов"""
+        from jarvis.agents.registry import AgentRegistry
+        return AgentRegistry.load_agents()
+
+    def switch_agent(self, agent_id: str):
+        """Переключить активного агента-специалиста"""
+        from jarvis.agents.registry import AgentRegistry
+        agent = AgentRegistry.set_active_agent(agent_id)
+        if self.core and agent:
+            # Обновляем профиль поведения ядра под выбранного агента
+            self.core.set_agent_personality(agent)
+        return agent
+
+    def install_agent(self, repo: str, name: str, role: str, prompt: str):
+        """Добавить нового открытого агента в рой"""
+        from jarvis.agents.registry import AgentRegistry
+        return AgentRegistry.install_github_agent(repo, name, role, prompt)
+
     def close_app(self):
         self.window.destroy()
         os._exit(0)

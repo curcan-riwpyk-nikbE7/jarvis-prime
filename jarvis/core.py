@@ -26,6 +26,7 @@ from jarvis.tools.organizer import OrganizerManager
 from jarvis.tools.security_sentry import SecuritySentry
 from jarvis.tools.content_factory import ContentFactorySkill
 from jarvis.tools.morning_briefing import MorningBriefingSkill
+from jarvis.agents.registry import AgentRegistry
 
 SYSTEM_PROMPT = """
 Ты — J.A.R.V.I.S. Prime, автономный ИИ-ассистент, полностью контролирующий компьютер пользователя (сэра).
@@ -177,11 +178,21 @@ class JarvisCore:
             )
         )
 
+    def set_agent_personality(self, agent: dict):
+        """Динамически переключает системную инструкцию под выбранного агента"""
+        self.active_agent = agent
+        print(f"[Core Agent Switch]: Активный агент изменен на {agent.get('name')}")
+
     def process_request(self, user_text: str) -> str:
         """Отправляет запрос в ядро Gemini с автоматическим выполнением инструментов"""
         txt = user_text.lower().strip()
         if any(w in txt for w in ["привет", "здравствуй", "джарвис", "ты тут"]):
             return "Здравствуйте, сэр. Все протоколы активированы, системы в строю. Чем могу помочь?"
+
+        active_sys_prompt = SYSTEM_PROMPT
+        if hasattr(self, "active_agent") and self.active_agent:
+            agent_role = self.active_agent.get("system_prompt", "")
+            active_sys_prompt = f"{SYSTEM_PROMPT}\n\nСЕЙЧАС ТЫ ВЫСТУПАЕШЬ В РОЛИ СПЕЦИАЛИЗИРОВАННОГО АГЕНТА: {self.active_agent.get('name')}\nСпециализация: {agent_role}"
 
         models_pool = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.6-flash", "gemini-3.8-flash"]
         for m in models_pool:
@@ -189,7 +200,7 @@ class JarvisCore:
                 chat = self.client.chats.create(
                     model=m,
                     config=types.GenerateContentConfig(
-                        system_instruction=SYSTEM_PROMPT,
+                        system_instruction=active_sys_prompt,
                         tools=self.tools,
                         temperature=0.4
                     )
