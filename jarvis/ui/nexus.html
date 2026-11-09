@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>J.A.R.V.I.S. QUANTUM SYNAPSE HUD</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="head_b64.js"></script>
+    <script src="three.min.js"></script>
+    <script src="head_verts.js"></script>
     <style>
         :root {
             --cyan: #4deeea;
@@ -846,92 +845,89 @@
             auraCloud = new THREE.Points(auraGeo, auraMat);
             scene.add(auraCloud);
 
-            // 3. ЗАГРУЗКА РЕАЛЬНОГО 3D СКАНА ЧЕЛОВЕКА (GLTF) И ПРЕВРАЩЕНИЕ В НЕЙРО-СИНАПСЫ
-            if (window.HEAD_GLB_B64 && THREE.GLTFLoader) {
-                try {
-                    const binaryString = window.atob(window.HEAD_GLB_B64);
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
+            // 3. ПОСТРОЕНИЕ 3D ЧЕЛОВЕКА НАПРЯМУЮ ИЗ АНАТОМИЧЕСКОГО 3D СКАНА
+            if (window.HEAD_VERTS && window.HEAD_VERTS.length > 0) {
+                const verts = window.HEAD_VERTS;
+                const cyanPos = [];
+                const magPos = [];
+
+                for (let i = 0; i < verts.length; i += 3) {
+                    let x = verts[i];
+                    let y = verts[i+1];
+                    let z = verts[i+2];
+
+                    if (Math.random() > 0.25) {
+                        cyanPos.push(x, y, z);
+                    } else {
+                        magPos.push(x, y, z);
                     }
-
-                    const loader = new THREE.GLTFLoader();
-                    loader.parse(bytes.buffer, '', (gltf) => {
-                        let headMesh = null;
-                        gltf.scene.traverse((child) => {
-                            if (child.isMesh && !headMesh) headMesh = child;
-                        });
-
-                        if (headMesh) {
-                            const origGeo = headMesh.geometry;
-                            origGeo.center();
-
-                            const pos = origGeo.attributes.position.array;
-                            const cyanPos = [];
-                            const magPos = [];
-
-                            for(let i = 0; i < pos.length; i += 3) {
-                                let x = pos[i];
-                                let y = pos[i+1];
-                                let z = pos[i+2];
-
-                                if (Math.random() > 0.3) {
-                                    cyanPos.push(x, y, z);
-                                } else {
-                                    magPos.push(x, y, z);
-                                }
-                            }
-
-                            // Синапсы циановые
-                            const gCyan = new THREE.BufferGeometry();
-                            gCyan.setAttribute('position', new THREE.Float32BufferAttribute(cyanPos, 3));
-                            const mCyan = new THREE.PointsMaterial({
-                                color: 0x4deeea,
-                                size: 0.016,
-                                transparent: true,
-                                opacity: 0.88,
-                                blending: THREE.AdditiveBlending
-                            });
-                            cyanPoints = new THREE.Points(gCyan, mCyan);
-
-                            // Синапсы пурпурные (внутренние нейроны)
-                            const gMag = new THREE.BufferGeometry();
-                            gMag.setAttribute('position', new THREE.Float32BufferAttribute(magPos, 3));
-                            const mMag = new THREE.PointsMaterial({
-                                color: 0xf000ff,
-                                size: 0.022,
-                                transparent: true,
-                                opacity: 0.95,
-                                blending: THREE.AdditiveBlending
-                            });
-                            magentaPoints = new THREE.Points(gMag, mMag);
-
-                            // Полупрозрачная внутренняя кибер-сетка для идеального объема
-                            const wireMat = new THREE.MeshBasicMaterial({
-                                color: 0x142850,
-                                wireframe: true,
-                                transparent: true,
-                                opacity: 0.35
-                            });
-                            const meshWire = new THREE.Mesh(origGeo, wireMat);
-
-                            const innerG = new THREE.Group();
-                            innerG.add(meshWire);
-                            innerG.add(cyanPoints);
-                            innerG.add(magentaPoints);
-
-                            innerG.scale.set(0.26, 0.26, 0.26);
-                            innerG.position.y = -0.15;
-                            humanGroup.add(innerG);
-                        }
-                    }, (err) => console.error("GLTF error:", err));
-                } catch(e) {
-                    console.error("Head parse error:", e);
                 }
+
+                // Внешние синапсы электрического циана
+                const gCyan = new THREE.BufferGeometry();
+                gCyan.setAttribute('position', new THREE.Float32BufferAttribute(cyanPos, 3));
+                const mCyan = new THREE.PointsMaterial({
+                    color: 0x4deeea,
+                    size: 0.024,
+                    transparent: true,
+                    opacity: 0.85,
+                    blending: THREE.AdditiveBlending
+                });
+                cyanPoints = new THREE.Points(gCyan, mCyan);
+
+                // Внутренние неоновые нейро-синапсы пурпура
+                const gMag = new THREE.BufferGeometry();
+                gMag.setAttribute('position', new THREE.Float32BufferAttribute(magPos, 3));
+                const mMag = new THREE.PointsMaterial({
+                    color: 0xf000ff,
+                    size: 0.035,
+                    transparent: true,
+                    opacity: 0.95,
+                    blending: THREE.AdditiveBlending
+                });
+                magentaPoints = new THREE.Points(gMag, mMag);
+
+                // Сетка связей
+                const linePositions = [];
+                for (let i = 0; i < 900; i++) {
+                    let idxA = Math.floor(Math.random() * (cyanPos.length / 3)) * 3;
+                    let idxB = Math.floor(Math.random() * (cyanPos.length / 3)) * 3;
+
+                    let dx = cyanPos[idxA] - cyanPos[idxB];
+                    let dy = cyanPos[idxA+1] - cyanPos[idxB+1];
+                    let dz = cyanPos[idxA+2] - cyanPos[idxB+2];
+                    let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                    if (dist > 0.04 && dist < 0.22) {
+                        linePositions.push(
+                            cyanPos[idxA], cyanPos[idxA+1], cyanPos[idxA+2],
+                            cyanPos[idxB], cyanPos[idxB+1], cyanPos[idxB+2]
+                        );
+                    }
+                }
+                const lineGeo = new THREE.BufferGeometry();
+                lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+                const lineMat = new THREE.LineBasicMaterial({
+                    color: 0x2874fc,
+                    transparent: true,
+                    opacity: 0.45,
+                    blending: THREE.AdditiveBlending
+                });
+                const netMesh = new THREE.LineSegments(lineGeo, lineMat);
+
+                const headG = new THREE.Group();
+                headG.add(cyanPoints);
+                headG.add(magentaPoints);
+                headG.add(netMesh);
+
+                // Центрирование и масштаб
+                headG.scale.set(0.3, 0.3, 0.3);
+                headG.position.y = -0.15;
+                humanGroup.add(headG);
             }
 
-            // Поворот в полупрофиль (как на фото)
-            humanGroup.rotation.y = -0.45;
+            // Поворот в полупрофиль (как на референсе)
+            humanGroup.rotation.y = -0.42;
 
             // Мышь (интеллектуальное слежение за курсором)
             window.addEventListener('mousemove', (e) => {
