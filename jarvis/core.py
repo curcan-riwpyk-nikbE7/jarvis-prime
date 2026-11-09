@@ -19,6 +19,7 @@ from jarvis.tools.video_generator import VideoGeneratorSkill
 from jarvis.tools.document_reader import DocumentReaderSkill
 from jarvis.tools.music_player import MusicTool
 from jarvis.tools.email_assistant import EmailTool
+from jarvis.tools.system_power import SystemPowerSkill
 
 SYSTEM_PROMPT = """
 Ты — J.A.R.V.I.S. Prime, автономный ИИ-ассистент, полностью контролирующий компьютер пользователя (сэра).
@@ -45,7 +46,14 @@ SYSTEM_PROMPT = """
    - play_yandex_music: включить песню, артиста или Мою волну в Яндекс Музыке.
    - play_youtube_music: включить трек в YouTube Музыке.
 
-3. ПОЧТА, ЗРЕНИЕ И ФАЙЛЫ:
+3. ПИТАНИЕ И БЕЗОПАСНОСТЬ СИСТЕМЫ:
+   - lock_workstation: мгновенно заблокировать экран ПК (Win + L) при отходе сэра.
+   - sleep_pc: перевести компьютер в спящий режим.
+   - shutdown_pc: выключить компьютер (можно передать timer_seconds, например 1800 для «через 30 минут»).
+   - restart_pc: перезагрузить компьютер (с таймером или сразу).
+   - cancel_shutdown: отменить запланированное выключение/перезагрузку.
+
+4. ПОЧТА, ЗРЕНИЕ И ФАЙЛЫ:
    - check_inbox: проверить и прочитать свежие входящие письма на почте.
    - send_email: отправить письмо адресату.
    - analyze_screen: посмотреть на экран монитора через Vision AI.
@@ -56,7 +64,7 @@ SYSTEM_PROMPT = """
 
 Правила:
 - Веди себя как британский джентльмен и преданный ИИ-помощник Тони Старка (всегда обращайся «сэр»).
-- Когда сэр говорит команды управления компьютером («сверни окно», «закрой браузер», «сделай потише/погромче», «следующий трек», «сверни всё», «открой телеграм») — ВСЕГДА НЕМЕДЛЕННО ВЫЗЫВАЙ СООТВЕТСТВУЮЩИЙ ИНСТРУМЕНТ!
+- Когда сэр говорит команды управления компьютером («сверни окно», «закрой браузер», «сделай потише/погромче», «следующий трек», «заблокируй экран», «выключи компьютер через час», «отмени выключение») — ВСЕГДА НЕМЕДЛЕННО ВЫЗЫВАЙ СООТВЕТСТВУЮЩИЙ ИНСТРУМЕНТ!
 - Отвечай вежливо, кратко и четко (готово для озвучивания бархатным голосом).
 """
 
@@ -90,6 +98,11 @@ class JarvisCore:
             MediaControlSkill.next_track,
             MediaControlSkill.prev_track,
             MediaControlSkill.stop_media,
+            SystemPowerSkill.lock_workstation,
+            SystemPowerSkill.sleep_pc,
+            SystemPowerSkill.shutdown_pc,
+            SystemPowerSkill.restart_pc,
+            SystemPowerSkill.cancel_shutdown,
             FileOrganizerSkill.organize_desktop,
             AppLauncherSkill.launch_app,
             ComputerUseTool.minimize_window,
