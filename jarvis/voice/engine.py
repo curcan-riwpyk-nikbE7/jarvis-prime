@@ -50,39 +50,63 @@ class VoiceEngine:
         except Exception:
             return ""
 
-    async def _async_speak_edge(self, text: str, output_path: str):
-        # Настройка голоса с учетом параметров
-        communicate = edge_tts.Communicate(text, self.voice_name, rate=self.rate, pitch=self.pitch)
+    def _clean_text_for_speech(self, text: str) -> str:
+        """Очищает текст от markdown, кавычек, ссылок и спецсимволов для гарантированного синтеза речи"""
+        import re
+        t = re.sub(r'<[^>]+>', ' ', text)
+        t = re.sub(r'[`*#_«»\"]', ' ', t)
+        t = re.sub(r'[(){}\[\]]', ' ', t)
+        t = re.sub(r'(\d+):(\d+)', r'\1 на \2', t)
+        t = t.replace('/', ' ').replace('\\', ' ').replace('_', ' ')
+        t = re.sub(r'\s+', ' ', t).strip()
+        return t
+
+    async def _async_speak_edge(self, text: str, output_path: str, voice_override: str = None):
+        v = voice_override or self.voice_name
+        communicate = edge_tts.Communicate(text, v, rate=self.rate, pitch=self.pitch)
         await communicate.save(output_path)
 
     def speak(self, text: str):
-        """Озвучивание текста: приоритет строго на русский дубляж Edge-TTS"""
+        """Озвучивание текста: приоритет на Edge-TTS (Dmitry -> Svetlana -> gTTS -> pyttsx3)"""
         if not text:
+            return
+
+        clean_text = self._clean_text_for_speech(text)
+        if not clean_text:
             return
 
         with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
             temp_path = f.name
 
         success = False
-        try:
-            # Увеличиваем таймаут, чтобы не переключаться на старый голос Windows
-            asyncio.run(asyncio.wait_for(self._async_speak_edge(text, temp_path), timeout=8.0))
-            if os.path.exists(temp_path) and os.path.getsize(temp_path) > 300:
-                pygame.mixer.music.load(temp_path)
-                pygame.mixer.music.play()
-                while pygame.mixer.music.get_busy():
-                    pygame.time.Clock().tick(10)
-                success = True
-        except Exception as e:
-            print(f"[Voice Error]: {e}")
-        finally:
-            if os.path.exists(temp_path):
-                try:
-                    pygame.mixer.music.unload()
-                    os.remove(temp_path)
-                except Exception:
-                    pass
+        # 1. Попытка синтеза через Edge-TTS (сначала выбранный голос, затем запасной Svetlana)
+        for voice_candidate in [self.voice_name, "ru-RU-SvetlanaNeural"]:
+            try:
+                asyncio.run(asyncio.wait_for(self._async_speak_edge(clean_text, temp_path, voice_candidate), timeout=6.0))
+                if os.path.exists(temp_path) and os.path.getsize(temp_path) > 300:
+                    pygame.mixer.music.load(temp_path)
+                    pygame.mixer.music.play()
+                    while pygame.mixer.music.get_busy():
+                        pygame.time.Clock().tick(10)
+                    success = True
+                    break
+            except Exception as e:
+                pass
 
-        # Если интернет-голос совсем не сработал
+        # 2. Если Edge-TTS не ответил (например, таймаут Microsoft) — мгновенный оффлайн fallback через Windows SAPI5 / pyttsx3
         if not success:
-            print(f"[Fallback Voice]: {text}")
+            try:
+                if self.sapi:
+                    self.sapi.say(clean_text)
+                    self.sapi.runAndWait()
+                    success = True
+            except Exception as e:
+                print(f"[Offline SAPI Error]: {e}")
+
+        # Удаляем временный файл
+        if os.path.exists(temp_path):
+            try:
+                pygame.mixer.music.unload()
+                os.remove(temp_path)
+            except Exception:
+                pass
