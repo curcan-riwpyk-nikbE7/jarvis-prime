@@ -195,30 +195,30 @@
   <!-- ================= TOP HEADER BAR ================= -->
   <header class="relative z-10 flex items-center justify-between w-full" style="-webkit-app-region: drag;">
     <!-- Left Title & Core Badge -->
-    <div class="flex items-center space-x-3.5">
+    <div class="flex items-center space-x-3 shrink-0">
       <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 shadow-[0_0_14px_#00f0ff] animate-pulse"></div>
-      <h1 class="text-lg font-bold tracking-[0.24em] text-cyan-50 flex items-center gap-2">
-        J . A . R . V . I . S . <span class="text-sm font-semibold tracking-widest text-slate-300">QUANTUM SYNAPSE</span>
+      <h1 class="text-base font-bold tracking-[0.2em] text-cyan-50 flex items-center gap-1.5 whitespace-nowrap">
+        J.A.R.V.I.S. <span class="text-xs font-semibold tracking-wider text-slate-300">QUANTUM SYNAPSE</span>
       </h1>
-      <span class="hidden md:inline-flex items-center px-3 py-1 rounded-full text-[10.5px] font-code font-bold tracking-wider text-cyan-300 bg-cyan-950/40 border border-cyan-400/40 shadow-[0_0_12px_rgba(0,240,255,0.25)]">
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-code font-bold tracking-wider text-cyan-300 bg-cyan-950/40 border border-cyan-400/40 whitespace-nowrap">
         NEURAL CORE // ACTIVE
       </span>
     </div>
 
     <!-- Center Status Metrics (Sci-Fi Telemetry) -->
-    <div class="hidden lg:flex items-center space-x-6 text-xs font-code text-slate-400">
-      <div class="flex items-center gap-2">
+    <div class="flex items-center space-x-4 text-xs font-code text-slate-400">
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
         <span class="text-[10px] text-slate-500 uppercase tracking-wider">LATENCY:</span>
         <span class="text-cyan-300 font-semibold" id="tele-latency">14ms</span>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 whitespace-nowrap">
         <span class="text-[10px] text-slate-500 uppercase tracking-wider">SYNAPSE LOAD:</span>
-        <div class="w-16 h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+        <div class="w-14 h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
           <div class="w-2/5 h-full bg-gradient-to-r from-cyan-500 to-sky-400" id="tele-load-bar" style="width: 38%;"></div>
         </div>
         <span class="text-slate-300" id="tele-load-val">38%</span>
       </div>
-      <div class="flex items-center gap-1.5 text-emerald-400">
+      <div class="flex items-center gap-1.5 text-emerald-400 whitespace-nowrap">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
         <span class="text-[10px] tracking-wider uppercase">ONLINE</span>
       </div>
@@ -378,40 +378,40 @@
   </main>
 
   <!-- ================= BOTTOM HUD DIALOGUE & COMMAND CONSOLE ================= -->
-  <footer class="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center space-y-3.5">
+  <footer class="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center space-y-2 mb-1">
     
     <!-- J.A.R.V.I.S. Response Hologram Bubble -->
-    <div class="dialogue-pill w-full px-6 py-3.5 text-center relative overflow-hidden">
+    <div class="dialogue-pill w-full px-5 py-2.5 text-center relative overflow-hidden" style="max-height: 110px; overflow-y: auto;">
       <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
       
-      <div class="text-[11px] font-code font-bold tracking-widest text-cyan-400 uppercase flex items-center justify-center gap-2 mb-1.5">
+      <div class="text-[10px] font-code font-bold tracking-widest text-cyan-400 uppercase flex items-center justify-center gap-2 mb-1">
         <span class="text-cyan-400 animate-pulse">✦</span> 
         <span>J . A . R . V . I . S .</span> 
         <span class="text-cyan-400 animate-pulse">✦</span>
       </div>
       
-      <p id="dialogue-text" class="text-sm sm:text-base text-slate-100 font-normal tracking-wide transition-all duration-300">
+      <div id="dialogue-text" class="text-xs sm:text-sm text-slate-100 font-normal tracking-wide transition-all duration-300">
         Здравствуйте, сэр. Все квантовые синапсы синхронизированы. Чем могу помочь?
-      </p>
+      </div>
     </div>
 
     <!-- Command Input Bar -->
-    <div class="input-pill w-full p-2 flex items-center space-x-3">
+    <div class="input-pill w-full p-1.5 flex items-center space-x-2">
       <div class="relative flex-1 flex items-center pl-3">
-        <i data-lucide="terminal" class="w-4 h-4 text-cyan-400/60 mr-2.5 shrink-0"></i>
+        <i data-lucide="terminal" class="w-4 h-4 text-cyan-400/60 mr-2 shrink-0"></i>
         <input 
           id="cmd-input"
           type="text" 
           placeholder="Введите команду или скажите вслух «Джарвис»..."
-          class="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none"
+          class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
           onkeydown="if(event.key==='Enter') sendText()"
         />
       </div>
 
       <!-- Action Button -->
-      <button id="mic-trigger" onclick="toggleVoice()" class="glow-btn px-6 py-2.5 rounded-xl flex items-center space-x-2 shrink-0">
-        <i data-lucide="mic" id="mic-icon" class="w-4 h-4"></i>
-        <span id="mic-text" class="text-xs font-bold uppercase tracking-wider">СЛУШАТЬ</span>
+      <button id="mic-trigger" onclick="toggleVoice()" class="glow-btn px-5 py-2 rounded-xl flex items-center space-x-2 shrink-0">
+        <i data-lucide="mic" id="mic-icon" class="w-3.5 h-3.5"></i>
+        <span id="mic-text" class="text-[11px] font-bold uppercase tracking-wider">СЛУШАТЬ</span>
       </button>
     </div>
 
