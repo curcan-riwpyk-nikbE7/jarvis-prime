@@ -788,14 +788,14 @@
         let isListening = false;
         let mouseX = 0, mouseY = 0;
 
-        let headShaderMat;
+        let headShaderMat, eyeLeft, eyeRight, brainMesh;
 
         function init3DHuman() {
             const container = document.getElementById('avatar-canvas');
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.z = 7.2;
-            camera.position.y = 0.2;
+            camera.position.z = 7.0;
+            camera.position.y = 0.1;
 
             renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
@@ -847,25 +847,31 @@
             auraCloud = new THREE.Points(auraGeo, auraMat);
             scene.add(auraCloud);
 
-            // 3. ПОСТРОЕНИЕ ГОЛОГРАФИЧЕСКОГО ЧЕЛОВЕКА С ШЕЙДЕРОМ FRESNEL RIM GLOW
+            // 3. ПОСТРОЕНИЕ ГОЛОГРАФИЧЕСКОГО ЧЕЛОВЕКА С КРАСИВЫМ ЖИВЫМ ВЗГЛЯДОМ
             if (window.HEAD_VERTS && window.HEAD_INDICES) {
                 const headGeo = new THREE.BufferGeometry();
                 headGeo.setAttribute('position', new THREE.Float32BufferAttribute(window.HEAD_VERTS, 3));
                 headGeo.setAttribute('normal', new THREE.Float32BufferAttribute(window.HEAD_NORMALS, 3));
                 headGeo.setIndex(window.HEAD_INDICES);
 
-                // А. КИБЕР-ШЕЙДЕР СВЕТЯЩЕГОСЯ КОНТУРА FRESNEL (КАК В IRON MAN & BLADE RUNNER)
+                // А. ВНУТРЕННЕЕ ЗАТЕМНЕНИЕ (Убираем эффект прозрачной дыры)
+                const innerDarkMat = new THREE.MeshBasicMaterial({
+                    color: 0x050c18,
+                    depthWrite: true
+                });
+                const innerDarkMesh = new THREE.Mesh(headGeo, innerDarkMat);
+                innerDarkMesh.scale.set(0.99, 0.99, 0.99);
+
+                // Б. ЭЛЕГАНТНЫЙ КИБЕР-ШЕЙДЕР СВЕТЯЩЕЙСЯ КОЖИ (НЕ ПУСТОЙ ЧЕРЕП!)
                 headShaderMat = new THREE.ShaderMaterial({
                     transparent: true,
                     depthWrite: false,
-                    blending: THREE.AdditiveBlending,
                     uniforms: {
                         uTime: { value: 0.0 },
                         uColor: { value: new THREE.Color(0x00f0ff) },
-                        uColorInner: { value: new THREE.Color(0xa855f7) }
+                        uBase: { value: new THREE.Color(0x0d1b33) }
                     },
                     vertexShader: `
-                        uniform float uTime;
                         varying vec3 vNormal;
                         varying vec3 vViewPosition;
                         varying vec3 vWorldPos;
@@ -881,7 +887,7 @@
                     fragmentShader: `
                         uniform float uTime;
                         uniform vec3 uColor;
-                        uniform vec3 uColorInner;
+                        uniform vec3 uBase;
                         varying vec3 vNormal;
                         varying vec3 vViewPosition;
                         varying vec3 vWorldPos;
@@ -890,58 +896,85 @@
                             vec3 normal = normalize(vNormal);
                             vec3 viewDir = normalize(vViewPosition);
 
-                            // Эффект Френеля: свечение по контуру лица
-                            float fresnel = 1.0 - abs(dot(viewDir, normal));
-                            fresnel = pow(fresnel, 2.5);
+                            // Мягкий бархатный обод свечения Френеля
+                            float fresnel = 1.0 - max(0.0, dot(viewDir, normal));
+                            fresnel = pow(fresnel, 2.2);
 
-                            // Голографические скан-линии
-                            float scanline = sin(vWorldPos.y * 35.0 - uTime * 4.0) * 0.5 + 0.5;
-                            scanline = pow(scanline, 3.0);
+                            // Голографические микро-линии данных
+                            float scan = sin(vWorldPos.y * 40.0 - uTime * 3.0) * 0.5 + 0.5;
 
-                            // Смешивание неонового циана и пурпура
-                            vec3 glowColor = mix(uColorInner, uColor, fresnel);
-                            float alpha = fresnel * 0.85 + scanline * 0.25;
+                            // Кибер-оттенок лица
+                            vec3 finalColor = mix(uBase, uColor, fresnel * 0.85 + scan * 0.15);
+                            float alpha = 0.55 + fresnel * 0.45;
 
-                            gl_FragColor = vec4(glowColor, clamp(alpha, 0.0, 0.95));
+                            gl_FragColor = vec4(finalColor, alpha);
                         }
                     `
                 });
+                const skinMesh = new THREE.Mesh(headGeo, headShaderMat);
 
-                const holographicMesh = new THREE.Mesh(headGeo, headShaderMat);
-
-                // Б. ТОНКАЯ КИБЕРНЕТИЧЕСКАЯ СЕТКА (WIREFRAME)
-                const wireMat = new THREE.MeshBasicMaterial({
-                    color: 0x00f0ff,
-                    wireframe: true,
-                    transparent: true,
-                    opacity: 0.18,
-                    blending: THREE.AdditiveBlending
-                });
-                const wireMesh = new THREE.Mesh(headGeo, wireMat);
-
-                // В. ДЕЛИКАТНЫЕ СВЕТОВЫЕ СИНАПСЫ (POINTS)
+                // В. МЯГКИЕ НЕОНОВЫЕ СИНАПТИЧЕСКИЕ ЧАСТИЦЫ
                 const pointMat = new THREE.PointsMaterial({
                     color: 0x4deeea,
-                    size: 0.022,
+                    size: 0.016,
                     transparent: true,
-                    opacity: 0.6,
+                    opacity: 0.65,
                     blending: THREE.AdditiveBlending
                 });
                 const pMesh = new THREE.Points(headGeo, pointMat);
 
-                const headG = new THREE.Group();
-                headG.add(holographicMesh);
-                headG.add(wireMesh);
-                headG.add(pMesh);
+                // Г. ИНТЕЛЛЕКТУАЛЬНЫЕ ГЛАЗА С ЗРАЧКАМИ (Глазницы больше не черные дыры!)
+                const eyeGeo = new THREE.SphereGeometry(0.35, 24, 24);
+                const eyeMat = new THREE.MeshBasicMaterial({
+                    color: 0x00f0ff
+                });
+                const pupilGeo = new THREE.SphereGeometry(0.14, 16, 16);
+                const pupilMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
-                // Идеальный масштаб и поворот в полупрофиль (как на референсе)
+                eyeLeft = new THREE.Group();
+                const eL = new THREE.Mesh(eyeGeo, eyeMat);
+                const pL = new THREE.Mesh(pupilGeo, pupilMat);
+                pL.position.z = 0.32;
+                eyeLeft.add(eL);
+                eyeLeft.add(pL);
+                eyeLeft.position.set(-0.85, 0.75, 1.4);
+
+                eyeRight = new THREE.Group();
+                const eR = new THREE.Mesh(eyeGeo, eyeMat);
+                const pR = new THREE.Mesh(pupilGeo, pupilMat);
+                pR.position.z = 0.32;
+                eyeRight.add(eR);
+                eyeRight.add(pR);
+                eyeRight.position.set(0.85, 0.75, 1.4);
+
+                // Д. ПУЛЬСИРУЮЩИЙ НЕЙРОННЫЙ МОЗГ ВНУТРИ
+                const brainGeo = new THREE.IcosahedronGeometry(1.6, 2);
+                const brainMat = new THREE.PointsMaterial({
+                    color: 0xf000ff,
+                    size: 0.025,
+                    transparent: true,
+                    opacity: 0.85,
+                    blending: THREE.AdditiveBlending
+                });
+                brainMesh = new THREE.Points(brainGeo, brainMat);
+                brainMesh.position.set(0, 1.1, -0.2);
+
+                const headG = new THREE.Group();
+                headG.add(innerDarkMesh);
+                headG.add(skinMesh);
+                headG.add(pMesh);
+                headG.add(eyeLeft);
+                headG.add(eyeRight);
+                headG.add(brainMesh);
+
+                // Масштаб и подгонка
                 headG.scale.set(0.55, 0.55, 0.55);
                 headG.position.y = -0.2;
                 humanGroup.add(headG);
             }
 
-            // Поворот в полупрофиль 3/4 (как на фото)
-            humanGroup.rotation.y = -0.42;
+            // Поворот в красивый полупрофиль 3/4
+            humanGroup.rotation.y = -0.52;
 
             // Мышь (интеллектуальное слежение за курсором)
             window.addEventListener('mousemove', (e) => {
@@ -978,13 +1011,23 @@
             // Живое дыхание человека
             humanGroup.position.y = Math.sin(time * 2.2) * 0.15;
 
-            // Волновое мерцание синапсов в мозгу
-            if (magentaPoints && magentaPoints.geometry && magentaPoints.geometry.attributes.position) {
-                const pMag = magentaPoints.geometry.attributes.position.array;
-                for(let i = 1; i < Math.min(pMag.length, 300); i += 6) {
-                    pMag[i] += Math.sin(time * 6 + i) * 0.005;
+            // Пульсация глаз при диалоге
+            if (eyeLeft && eyeRight) {
+                if (isSpeaking) {
+                    eyeLeft.children[0].material.color.setHex(0xff0055);
+                    eyeRight.children[0].material.color.setHex(0xff0055);
+                } else if (isListening) {
+                    eyeLeft.children[0].material.color.setHex(0xf59e0b);
+                    eyeRight.children[0].material.color.setHex(0xf59e0b);
+                } else {
+                    eyeLeft.children[0].material.color.setHex(0x00f0ff);
+                    eyeRight.children[0].material.color.setHex(0x00f0ff);
                 }
-                magentaPoints.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // Вращение внутреннего нейронного мозга
+            if (brainMesh) {
+                brainMesh.rotation.y -= 0.015;
             }
 
             // Пульсация ауры частиц
