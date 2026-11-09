@@ -18,6 +18,7 @@ from jarvis.sound_fx import SoundFX
 from jarvis.tools.telegram_bridge import TelegramBridge
 from jarvis.tools.organizer import OrganizerManager
 from jarvis.tools.security_sentry import SecuritySentry
+from jarvis.voice.vad_listener import ContinuousVoiceListener
 
 class UltimateBridge:
     def __init__(self, window):
@@ -81,15 +82,25 @@ class UltimateBridge:
             pass
 
     def _start_wake_word(self):
-        def loop():
-            while True:
-                try:
-                    heard = self.voice.listen(timeout=3, phrase_time_limit=4)
-                    if heard and any(w in heard.lower() for w in ["джарвис", "jarvis"]):
-                        self.trigger_listen()
-                except Exception:
-                    pass
-        threading.Thread(target=loop, daemon=True).start()
+        """Непрерывный высокоскоростной слушатель Wake Word на микрофоне Fifine"""
+        def on_wake(phrase):
+            # Если пользователь сразу сказал команду: «Джарвис, сверни окна»
+            wake_variants = ["джарвис", "jarvis", "жарвис", "дарвис", "чарвис", "старк"]
+            cmd = phrase
+            for w in wake_variants:
+                cmd = cmd.replace(w, "").strip()
+
+            if len(cmd) > 2:
+                # Сразу выполняем команду без паузы!
+                SoundFX.play_wake_sound()
+                self.window.evaluate_js(f"addMessage('СЭР', '{phrase}', true)")
+                self.send_command(cmd)
+            else:
+                # Пользователь просто позвал «Джарвис» — переходим в режим ожидания команды
+                self.trigger_listen()
+
+        self.vad_listener = ContinuousVoiceListener(on_wake_word_callback=on_wake, energy_threshold=160)
+        self.vad_listener.start()
 
     def _start_system_monitor(self):
         """Реальный мониторинг CPU, RAM и Диска (как в Kira)"""
