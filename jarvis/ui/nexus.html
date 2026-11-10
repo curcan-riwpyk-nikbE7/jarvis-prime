@@ -597,6 +597,41 @@
       font-size: 11px;
     }
     .composer input::placeholder { color: #536d83; }
+    .voice-toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font: 9px 'DM Mono', monospace;
+      font-weight: 600;
+      border: 1px solid #1a3c54;
+      background: #0d2133;
+      color: #6fbce8;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .voice-toggle-btn:hover {
+      background: #14334f;
+      border-color: #3182b8;
+    }
+    .voice-toggle-btn.active {
+      background: rgba(72, 217, 176, 0.12);
+      border-color: #278168;
+      color: #48d9b0;
+      box-shadow: 0 0 10px rgba(72, 217, 176, 0.2);
+    }
+    .voice-toggle-btn.muted {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: #7f2323;
+      color: #f87171;
+    }
+    .voice-toggle-btn svg {
+      width: 13px;
+      height: 13px;
+    }
+
     .icon-button {
       background: transparent;
       border: 0;
@@ -847,6 +882,10 @@
           <button class="icon-button" id="mic-btn" onclick="toggleVoice()" title="Слушать микрофон">
             <i data-lucide="mic"></i>
           </button>
+          <button class="voice-toggle-btn active" id="voice-toggle-btn" onclick="toggleVoiceOutput()" title="Включить / Выключить озвучивание">
+            <i data-lucide="volume-2" id="voice-toggle-icon"></i>
+            <span id="voice-toggle-label">VOICE ON</span>
+          </button>
           <input id="chat-input" placeholder="Введите команду или скажите вслух «Джарвис»..." onkeydown="if(event.key==='Enter') sendMessage()" />
           <button class="send-button" onclick="sendMessage()">
             <i data-lucide="send"></i>
@@ -951,6 +990,30 @@
 
     if (window.pywebview && window.pywebview.api) {
       window.pywebview.api.send_command(text);
+    }
+  }
+
+  let voiceOutputEnabled = true;
+
+  function toggleVoiceOutput() {
+    voiceOutputEnabled = !voiceOutputEnabled;
+    const btn = document.getElementById('voice-toggle-btn');
+    const label = document.getElementById('voice-toggle-label');
+    const icon = document.getElementById('voice-toggle-icon');
+
+    if (voiceOutputEnabled) {
+      btn.className = 'voice-toggle-btn active';
+      label.innerText = 'VOICE ON';
+      icon.setAttribute('data-lucide', 'volume-2');
+    } else {
+      btn.className = 'voice-toggle-btn muted';
+      label.innerText = 'VOICE OFF';
+      icon.setAttribute('data-lucide', 'volume-x');
+    }
+    lucide.createIcons();
+
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.set_voice_output) {
+      window.pywebview.api.set_voice_output(voiceOutputEnabled);
     }
   }
 

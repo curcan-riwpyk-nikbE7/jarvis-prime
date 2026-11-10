@@ -27,6 +27,7 @@ class UltimateBridge:
         self.voice = VoiceEngine()
         self.core = None
         self.tg_bridge = None
+        self.speech_enabled = True
         self._init_core()
         self._setup_hotkeys()
         self._start_wake_word()
@@ -36,12 +37,19 @@ class UltimateBridge:
         SoundFX.play_startup_sound()
         self._say_greeting_on_start()
 
+    def set_voice_output(self, enabled: bool):
+        """Включение/выключение озвучивания ответов (Voice Toggle)"""
+        self.speech_enabled = bool(enabled)
+        state_str = "включено" if self.speech_enabled else "отключено"
+        return {"ok": True, "speech_enabled": self.speech_enabled, "message": f"Озвучивание {state_str}"}
+
     def _say_greeting_on_start(self):
         """Озвучивание приветствия сразу при запуске приложения"""
         def greet():
             time.sleep(1.2)  # Даем окну загрузиться
             greeting_msg = "Здравствуйте, сэр. Все квантовые синапсы синхронизированы, системы в строю. Чем могу помочь?"
-            self.voice.speak(greeting_msg)
+            if self.speech_enabled:
+                self.voice.speak(greeting_msg)
         threading.Thread(target=greet, daemon=True).start()
 
     def _init_core(self):
@@ -147,10 +155,11 @@ class UltimateBridge:
 
             clean_reply = reply.replace("'", "\\'").replace('"', '\\"').replace("\n", "<br>")
             self.window.evaluate_js(f"addMessage('J.A.R.V.I.S.', '{clean_reply}', false)")
-            self.window.evaluate_js("setStatus('ОТВЕЧАЮ ГОЛОСОМ...', false, true)")
-
-            # Озвучивание настоящим дубляжом
-            self.voice.speak(reply)
+            
+            if self.speech_enabled:
+                self.window.evaluate_js("setStatus('ОТВЕЧАЮ ГОЛОСОМ...', false, true)")
+                # Озвучивание настоящим дубляжом
+                self.voice.speak(reply)
             self.window.evaluate_js("setStatus('ГОТОВ К РАБОТЕ', false, false)")
 
         threading.Thread(target=task, daemon=True).start()
