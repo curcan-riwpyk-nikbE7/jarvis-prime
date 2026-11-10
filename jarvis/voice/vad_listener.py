@@ -7,18 +7,42 @@ from jarvis.voice.whisper_listener import WhisperRecognizer
 
 class ContinuousVoiceListener:
     """
-    Непрерывный высокоскоростной детектор речи (Continuous VAD Listener).
-    - Читает микрофон в непрерывном потоке PyAudio без блокировок SpeechRecognition.
-    - Мгновенно улавливает начало речи по всплеску энергии микрофона (VAD).
-    - Накапливает аудио-фрагмент (~2-3 сек) и передает в локальный Faster-Whisper.
-    - При обнаружении слова «джарвис» / «jarvis» мгновенно вызывает callback.
+    Высокоточный непрерывный VAD-детектор речи для микрофона Fifine:
+    1. Автоматически находит устройство 'fifine Microphone' среди аудиовходов Windows.
+    2. Выполняет динамическую автокалибровку шума комнаты (running ambient baseline).
+    3. При превышении порога энергии накапливает аудиопоток.
+    4. При паузе (silence) передает буфер в отдельный рабочий поток (worker pool) для Whisper,
+       чтобы главный цикл захвата звука НИКОГДА не замирал и не терял ни одного сэмпла.
+    5. Поддерживает все вариации слова активации и мгновенно вызывает callback.
     """
 
-    def __init__(self, on_wake_word_callback, energy_threshold=180):
+    def __init__(self, on_wake_word_callback, fixed_device_index=None):
         self.callback = on_wake_word_callback
-        self.energy_threshold = energy_threshold
+        self.fixed_device_index = fixed_device_index
         self.is_running = False
         self.thread = None
+        self.ambient_energy = 250.0  # стартовый уровень шума
+
+    def _find_microphone_index(self, p: pyaudio.PyAudio) -> int:
+        if self.fixed_device_index is not None:
+            return self.fixed_device_index
+        count = p.get_device_count()
+        # Приоритет 1: Ищем по имени Fifine
+        for i in range(count):
+            try:
+                info = p.get_device_info_by_index(i)
+                name = info.get("name", "").lower()
+                if "fifine" in name and info.get("maxInputChannels", 0) > 0:
+                    print(f"[Voice VAD]: Выбран целевой микрофон [{i}]: {info.get('name')}")
+                    return i
+            except Exception:
+                pass
+        # Fallback: Устройство по умолчанию
+        try:
+            default_dev = p.get_default_input_device_info()
+            return default_dev.get("index", 0)
+        except Exception:
+            return 0
 
     def start(self):
         if self.is_running:
@@ -33,20 +57,48 @@ class ContinuousVoiceListener:
 
     def _listen_loop(self):
         p = pyaudio.PyAudio()
+        dev_idx = self._find_microphone_index(p)
+
+        # Открываем поток 16 кГц, 16 бит моно
         try:
             stream = p.open(
                 format=pyaudio.paInt16,
                 channels=1,
                 rate=16000,
                 input=True,
+                input_device_index=dev_idx,
                 frames_per_buffer=1024
             )
         except Exception as e:
-            print(f"[Voice VAD Error]: Не удалось открыть аудиопоток: {e}")
-            p.terminate()
-            return
+            print(f"[Voice VAD Warning]: Не удалось открыть с индексом {dev_idx}: {e}, пробуем без индекса...")
+            try:
+                stream = p.open(
+                    format=pyaudio.paInt16,
+                    channels=1,
+                    rate=16000,
+                    input=True,
+                    frames_per_buffer=1024
+                )
+            except Exception as e2:
+                print(f"[Voice VAD Fatal]: Ошибка открытия микрофона: {e2}")
+                p.terminate()
+                return
 
-        print("[Voice VAD]: Микрофон готов. Ожидание вызова «Джарвис»...")
+        print("[Voice VAD]: Микрофон готов. Выполняю калибровку фонового шума...")
+
+        # Калибровка первых 15 кадров (~1 сек)
+        calib_vals = []
+        for _ in range(15):
+            try:
+                data = stream.read(1024, exception_on_overflow=False)
+                arr = np.frombuffer(data, dtype=np.int16)
+                calib_vals.append(float(np.abs(arr).mean()))
+            except Exception:
+                pass
+
+        if calib_vals:
+            self.ambient_energy = max(100.0, float(np.mean(calib_vals)))
+        print(f"[Voice VAD]: Базовый уровень шума откалиброван: {self.ambient_energy:.1f}. Ожидание «Джарвис»...")
 
         buffer_frames = []
         is_speaking = False
@@ -56,9 +108,12 @@ class ContinuousVoiceListener:
             try:
                 data = stream.read(1024, exception_on_overflow=False)
                 samples = np.frombuffer(data, dtype=np.int16)
-                energy = int(np.abs(samples).mean())
+                energy = float(np.abs(samples).mean())
 
-                if energy > self.energy_threshold:
+                # Динамический порог активации: 1.4x от шума фона + запас 120 единиц
+                threshold = max(280.0, self.ambient_energy * 1.35 + 100.0)
+
+                if energy > threshold:
                     is_speaking = True
                     silence_count = 0
                     buffer_frames.append(data)
@@ -66,19 +121,32 @@ class ContinuousVoiceListener:
                     buffer_frames.append(data)
                     silence_count += 1
 
-                    # Если после речи 0.6 сек тишины — фраза закончена, анализируем
-                    if silence_count > 10:
-                        if len(buffer_frames) > 12:  # не менее 0.7 сек
+                    # Если тишина длится более 9 кадров (~0.58 сек) — фраза завершена
+                    if silence_count > 9:
+                        if len(buffer_frames) >= 10:  # Длительность не менее 0.6 сек
                             raw_audio = b"".join(buffer_frames)
-                            self._process_utterance(raw_audio)
+                            # Запускаем распознавание в отдельном потоке, НЕ блокируя аудиопоток!
+                            threading.Thread(target=self._process_utterance, args=(raw_audio,), daemon=True).start()
+
                         buffer_frames = []
                         is_speaking = False
                         silence_count = 0
-            except Exception as e:
-                time.sleep(0.05)
+                else:
+                    # Медленно подстраиваем базовый уровень шума фона (moving average)
+                    self.ambient_energy = self.ambient_energy * 0.98 + energy * 0.02
+                    # Оставляем легкий срез пре-буфера (1 кадр) на случай резкого старта фразы
+                    if len(buffer_frames) > 2:
+                        buffer_frames.pop(0)
+                    buffer_frames.append(data)
 
-        stream.stop_stream()
-        stream.close()
+            except Exception:
+                time.sleep(0.01)
+
+        try:
+            stream.stop_stream()
+            stream.close()
+        except Exception:
+            pass
         p.terminate()
 
     def _process_utterance(self, raw_audio: bytes):
@@ -89,8 +157,17 @@ class ContinuousVoiceListener:
             if text:
                 clean = text.lower().strip()
                 print(f"[VAD Heard]: «{clean}»")
-                wake_variants = ["джарвис", "jarvis", "жарвис", "дарвис", "чарвис", "старк"]
-                if any(w in clean for w in wake_variants):
+
+                # Расширенный словарь вариантов триггера и созвучных слов
+                wake_variants = [
+                    "джарвис", "jarvis", "жарвис", "дарвис", "чарвис", "джервис",
+                    "старк", "stark", "джар", "джарви", "джовис", "ярвис"
+                ]
+
+                # Проверяем наличие ключевого слова в распознанной фразе
+                matched = any(w in clean for w in wake_variants)
+
+                if matched:
                     print(f"[VAD TRIGGERED]: Активация по слову Джарвис! Текст: {clean}")
                     self.callback(clean)
         except Exception as e:
