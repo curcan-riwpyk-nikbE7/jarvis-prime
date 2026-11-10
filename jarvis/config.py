@@ -33,10 +33,13 @@ def get_ui_path(filename: str = "nexus.html") -> str:
             return os.path.abspath(p)
     return os.path.abspath(candidates[0])
 
+base_dir = get_base_dir()
+load_dotenv(os.path.join(base_dir, ".env"))
+load_dotenv(os.path.join(os.path.expanduser("~"), ".jarvis_prime", ".env"))
 load_dotenv()
 
 class Config:
-    PROJECT_ROOT = get_base_dir()
+    PROJECT_ROOT = base_dir
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
     JARVIS_VOICE = os.getenv("JARVIS_VOICE", "ru-RU-DmitryNeural")

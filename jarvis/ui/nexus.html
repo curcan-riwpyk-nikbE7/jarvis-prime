@@ -2,1109 +2,877 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>J.A.R.V.I.S. PRIME — Command Dashboard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>J.A.R.V.I.S. Command Matrix</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
+
     :root {
-      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #e8f2ff;
-      background: #050a12;
-      font-synthesis: none;
-      text-rendering: optimizeLegibility;
-      -webkit-font-smoothing: antialiased;
+      --cyan-bright: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.45);
+      --cyan-dim: #0a4b67;
+      --panel-bg: rgba(6, 18, 32, 0.75);
+      --panel-border: rgba(0, 240, 255, 0.35);
+      --panel-border-glow: 0 0 15px rgba(0, 240, 255, 0.25);
+      --text-main: #dcf5ff;
+      --text-muted: #629bb2;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
-    *::-webkit-scrollbar { display: none !important; }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
-      min-width: 1100px;
+      background: radial-gradient(circle at 50% 30%, #082136 0%, #030a12 70%, #010408 100%);
+      color: var(--text-main);
+      font-family: 'Rajdhani', sans-serif;
       height: 100vh;
       overflow: hidden;
-      background: radial-gradient(ellipse at 70% -20%, #123354 0, transparent 40%), #050a12;
-      user-select: none;
-    }
-
-    button, input { font: inherit; }
-
-    .app-shell {
-      display: flex;
-      height: 100vh;
-      width: 100vw;
-    }
-
-    /* ================= SIDEBAR ================= */
-    .sidebar {
-      width: 250px;
-      flex-shrink: 0;
-      border-right: 1px solid #17283a;
-      background: rgba(6, 13, 23, 0.95);
-      backdrop-filter: blur(16px);
-      padding: 24px 16px 18px;
       display: flex;
       flex-direction: column;
-      position: relative;
-      z-index: 20;
     }
 
-    .brand {
+    /* TOP BAR */
+    header {
+      height: 52px;
+      padding: 0 20px;
       display: flex;
-      gap: 12px;
       align-items: center;
-      padding: 0 6px 30px;
-      cursor: grab;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--panel-border);
+      background: rgba(3, 12, 22, 0.85);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 2px 20px rgba(0, 240, 255, 0.15);
+      z-index: 100;
     }
-    .brand-mark {
-      width: 40px;
-      height: 40px;
-      border: 1px solid #2a8ac0;
-      border-radius: 11px;
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .arc-reactor-logo {
+      width: 34px;
+      height: 34px;
+      border: 2px solid var(--cyan-bright);
+      border-radius: 50%;
       display: grid;
       place-items: center;
-      color: #72d5ff;
-      background: #0c2336;
-      box-shadow: 0 0 22px rgba(22, 122, 176, 0.35);
+      box-shadow: 0 0 15px var(--cyan-bright), inset 0 0 10px var(--cyan-bright);
+      position: relative;
     }
-    .brand-name {
-      font-weight: 800;
-      letter-spacing: 2.2px;
-      font-size: 16px;
-      color: #ffffff;
+    .arc-reactor-logo::before {
+      content: '';
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      border: 2px dashed var(--cyan-bright);
+      border-radius: 50%;
+      animation: spin 8s linear infinite;
     }
-    .brand-sub, .nav-label, .version, .eyebrow, .panel-kicker, .metric-top span, .message-role, .composer-hint, footer, .hotkey, .module-state, .clock {
-      font-family: 'DM Mono', monospace;
-      letter-spacing: 1.1px;
+    .brand-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #fff;
+      text-shadow: 0 0 10px var(--cyan-bright);
     }
     .brand-sub {
-      font-size: 8px;
-      color: #6f8ca6;
-      margin-top: 3px;
-    }
-
-    .nav-label {
       font-size: 9px;
-      color: #526a81;
-      padding: 0 10px 10px;
-    }
-    .system-label {
-      margin-top: 24px;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      font-family: 'Share Tech Mono', monospace;
     }
 
-    nav {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .nav-item {
-      height: 40px;
-      padding: 0 12px;
+    .header-center {
       display: flex;
       align-items: center;
-      gap: 12px;
-      color: #8499ad;
-      font-size: 12px;
-      font-weight: 500;
-      text-decoration: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      border: 1px solid transparent;
+      gap: 20px;
+      font-size: 11px;
+      font-family: 'Share Tech Mono', monospace;
     }
-    .nav-item:hover {
-      color: #e2f1ff;
-      background: rgba(18, 58, 88, 0.35);
+    .badge-live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #00ffaa;
+      text-shadow: 0 0 8px rgba(0, 255, 170, 0.6);
     }
-    .nav-item.active {
-      color: #c9edff;
-      background: linear-gradient(90deg, rgba(18, 58, 88, 0.65), #0b1d2d);
-      border: 1px solid #1c5575;
-      box-shadow: inset 0 0 12px rgba(97, 202, 255, 0.1);
+    .badge-live::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      background: #00ffaa;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #00ffaa;
+      animation: pulse-dot 1.4s infinite;
     }
-    .nav-item i {
-      width: 17px;
-      height: 17px;
-      color: #68839b;
-      transition: color 0.2s;
-    }
-    .nav-item.active i {
-      color: #61caff;
+    .clock-display {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px var(--cyan-bright);
     }
 
-    .sidebar-bottom {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .user-chip {
-      border-top: 1px solid #1b2a39;
-      padding: 14px 4px 6px;
+    .header-controls {
       display: flex;
       align-items: center;
       gap: 10px;
-      font-size: 11px;
     }
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: #16344b;
-      color: #8ddaff;
-      font-weight: 700;
-      border: 1px solid #2a8ac0;
-    }
-    .user-chip b {
-      display: block;
-      color: #e0f0ff;
-    }
-    .user-chip span {
-      display: block;
-      color: #688096;
-      font-size: 9px;
-      margin-top: 2px;
-    }
-    .version {
-      font-size: 8.5px;
-      color: #41566b;
-      padding: 4px 4px;
-    }
-
-    /* ================= MAIN CONTENT ================= */
-    .main {
-      flex: 1;
-      height: 100vh;
-      overflow-y: auto;
-      padding: 24px 32px 18px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* TOPBAR */
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      flex-shrink: 0;
-    }
-    .eyebrow {
-      font-size: 9px;
-      color: #5b91b6;
-    }
-    .topbar h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 4px 0 0;
-      letter-spacing: -0.5px;
-    }
-    .top-actions {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .top-status {
-      font: 10px 'DM Mono', monospace;
-      color: #82a1b8;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: #091724;
-      padding: 7px 14px;
-      border-radius: 20px;
-      border: 1px solid #1c384e;
-    }
-    .live-dot {
-      display: inline-block;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #48d9b0;
-      box-shadow: 0 0 10px #48d9b0;
-      animation: pulse-dot 2s infinite;
-    }
-    .divider-v {
-      height: 14px;
-      border-left: 1px solid #26394b;
-      margin: 0 3px;
-    }
-    .clock {
-      color: #506c83;
-    }
-
-    .window-btns {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .win-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: #091724;
-      border: 1px solid #1c384e;
-      color: #85a2ba;
+    .sys-btn {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--cyan-dim);
+      background: rgba(0, 240, 255, 0.05);
+      color: var(--cyan-bright);
+      border-radius: 6px;
       display: grid;
       place-items: center;
       cursor: pointer;
       transition: all 0.2s;
     }
-    .win-btn:hover {
-      background: #12283c;
-      color: #ffffff;
-      border-color: #3b88b5;
+    .sys-btn:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 10px var(--cyan-bright);
     }
-    .win-btn.close:hover {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: #ef4444;
-      color: #f87171;
+    .sys-btn.close:hover {
+      background: rgba(255, 40, 80, 0.3);
+      border-color: #ff2850;
+      color: #ff4d6d;
+      box-shadow: 0 0 12px #ff2850;
     }
 
-    /* HERO GRID */
-    .hero-grid {
+    /* MAIN MATRIX LAYOUT */
+    .matrix-workspace {
+      flex: 1;
       display: grid;
-      grid-template-columns: 1.15fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
-      flex-shrink: 0;
-    }
-
-    .panel {
-      background: linear-gradient(145deg, rgba(13, 29, 45, 0.95), rgba(8, 18, 29, 0.97));
-      border: 1px solid #1a3449;
-      border-radius: 12px;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(12px);
-    }
-
-    /* REACTOR PANEL */
-    .core-panel {
-      min-height: 330px;
-      position: relative;
+      grid-template-columns: 210px 1fr 280px;
+      padding: 14px 16px;
+      gap: 14px;
       overflow: hidden;
+    }
+
+    /* LEFT SIDEBAR */
+    .sidebar {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 12px 10px;
       display: flex;
-      align-items: center;
       flex-direction: column;
-      padding: 20px;
-      background: radial-gradient(ellipse at 50% 48%, #0d3450 0, transparent 52%), linear-gradient(145deg, #0d1d2d, #08121d);
+      gap: 6px;
+      box-shadow: var(--panel-border-glow);
+      backdrop-filter: blur(10px);
     }
-    .core-panel::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image: linear-gradient(#1c4a6815 1px, transparent 1px), linear-gradient(90deg, #1c4a6815 1px, transparent 1px);
-      background-size: 26px 26px;
-      mask-image: linear-gradient(transparent, #000, transparent);
-    }
-    .panel-kicker {
-      font-size: 9px;
-      color: #78b5d8;
+    .nav-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
-      z-index: 1;
-    }
-    .muted { color: #55718a; }
-
-    .reactor-wrap {
-      width: 190px;
-      height: 190px;
-      position: relative;
-      margin: 14px 0 6px;
-      display: grid;
-      place-items: center;
-    }
-    .orbit {
-      position: absolute;
-      border: 1px solid rgba(56, 169, 223, 0.35);
-      border-radius: 50%;
-      animation: spin 22s linear infinite;
-    }
-    .orbit-one {
-      border-style: dashed;
-      inset: 0;
-    }
-    .orbit-two {
-      inset: 18px;
-      border-color: rgba(79, 202, 255, 0.55);
-      animation-duration: 14s;
-      animation-direction: reverse;
-    }
-    .orbit-three {
-      inset: 32px;
-      border-color: rgba(50, 136, 186, 0.4);
-      animation-duration: 32s;
-    }
-
-    .reactor {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      padding: 6px;
-      background: conic-gradient(from 20deg, #3bd3ff, #123a5b, #8de7ff, #16466c, #3bd3ff);
-      box-shadow: 0 0 25px rgba(32, 169, 239, 0.4), 0 0 60px rgba(20, 127, 192, 0.25);
-      animation: pulse 4s ease-in-out infinite;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
       cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
     }
-    .reactor-inner {
-      height: 100%;
-      border-radius: 50%;
-      background: radial-gradient(circle, #174e70, #071522 72%);
-      border: 1px solid rgba(139, 230, 255, 0.55);
+    .nav-btn i { width: 17px; height: 17px; color: var(--text-muted); }
+    .nav-btn:hover {
+      background: rgba(0, 240, 255, 0.1);
+      color: #fff;
+      border-color: rgba(0, 240, 255, 0.25);
+    }
+    .nav-btn.active {
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.25), rgba(0, 240, 255, 0.05));
+      border: 1px solid var(--cyan-bright);
+      color: #fff;
+      box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.2), 0 0 10px rgba(0, 240, 255, 0.2);
+    }
+    .nav-btn.active i { color: var(--cyan-bright); }
+
+    /* CENTER STAGE (HOLOGRAM & CHAT) */
+    .center-stage {
+      display: grid;
+      grid-template-rows: 1.15fr 1fr;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .hologram-viewport {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      position: relative;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      padding: 16px;
+      box-shadow: var(--panel-border-glow);
+      overflow: hidden;
+    }
+
+    .telemetry-col {
       display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 2;
+    }
+    .sec-badge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cyan-bright);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .metric-row {
+      background: rgba(2, 10, 18, 0.7);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 7px;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .metric-name {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .metric-val {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* CENTER HOLOGRAPHIC PROJECTION */
+    .hologram-avatar-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      color: #8ce4ff;
     }
-    .reactor-inner span {
-      font: 10px 'DM Mono', monospace;
-      letter-spacing: 5px;
-      margin-top: 3px;
+    .hologram-image {
+      max-height: 220px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 25px rgba(0, 240, 255, 0.65)) contrast(1.15);
+      animation: float 4s ease-in-out infinite, pulse-holo 3s ease-in-out infinite;
+      z-index: 2;
     }
-
-    .core-title {
-      font: 11px 'DM Mono', monospace;
-      letter-spacing: 2.5px;
-      color: #b9eaff;
-      z-index: 1;
-      margin-top: 2px;
+    .hologram-rings {
+      position: absolute;
+      bottom: 10px;
+      width: 260px;
+      height: 60px;
+      border: 2px solid var(--cyan-bright);
+      border-radius: 50%;
+      box-shadow: 0 0 25px var(--cyan-bright), inset 0 0 20px var(--cyan-bright);
+      transform: rotateX(65deg);
+      animation: spin 16s linear infinite;
     }
-    .core-caption {
-      font-size: 11px;
-      color: #65859e;
-      margin-top: 4px;
-      z-index: 1;
+    .hologram-caption {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: #fff;
+      text-shadow: 0 0 10px var(--cyan-bright);
+      margin-top: 6px;
+      z-index: 2;
     }
-    .core-actions {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-top: 14px;
-      z-index: 1;
-    }
-
-    .primary-button, .send-button {
-      border: 1px solid #2689ba;
-      background: linear-gradient(120deg, #12618a, #0e4265);
+    .speech-bubble {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: rgba(3, 18, 30, 0.85);
+      border: 1px solid var(--cyan-bright);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+      padding: 10px 14px;
+      border-radius: 10px;
+      border-bottom-left-radius: 2px;
+      font-size: 12px;
       color: #e5f8ff;
-      border-radius: 7px;
-      padding: 8px 14px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 0 20px rgba(22, 138, 192, 0.25);
-      transition: all 0.2s;
-    }
-    .primary-button:hover, .send-button:hover {
-      background: linear-gradient(120deg, #1877a8, #135580);
-      border-color: #42b1eb;
-      box-shadow: 0 0 25px rgba(22, 138, 192, 0.45);
-    }
-    .hotkey {
-      font-size: 8px;
-      color: #56758d;
+      max-width: 220px;
+      line-height: 1.4;
+      z-index: 3;
     }
 
-    /* RIGHT STACK */
-    .right-stack {
-      display: grid;
-      grid-template-rows: 1fr auto;
-      gap: 12px;
-    }
-    .welcome-panel {
-      padding: 18px 22px;
+    /* DIALOG CONSOLE */
+    .dialog-console {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      box-shadow: var(--panel-border-glow);
       display: flex;
       flex-direction: column;
+      padding: 14px 16px;
+      overflow: hidden;
+    }
+    .console-header {
+      display: flex;
       justify-content: space-between;
-    }
-    .welcome-panel h2 {
-      font-size: 20px;
-      font-weight: 700;
-      margin: 10px 0 6px;
-      color: #ffffff;
-    }
-    .welcome-panel p {
+      align-items: center;
+      margin-bottom: 10px;
+      font-family: 'Orbitron', sans-serif;
       font-size: 11px;
-      line-height: 1.7;
-      color: #8aa2b7;
-      margin: 0;
+      letter-spacing: 1px;
+      color: var(--cyan-bright);
     }
-    .welcome-footer {
-      display: flex;
-      justify-content: space-between;
-      border-top: 1px solid #1c3448;
-      margin-top: 14px;
-      padding-top: 10px;
-      font: 9px 'DM Mono', monospace;
-      letter-spacing: 0.8px;
-      color: #6d91aa;
-    }
-    .welcome-footer span:first-child {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 9px;
-    }
-    .metric {
-      padding: 12px 12px;
-      background: #091724;
-      border: 1px solid #183146;
-      border-radius: 9px;
-    }
-    .metric-top {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #65bce7;
-    }
-    .metric-top svg { width: 14px; height: 14px; }
-    .metric-top span { font-size: 8px; color: #7692a8; }
-    .metric strong {
-      display: block;
-      font: 16px 'DM Mono', monospace;
-      margin-top: 8px;
-      color: #d8f1ff;
-      font-weight: 600;
-    }
-    .metric small {
-      display: block;
-      font-size: 8.5px;
-      color: #58748b;
-      margin-top: 3px;
-    }
-
-    /* LOWER GRID */
-    .lower-grid {
-      display: grid;
-      grid-template-columns: 1.15fr 1fr;
-      gap: 16px;
-      flex: 1;
-      min-height: 280px;
-    }
-
-    .chat-panel, .activity-panel {
-      padding: 18px 20px;
-      display: flex;
-      flex-direction: column;
-    }
-    .section-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-    .section-heading h2 {
-      font-size: 15px;
-      margin: 4px 0 0;
-      color: #ffffff;
-    }
-    .tag {
-      font: 8px 'DM Mono', monospace;
-      color: #69c9a9;
-      border: 1px solid #245c50;
-      border-radius: 20px;
-      padding: 4px 8px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(105, 201, 169, 0.08);
-    }
-
-    .messages {
+    .messages-log {
       flex: 1;
       overflow-y: auto;
       padding-right: 6px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      max-height: 200px;
+      gap: 10px;
+      max-height: 140px;
     }
-    .message {
+    .msg-item {
       display: flex;
       gap: 10px;
+      font-size: 12px;
+      line-height: 1.5;
     }
-    .message-avatar {
-      width: 28px;
-      height: 28px;
-      flex-shrink: 0;
-      border-radius: 8px;
-      background: #12354c;
-      color: #7bd7ff;
+    .msg-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--cyan-bright);
       display: grid;
       place-items: center;
+      box-shadow: 0 0 8px var(--cyan-bright);
+      color: var(--cyan-bright);
       font-size: 10px;
       font-weight: 700;
-      border: 1px solid rgba(42, 138, 192, 0.3);
+      flex-shrink: 0;
     }
-    .message.user .message-avatar {
-      background: #253346;
-      color: #b5c6d7;
-      border-color: #3b4e68;
+    .msg-item.user .msg-avatar {
+      border-color: #629bb2;
+      color: #fff;
+      box-shadow: none;
     }
-    .message-role {
-      font-size: 8px;
-      color: #6ba9ce;
-      font-weight: 600;
+    .msg-item b {
+      color: var(--cyan-bright);
+      display: block;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      font-family: 'Share Tech Mono', monospace;
     }
-    .message.user .message-role { color: #879ab0; }
-    .message p {
-      font-size: 11px;
-      color: #b9cbd9;
-      line-height: 1.6;
-      margin: 3px 0 0;
-    }
-    .typing {
-      font: 9px 'DM Mono', monospace;
-      color: #6fa9c9;
-      padding-left: 38px;
-    }
-    .typing span {
-      margin-left: 6px;
-      animation: pulse 1s infinite;
-    }
+    .msg-item.user b { color: #8ba9bd; }
 
-    .composer {
+    /* COMPOSER ROW */
+    .composer-bar {
+      margin-top: 10px;
       display: flex;
       align-items: center;
       gap: 8px;
-      background: #07121d;
-      border: 1px solid #203b50;
+      background: rgba(2, 9, 16, 0.85);
+      border: 1px solid var(--cyan-dim);
       border-radius: 8px;
-      padding: 6px 8px;
-      margin-top: 10px;
+      padding: 6px 10px;
     }
-    .composer input {
+    .composer-bar:focus-within {
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.3);
+    }
+    .composer-input {
       flex: 1;
-      min-width: 0;
       background: transparent;
-      border: 0;
-      outline: 0;
-      color: #e5f3ff;
-      font-size: 11px;
-    }
-    .composer input::placeholder { color: #536d83; }
-    .voice-toggle-btn {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 5px 8px;
-      border-radius: 6px;
-      font: 9px 'DM Mono', monospace;
+      border: none;
+      outline: none;
+      color: #fff;
+      font-size: 13px;
+      font-family: 'Rajdhani', sans-serif;
       font-weight: 600;
-      border: 1px solid #1a3c54;
-      background: #0d2133;
-      color: #6fbce8;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      white-space: nowrap;
     }
-    .voice-toggle-btn:hover {
-      background: #14334f;
-      border-color: #3182b8;
-    }
-    .voice-toggle-btn.active {
-      background: rgba(72, 217, 176, 0.12);
-      border-color: #278168;
-      color: #48d9b0;
-      box-shadow: 0 0 10px rgba(72, 217, 176, 0.2);
-    }
-    .voice-toggle-btn.muted {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: #7f2323;
-      color: #f87171;
-    }
-    .voice-toggle-btn svg {
-      width: 13px;
-      height: 13px;
-    }
+    .composer-input::placeholder { color: #436a7d; }
 
-    .icon-button {
-      background: transparent;
-      border: 0;
-      color: #6e9fbd;
-      padding: 5px;
-      cursor: pointer;
-      border-radius: 6px;
-      transition: all 0.2s;
-    }
-    .icon-button:hover {
-      background: rgba(110, 159, 189, 0.15);
-      color: #8ce4ff;
-    }
-    .icon-button.active {
-      color: #48d9b0;
-      background: rgba(72, 217, 176, 0.15);
-      box-shadow: 0 0 10px rgba(72, 217, 176, 0.3);
-    }
-    .composer-hint {
-      font-size: 8px;
-      color: #526c82;
-      margin: 6px 3px 0;
-      letter-spacing: 0.4px;
-    }
-
-    /* TELEMETRY ACTIVITY */
-    .module-row {
+    .voice-toggle-chip {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 9px 0;
-      border-bottom: 1px solid #172b3c;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 6px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--cyan-bright);
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--cyan-bright);
+      box-shadow: 0 0 8px rgba(0, 240, 255, 0.25);
     }
-    .module-icon {
-      width: 30px;
-      height: 30px;
-      border-radius: 7px;
-      background: #102b40;
-      color: #6bbde4;
+    .voice-toggle-chip.muted {
+      border-color: #ff3366;
+      background: rgba(255, 51, 102, 0.15);
+      color: #ff5577;
+      box-shadow: 0 0 8px rgba(255, 51, 102, 0.25);
+    }
+
+    .mic-live-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--cyan-bright);
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--cyan-bright);
       display: grid;
       place-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-    .module-icon svg { width: 15px; height: 15px; }
-    .module-copy { flex: 1; }
-    .module-copy b { font-size: 11px; font-weight: 600; color: #ffffff; display: block; }
-    .module-copy small { font-size: 8.5px; color: #678198; margin-top: 2px; display: block; }
-    .module-state { font-size: 8px; }
-    .module-state.active, .module-state.ready { color: #55d6ad; }
-    .module-state.pending { color: #d6b46a; }
+    .mic-live-btn:hover {
+      background: rgba(0, 240, 255, 0.3);
+      box-shadow: 0 0 15px var(--cyan-bright);
+    }
+    .mic-live-btn.listening {
+      background: #00ffaa;
+      border-color: #00ffaa;
+      color: #000;
+      box-shadow: 0 0 20px #00ffaa;
+      animation: pulse 1s infinite;
+    }
 
-    .security-note {
+    /* RIGHT WIDGETS COLUMN */
+    .widgets-col {
       display: flex;
-      gap: 9px;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .widget-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      box-shadow: var(--panel-border-glow);
+      padding: 12px 14px;
+      backdrop-filter: blur(10px);
+    }
+    .widget-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--cyan-bright);
+      margin-bottom: 10px;
+      display: flex;
       align-items: center;
-      padding: 10px 12px;
-      background: #0c2430;
-      border: 1px solid #1c4852;
-      border-radius: 8px;
-      margin-top: 10px;
-      color: #72d3bd;
+      gap: 6px;
     }
-    .security-note b { font-size: 10px; color: #a7e5d7; display: block; }
-    .security-note small { font-size: 8.5px; color: #6e9c9d; margin-top: 2px; display: block; }
+    .quick-cmd-btn {
+      width: 100%;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      background: rgba(2, 10, 18, 0.6);
+      color: var(--text-main);
+      font-size: 11.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+    .quick-cmd-btn:hover {
+      border-color: var(--cyan-bright);
+      background: rgba(0, 240, 255, 0.15);
+      color: #fff;
+      transform: translateX(3px);
+    }
 
-    footer {
-      font-size: 8.5px;
-      color: #3e586e;
-      text-align: center;
-      margin-top: 14px;
-      flex-shrink: 0;
+    /* MODAL AGENTS */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(1, 6, 12, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      display: none;
+      place-items: center;
     }
-    footer span { color: #277ba4; margin: 0 7px; }
+    .modal-card {
+      width: 540px;
+      background: #04121e;
+      border: 1px solid var(--cyan-bright);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 0 40px rgba(0, 240, 255, 0.35);
+    }
+    .agent-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .agent-box {
+      background: rgba(2, 8, 14, 0.8);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .agent-box:hover {
+      border-color: var(--cyan-bright);
+      background: rgba(0, 240, 255, 0.12);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+    }
+    .agent-box b {
+      display: block;
+      color: var(--cyan-bright);
+      font-size: 12px;
+      margin-bottom: 4px;
+    }
+    .agent-box small {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.4;
+      display: block;
+    }
 
     @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes pulse { 0%, 100% { filter: brightness(0.9); } 50% { filter: brightness(1.25); } }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes pulse-holo { 0%, 100% { filter: drop-shadow(0 0 20px rgba(0,240,255,0.5)); } 50% { filter: drop-shadow(0 0 35px rgba(0,240,255,0.85)); } }
     @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
   </style>
 </head>
 <body>
 
-<div class="app-shell">
-
-  <!-- ================= SIDEBAR ================= -->
-  <aside class="sidebar">
-    <div class="brand" pywebview-drag-region>
-      <div class="brand-mark"><i data-lucide="radio"></i></div>
+  <!-- TOP HUD -->
+  <header pywebview-drag-region>
+    <div class="brand-group">
+      <div class="arc-reactor-logo"></div>
       <div>
-        <div class="brand-name">J.A.R.V.I.S.</div>
-        <div class="brand-sub">PERSONAL INTELLIGENCE</div>
+        <div class="brand-title">J.A.R.V.I.S.</div>
+        <div class="brand-sub">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
       </div>
     </div>
 
-    <div class="nav-label">WORKSPACE</div>
-    <nav>
-      <a class="nav-item active" onclick="selectNav(this)"><i data-lucide="layout-dashboard"></i>Обзор</a>
-      <a class="nav-item" onclick="focusChat()"><i data-lucide="message-square"></i>Диалоги</a>
-      <a class="nav-item" onclick="openAgentsModal()"><i data-lucide="bot"></i>Рой Агентов</a>
-      <a class="nav-item" onclick="sendQuickCommand('покажи контент план на youtube')"><i data-lucide="zap"></i>YouTube Скиллы</a>
-      <a class="nav-item" onclick="sendQuickCommand('сверни все окна')"><i data-lucide="monitor"></i>Управление ПК</a>
-    </nav>
-
-    <div class="nav-label system-label">SYSTEM</div>
-    <nav>
-      <a class="nav-item" onclick="openFullSettings()"><i data-lucide="settings"></i>Настройки</a>
-      <a class="nav-item" onclick="triggerWakeWordTest()"><i data-lucide="mic"></i>Тест Микрофона</a>
-      <a class="nav-item" onclick="checkUpdates()"><i data-lucide="refresh-cw"></i>Обновления</a>
-    </nav>
-
-    <div class="sidebar-bottom">
-      <div class="user-chip">
-        <div class="avatar">С</div>
-        <div>
-          <b>Сэр Тони</b>
-          <span>Локальный профиль</span>
-        </div>
-      </div>
-      <div class="version">JARVIS PRIME · BUILD 2.1.0</div>
+    <div class="header-center">
+      <span class="badge-live">СИСТЕМА АКТИВНА</span>
+      <span style="color:var(--text-muted);">|</span>
+      <span>РЕЖИМ: HYBRID (CLOUD + LOCAL)</span>
+      <span style="color:var(--text-muted);">|</span>
+      <span class="clock-display" id="clock">12:00:00</span>
     </div>
-  </aside>
 
-  <!-- ================= MAIN ================= -->
-  <main class="main">
+    <div class="header-controls">
+      <button class="sys-btn" onclick="openFullSettings()" title="Настройки"><i data-lucide="settings"></i></button>
+      <button class="sys-btn" onclick="minimizeToTray()" title="Свернуть в трей"><i data-lucide="minus"></i></button>
+      <button class="sys-btn close" onclick="closeApp()" title="Закрыть"><i data-lucide="x"></i></button>
+    </div>
+  </header>
 
-    <!-- TOPBAR -->
-    <header class="topbar" pywebview-drag-region>
-      <div>
-        <span class="eyebrow">STARK INDUSTRIES · QUANTUM CORE</span>
-        <h1>Центр управления</h1>
-      </div>
+  <!-- MAIN WORKSPACE -->
+  <div class="matrix-workspace">
+    <!-- LEFT NAVIGATION -->
+    <aside class="sidebar">
+      <button class="nav-btn active" onclick="selectNav(this)"><i data-lucide="layout-dashboard"></i> Главная (Dashboard)</button>
+      <button class="nav-btn" onclick="focusChat()"><i data-lucide="message-square"></i> Чат с ИИ</button>
+      <button class="nav-btn" onclick="openAgentsModal()"><i data-lucide="bot"></i> Рой Агентов</button>
+      <button class="nav-btn" onclick="sendQuickCommand('покажи контент план на youtube')"><i data-lucide="zap"></i> YouTube Скиллы</button>
+      <button class="nav-btn" onclick="sendQuickCommand('сверни все окна')"><i data-lucide="monitor"></i> Управление ПК</button>
+      <button class="nav-btn" onclick="triggerWakeWordTest()"><i data-lucide="mic"></i> Тест Микрофона</button>
+      <button class="nav-btn" onclick="checkUpdates()"><i data-lucide="refresh-cw"></i> Обновления</button>
+      <button class="nav-btn" onclick="openFullSettings()"><i data-lucide="sliders"></i> Настройки</button>
+    </aside>
 
-      <div class="top-actions">
-        <div class="top-status">
-          <span class="live-dot"></span>
-          <span id="system-status-text">СИСТЕМА В СЕТИ</span>
-          <span class="divider-v"></span>
-          <span class="clock">FIFINE MIC · OK</span>
-        </div>
-
-        <div class="window-btns">
-          <button onclick="minimizeToTray()" class="win-btn" title="Свернуть в трей">
-            <i data-lucide="minus"></i>
-          </button>
-          <button onclick="closeApp()" class="win-btn close" title="Закрыть программу">
-            <i data-lucide="x"></i>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- HERO SECTION -->
-    <section class="hero-grid">
-      <!-- REACTOR CORE -->
-      <div class="core-panel panel">
-        <div class="panel-kicker">
-          <span class="live-dot"></span> JARVIS QUANTUM SYNAPSE <span class="muted">/ READY</span>
-        </div>
-
-        <div class="reactor-wrap" onclick="toggleVoice()">
-          <div class="orbit orbit-one"></div>
-          <div class="orbit orbit-two"></div>
-          <div class="orbit orbit-three"></div>
-          <div class="reactor">
-            <div class="reactor-inner">
-              <i data-lucide="activity" style="width: 32px; height: 32px;"></i>
-              <span>CORE</span>
-            </div>
+    <!-- CENTER MATRIX -->
+    <main class="center-stage">
+      <!-- HOLOGRAM VIEWPORT -->
+      <section class="hologram-viewport">
+        <div class="telemetry-col">
+          <div class="sec-badge"><i data-lucide="shield-check" style="width:14px;height:14px;"></i> СТАТУС СИСТЕМЫ</div>
+          <div class="metric-row">
+            <span class="metric-name"><i data-lucide="cpu" style="width:13px;height:13px;"></i> CPU LOAD</span>
+            <span class="metric-val" id="metric-cpu">8%</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name"><i data-lucide="database" style="width:13px;height:13px;"></i> RAM USE</span>
+            <span class="metric-val" id="metric-ram">38%</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name"><i data-lucide="hard-drive" style="width:13px;height:13px;"></i> NVMe C:</span>
+            <span class="metric-val" id="metric-disk">54%</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-name"><i data-lucide="mic" style="width:13px;height:13px;"></i> FIFINE MIC</span>
+            <span class="metric-val" style="color:#00ffaa;">ONLINE</span>
           </div>
         </div>
 
-        <div class="core-title" id="core-state-title">СИСТЕМА ГОТОВА</div>
-        <div class="core-caption" id="core-state-caption">Кликните по реактору или скажите «Джарвис»</div>
-
-        <div class="core-actions">
-          <button class="primary-button" onclick="toggleVoice()">
-            <i data-lucide="mic"></i> Слушать команду
-          </button>
-          <span class="hotkey">ALT + J · WAKE WORD ON</span>
+        <div class="hologram-avatar-wrap">
+          <img src="hologram_core.png" alt="Tony Stark Hologram" class="hologram-image" id="hologram-img" onerror="this.src='stark_hologram.jpg'">
+          <div class="hologram-rings"></div>
+          <div class="hologram-caption" id="holo-caption">J.A.R.V.I.S. QUANTUM CORE</div>
+          <div class="speech-bubble" id="speech-bubble">Привет, сэр. Все квантовые системы в норме. Чем могу помочь?</div>
         </div>
-      </div>
+      </section>
 
-      <!-- RIGHT STACK -->
-      <div class="right-stack">
-        <div class="panel welcome-panel">
-          <div>
-            <div class="panel-kicker"><i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> INTELLIGENCE OVERVIEW</div>
-            <h2>Добро пожаловать, сэр.</h2>
-            <p>Все модули J.A.R.V.I.S. Prime синхронизированы. Доступен полный контроль Windows, фоновый трей-режим, голосовой дубляж Тони Старка и 11 инструментов YouTube.</p>
-          </div>
-          <div class="welcome-footer">
-            <span><span class="live-dot"></span> Голосовое ядро активно</span>
-            <span id="voice-name-badge">VOICE: DMITRY (RU)</span>
-          </div>
+      <!-- INTERACTION CONSOLE -->
+      <section class="dialog-console">
+        <div class="console-header">
+          <span><i data-lucide="terminal" style="width:13px;height:13px;"></i> ДИАЛОГ С J.A.R.V.I.S.</span>
+          <span style="font-family:'Share Tech Mono'; color:#00ffaa;" id="engine-status">● VOICE: DMITRY NEURAL</span>
         </div>
 
-        <!-- METRICS -->
-        <div class="metrics-grid">
-          <div class="metric">
-            <div class="metric-top"><i data-lucide="cpu"></i><span>CPU LOAD</span></div>
-            <strong id="metric-cpu">8%</strong>
-            <small>8 Cores Active</small>
-          </div>
-          <div class="metric">
-            <div class="metric-top"><i data-lucide="database"></i><span>RAM USE</span></div>
-            <strong id="metric-ram">42%</strong>
-            <small>DDR4 / DDR5</small>
-          </div>
-          <div class="metric">
-            <div class="metric-top"><i data-lucide="hard-drive"></i><span>DISK C:</span></div>
-            <strong id="metric-disk">64%</strong>
-            <small>NVMe Storage</small>
-          </div>
-          <div class="metric">
-            <div class="metric-top"><i data-lucide="wifi"></i><span>STATUS</span></div>
-            <strong>ONLINE</strong>
-            <small>Gemini Flash</small>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- LOWER SECTION -->
-    <section class="lower-grid">
-      <!-- CHAT TERMINAL -->
-      <div class="panel chat-panel">
-        <div class="section-heading">
-          <div>
-            <span class="panel-kicker">INTERACTION MODULE</span>
-            <h2>Диалог с J.A.R.V.I.S.</h2>
-          </div>
-          <span class="tag"><span class="live-dot"></span> NEURAL STREAM</span>
-        </div>
-
-        <div class="messages" id="messages-container">
-          <div class="message">
-            <div class="message-avatar"><i data-lucide="radio" style="width: 14px; height: 14px;"></i></div>
+        <div class="messages-log" id="messages-container">
+          <div class="msg-item">
+            <div class="msg-avatar"><i data-lucide="activity" style="width:14px;height:14px;"></i></div>
             <div>
-              <div class="message-role">J.A.R.V.I.S.</div>
-              <p>Здравствуйте, сэр. Все квантовые синапсы синхронизированы. Чем могу помочь?</p>
+              <b>J.A.R.V.I.S.</b>
+              <p>Здравствуйте, сэр. Нейросетевое ядро Gemini 3.5 синхронизировано. Компьютер под полным контролем.</p>
             </div>
           </div>
         </div>
 
-        <div id="typing-indicator" class="typing" style="display: none;">
-          J.A.R.V.I.S. обрабатывает запрос<span>•••</span>
-        </div>
-
-        <div class="composer">
-          <button class="icon-button" id="mic-btn" onclick="toggleVoice()" title="Слушать микрофон">
-            <i data-lucide="mic"></i>
+        <div class="composer-bar">
+          <button class="mic-live-btn" id="mic-btn" onclick="toggleVoice()" title="Слушать микрофон">
+            <i data-lucide="mic" style="width:16px;height:16px;"></i>
           </button>
-          <button class="voice-toggle-btn active" id="voice-toggle-btn" onclick="toggleVoiceOutput()" title="Включить / Выключить озвучивание">
-            <i data-lucide="volume-2" id="voice-toggle-icon"></i>
+
+          <button class="voice-toggle-chip" id="voice-toggle-btn" onclick="toggleVoiceOutput()" title="Включить / Выключить голос">
+            <i data-lucide="volume-2" id="voice-toggle-icon" style="width:13px;height:13px;"></i>
             <span id="voice-toggle-label">VOICE ON</span>
           </button>
-          <input id="chat-input" placeholder="Введите команду или скажите вслух «Джарвис»..." onkeydown="if(event.key==='Enter') sendMessage()" />
-          <button class="send-button" onclick="sendMessage()">
-            <i data-lucide="send"></i>
-          </button>
+
+          <input type="text" class="composer-input" id="chat-input" placeholder="Введите команду или скажите вслух «Джарвис»..." onkeydown="if(event.key==='Enter') sendMessage()">
+
+          <button class="sys-btn" onclick="sendMessage()" title="Отправить"><i data-lucide="send" style="width:15px;height:15px;"></i></button>
         </div>
-        <div class="composer-hint">ENTER — отправить · ALT+J или фраза «Джарвис» — голосовая команда</div>
+      </section>
+    </main>
+
+    <!-- RIGHT WIDGETS -->
+    <aside class="widgets-col">
+      <div class="widget-panel">
+        <div class="widget-title"><i data-lucide="terminal-square" style="width:14px;height:14px;"></i> БЫСТРЫЕ КОМАНДЫ</div>
+        <button class="quick-cmd-btn" onclick="sendQuickCommand('сверни все окна')"><i data-lucide="minimize-2" style="width:14px;height:14px;"></i> Свернуть все окна</button>
+        <button class="quick-cmd-btn" onclick="sendQuickCommand('разверни все окна')"><i data-lucide="maximize-2" style="width:14px;height:14px;"></i> Развернуть окна</button>
+        <button class="quick-cmd-btn" onclick="sendQuickCommand('сделай скриншот')"><i data-lucide="camera" style="width:14px;height:14px;"></i> Сделать скриншот</button>
+        <button class="quick-cmd-btn" onclick="sendQuickCommand('следующий трек')"><i data-lucide="skip-forward" style="width:14px;height:14px;"></i> Следующий трек</button>
+        <button class="quick-cmd-btn" onclick="sendQuickCommand('заблокируй компьютер')"><i data-lucide="lock" style="width:14px;height:14px;"></i> Заблокировать ПК</button>
       </div>
 
-      <!-- TELEMETRY / MODULES -->
-      <div class="panel activity-panel">
-        <div class="section-heading">
-          <div>
-            <span class="panel-kicker">SYSTEM TELEMETRY</span>
-            <h2>Состояние подсистем</h2>
-          </div>
-          <i data-lucide="gauge" class="muted" style="width: 18px; height: 18px;"></i>
-        </div>
-
-        <div class="module-row">
-          <div class="module-icon"><i data-lucide="cpu"></i></div>
-          <div class="module-copy">
-            <b>Gemini 3.5 Flash AI Core</b>
-            <small>Мультимодальный мозг и анализ контекста</small>
-          </div>
-          <span class="module-state active">ACTIVE</span>
-        </div>
-
-        <div class="module-row">
-          <div class="module-icon"><i data-lucide="mic"></i></div>
-          <div class="module-copy">
-            <b>Fifine VAD Listener & Whisper</b>
-            <small>Локальное непрерывное распознавание</small>
-          </div>
-          <span class="module-state active">READY</span>
-        </div>
-
-        <div class="module-row">
-          <div class="module-icon"><i data-lucide="volume-2"></i></div>
-          <div class="module-copy">
-            <b>Neural Voice Engine</b>
-            <small>Дубляж Тони Старка (ru-RU-Dmitry)</small>
-          </div>
-          <span class="module-state active">ONLINE</span>
-        </div>
-
-        <div class="module-row">
-          <div class="module-icon"><i data-lucide="monitor"></i></div>
-          <div class="module-copy">
-            <b>Windows Desktop Automation</b>
-            <small>Управление окнами, звуком и питанием</small>
-          </div>
-          <span class="module-state active">ACTIVE</span>
-        </div>
-
-        <div class="security-note">
-          <i data-lucide="shield-check" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
-          <span>
-            <b>Защищённый режим и системный трей</b>
-            <small>Приложение сворачивается в трей и просыпается по голосу.</small>
-          </span>
+      <div class="widget-panel" style="flex:1;">
+        <div class="widget-title"><i data-lucide="activity" style="width:14px;height:14px;"></i> АКТИВНЫЕ ПОДСИСТЕМЫ</div>
+        <div style="font-size:11px; line-height:1.7; color:var(--text-muted);">
+          <div><b style="color:#00ffaa;">✔</b> Gemini 3.5 AI Core: <span style="color:#fff;">READY</span></div>
+          <div><b style="color:#00ffaa;">✔</b> Fifine Mic & Whisper: <span style="color:#fff;">LISTENING</span></div>
+          <div><b style="color:#00ffaa;">✔</b> Neural Voice (Dmitry): <span style="color:#fff;">ONLINE</span></div>
+          <div><b style="color:#00ffaa;">✔</b> Windows Automation: <span style="color:#fff;">ACTIVE</span></div>
+          <div><b style="color:#00ffaa;">✔</b> System Tray & Alt+J: <span style="color:#fff;">ARMED</span></div>
         </div>
       </div>
-    </section>
+    </aside>
+  </div>
 
-    <footer>
-      J.A.R.V.I.S. PRIME <span>·</span> STARK INDUSTRIES <span>·</span> LOCAL-FIRST HYBRID ARCHITECTURE
-    </footer>
-  </main>
-</div>
-
-<script>
-  lucide.createIcons();
-
-  function addMessage(role, text, isUser = false) {
-    const container = document.getElementById('messages-container');
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `message ${isUser ? 'user' : ''}`;
-    
-    msgDiv.innerHTML = `
-      <div class="message-avatar">${isUser ? 'ВЫ' : '<i data-lucide="radio" style="width: 14px; height: 14px;"></i>'}</div>
-      <div>
-        <div class="message-role">${role}</div>
-        <p>${text}</p>
+  <!-- MODAL AGENTS -->
+  <div class="modal-overlay" id="agents-modal" onclick="if(event.target===this) closeAgentsModal()">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <h3 style="font-family:'Orbitron'; font-size:15px; color:var(--cyan-bright);"><i data-lucide="bot" style="width:18px;height:18px;vertical-align:middle;"></i> АВТОНОМНЫЙ РОЙ АГЕНТОВ</h3>
+        <button class="sys-btn close" onclick="closeAgentsModal()"><i data-lucide="x"></i></button>
       </div>
-    `;
-    container.appendChild(msgDiv);
-    container.scrollTop = container.scrollHeight;
-    lucide.createIcons();
-  }
+      <p style="font-size:11.5px; color:var(--text-muted); margin-bottom:14px;">Выберите специализированного агента для выполнения задачи:</p>
+      <div class="agent-grid">
+        <div class="agent-box" onclick="selectAgentTask('YouTube Producer: создай вирусный сценарий для Shorts с хуком')">
+          <b>🎬 YouTube Producer</b>
+          <small>Сценарии для YouTube/Shorts, таймкоды, вирусные заголовки и SEO-пакеты.</small>
+        </div>
+        <div class="agent-box" onclick="selectAgentTask('AutoCoder: напиши скрипт автоматизации для Windows')">
+          <b>💻 AutoCoder</b>
+          <small>Автоматическое написание и тестирование скриптов PowerShell и Python на ПК.</small>
+        </div>
+        <div class="agent-box" onclick="selectAgentTask('Web Scout: найди последние новости о технологиях и искусственном интеллекте')">
+          <b>🌐 Web Scout</b>
+          <small>Глубокий веб-поиск актуальной информации, курсов валют и сводок.</small>
+        </div>
+        <div class="agent-box" onclick="selectAgentTask('Vision Sentry: включи охранный режим компьютера')">
+          <b>🛡️ Vision Sentry</b>
+          <small>Охранный режим через веб-камеру с фиксацией лиц и отправкой фото в Telegram.</small>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-    
-    addMessage('ВЫ', text, true);
-    input.value = '';
-    
-    document.getElementById('typing-indicator').style.display = 'block';
-    document.getElementById('core-state-title').innerText = 'ОБРАБОТКА...';
-    document.getElementById('core-state-caption').innerText = text;
-
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.send_command(text);
-    }
-  }
-
-  let voiceOutputEnabled = true;
-
-  function toggleVoiceOutput() {
-    voiceOutputEnabled = !voiceOutputEnabled;
-    const btn = document.getElementById('voice-toggle-btn');
-    const label = document.getElementById('voice-toggle-label');
-    const icon = document.getElementById('voice-toggle-icon');
-
-    if (voiceOutputEnabled) {
-      btn.className = 'voice-toggle-btn active';
-      label.innerText = 'VOICE ON';
-      icon.setAttribute('data-lucide', 'volume-2');
-    } else {
-      btn.className = 'voice-toggle-btn muted';
-      label.innerText = 'VOICE OFF';
-      icon.setAttribute('data-lucide', 'volume-x');
-    }
+  <script>
     lucide.createIcons();
 
-    if (window.pywebview && window.pywebview.api && window.pywebview.api.set_voice_output) {
-      window.pywebview.api.set_voice_output(voiceOutputEnabled);
+    // Clock display
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toTimeString().split(' ')[0];
+    }, 1000);
+
+    let voiceOutputEnabled = true;
+
+    function addMessage(role, text, isUser = false) {
+      const container = document.getElementById('messages-container');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg-item ${isUser ? 'user' : ''}`;
+      
+      msgDiv.innerHTML = `
+        <div class="msg-avatar">${isUser ? 'ВЫ' : '<i data-lucide="activity" style="width:13px;height:13px;"></i>'}</div>
+        <div>
+          <b>${role}</b>
+          <p>${text}</p>
+        </div>
+      `;
+      container.appendChild(msgDiv);
+      container.scrollTop = container.scrollHeight;
+      lucide.createIcons();
     }
-  }
 
-  function setStatus(statusText, isListening = false, isSpeaking = false) {
-    const title = document.getElementById('core-state-title');
-    const caption = document.getElementById('core-state-caption');
-    const micBtn = document.getElementById('mic-btn');
-    const typing = document.getElementById('typing-indicator');
+    function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      addMessage('ВЫ', text, true);
+      input.value = '';
+      
+      document.getElementById('speech-bubble').innerText = text;
+      document.getElementById('holo-caption').innerText = 'ОБРАБОТКА КОМАНДЫ...';
 
-    if (isListening) {
-      title.innerText = 'СЛУШАЮ ВАС...';
-      title.style.color = '#48d9b0';
-      caption.innerText = 'Говорите команду в микрофон Fifine';
-      micBtn.classList.add('active');
-    } else if (isSpeaking) {
-      title.innerText = 'ОТВЕТ ДЖАРВИСА';
-      title.style.color = '#72d5ff';
-      typing.style.display = 'none';
-      micBtn.classList.remove('active');
-    } else {
-      title.innerText = 'СИСТЕМА ГОТОВА';
-      title.style.color = '#b9eaff';
-      caption.innerText = 'Ожидаю вашей команды';
-      typing.style.display = 'none';
-      micBtn.classList.remove('active');
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.send_command(text);
+      }
     }
-  }
 
-  function updateSystemGauges(cpu, ram, disk) {
-    document.getElementById('metric-cpu').innerText = cpu + '%';
-    document.getElementById('metric-ram').innerText = ram + '%';
-    document.getElementById('metric-disk').innerText = disk + '%';
-  }
+    function toggleVoiceOutput() {
+      voiceOutputEnabled = !voiceOutputEnabled;
+      const btn = document.getElementById('voice-toggle-btn');
+      const label = document.getElementById('voice-toggle-label');
+      const icon = document.getElementById('voice-toggle-icon');
 
-  function toggleVoice() {
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.trigger_listen();
+      if (voiceOutputEnabled) {
+        btn.className = 'voice-toggle-chip';
+        label.innerText = 'VOICE ON';
+        icon.setAttribute('data-lucide', 'volume-2');
+      } else {
+        btn.className = 'voice-toggle-chip muted';
+        label.innerText = 'VOICE OFF';
+        icon.setAttribute('data-lucide', 'volume-x');
+      }
+      lucide.createIcons();
+
+      if (window.pywebview && window.pywebview.api && window.pywebview.api.set_voice_output) {
+        window.pywebview.api.set_voice_output(voiceOutputEnabled);
+      }
     }
-  }
 
-  function minimizeToTray() {
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.minimize_to_tray();
+    function setStatus(statusText, isListening = false, isSpeaking = false) {
+      const caption = document.getElementById('holo-caption');
+      const micBtn = document.getElementById('mic-btn');
+      const bubble = document.getElementById('speech-bubble');
+
+      if (isListening) {
+        caption.innerText = 'СЛУШАЮ СЭР...';
+        micBtn.classList.add('listening');
+        bubble.innerText = 'Слушаю вас... Говорите команду в микрофон.';
+      } else if (isSpeaking) {
+        caption.innerText = 'ОТВЕТ ДЖАРВИСА';
+        micBtn.classList.remove('listening');
+      } else {
+        caption.innerText = 'J.A.R.V.I.S. QUANTUM CORE';
+        micBtn.classList.remove('listening');
+      }
     }
-  }
 
-  function closeApp() {
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.close_app();
+    function updateSystemGauges(cpu, ram, disk) {
+      document.getElementById('metric-cpu').innerText = cpu + '%';
+      document.getElementById('metric-ram').innerText = ram + '%';
+      document.getElementById('metric-disk').innerText = disk + '%';
     }
-  }
 
-  function checkUpdates() {
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.check_updates().then(res => {
-        alert(res.message || 'Проверка обновлений завершена!');
-      });
+    function toggleVoice() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.trigger_listen();
+      }
     }
-  }
 
-  function triggerWakeWordTest() {
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.test_voice_sample();
+    function minimizeToTray() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.minimize_to_tray();
+      }
     }
-  }
 
-  function openFullSettings() {
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.open_wizard();
+    function closeApp() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.close_app();
+      }
     }
-  }
 
-  function openAgentsModal() {
-    alert("Рой агентов: в системе доступны AutoCoder, YouTube Producer, Web Scout и Vision Sentry!");
-  }
-
-  function sendQuickCommand(cmd) {
-    addMessage('ВЫ', cmd, true);
-    if (window.pywebview && window.pywebview.api) {
-      window.pywebview.api.send_command(cmd);
+    function checkUpdates() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.check_updates().then(res => {
+          alert(res.message || 'Проверка обновлений завершена!');
+        });
+      }
     }
-  }
 
-  function focusChat() {
-    document.getElementById('chat-input').focus();
-  }
+    function triggerWakeWordTest() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.test_voice_sample();
+      }
+    }
 
-  function selectNav(el) {
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-  }
-</script>
+    function openFullSettings() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.open_wizard();
+      }
+    }
+
+    function openAgentsModal() {
+      document.getElementById('agents-modal').style.display = 'grid';
+      lucide.createIcons();
+    }
+
+    function closeAgentsModal() {
+      document.getElementById('agents-modal').style.display = 'none';
+    }
+
+    function selectAgentTask(cmd) {
+      closeAgentsModal();
+      sendQuickCommand(cmd);
+    }
+
+    function sendQuickCommand(cmd) {
+      addMessage('ВЫ', cmd, true);
+      document.getElementById('speech-bubble').innerText = cmd;
+      document.getElementById('holo-caption').innerText = 'ОБРАБОТКА...';
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.send_command(cmd);
+      }
+    }
+
+    function focusChat() {
+      document.getElementById('chat-input').focus();
+    }
+
+    function selectNav(el) {
+      document.querySelectorAll('.nav-btn').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+    }
+  </script>
 </body>
 </html>
