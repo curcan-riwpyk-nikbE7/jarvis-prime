@@ -16,9 +16,10 @@ class ContinuousVoiceListener:
     5. Поддерживает все вариации слова активации и мгновенно вызывает callback.
     """
 
-    def __init__(self, on_wake_word_callback, fixed_device_index=None):
+    def __init__(self, on_wake_word_callback, fixed_device_index=None, energy_threshold=None):
         self.callback = on_wake_word_callback
         self.fixed_device_index = fixed_device_index
+        self.energy_threshold = energy_threshold
         self.is_running = False
         self.thread = None
         self.ambient_energy = 250.0  # стартовый уровень шума
