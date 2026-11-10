@@ -2,1235 +2,1046 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>J.A.R.V.I.S. QUANTUM SYNAPSE</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>J.A.R.V.I.S. PRIME — Command Dashboard</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="three.min.js"></script>
-  <script src="head_mesh.js"></script>
-
   <style>
+    :root {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #e8f2ff;
+      background: #050a12;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+    *::-webkit-scrollbar { display: none !important; }
+
     body {
-      font-family: 'Exo 2', sans-serif;
-      background: radial-gradient(ellipse at 50% 50%, #071126 0%, #040915 60%, #02050c 100%);
-      color: #f1f5f9;
+      min-width: 1100px;
+      height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(ellipse at 70% -20%, #123354 0, transparent 40%), #050a12;
       user-select: none;
     }
-    .font-code {
-      font-family: 'JetBrains Mono', monospace;
+
+    button, input { font: inherit; }
+
+    .app-shell {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
     }
 
-    /* ПОЛНАЯ ЛИКВИДАЦИЯ БЕЛОГО СКРОЛЛБАРА WINDOWS 98 */
-    * {
-      scrollbar-width: none !important;
-      -ms-overflow-style: none !important;
-    }
-    *::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    /* Ambient sci-fi grid overlay */
-    .space-grid {
-      background-image: 
-        radial-gradient(circle at 50% 48%, rgba(0, 240, 255, 0.12) 0%, transparent 65%),
-        linear-gradient(rgba(0, 240, 255, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 240, 255, 0.025) 1px, transparent 1px);
-      background-size: 100% 100%, 42px 42px, 42px 42px;
-    }
-
-    /* Cinematic Frosted Glass Cards with corner tech brackets */
-    .module-card {
-      background: linear-gradient(135deg, rgba(10, 22, 44, 0.7) 0%, rgba(5, 12, 26, 0.8) 100%);
-      border: 1px solid rgba(0, 240, 255, 0.18);
-      border-radius: 18px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-      position: relative;
-    }
-    .module-card:hover {
-      border-color: rgba(0, 240, 255, 0.6);
-      background: linear-gradient(135deg, rgba(14, 30, 60, 0.85) 0%, rgba(7, 18, 36, 0.9) 100%);
-      box-shadow: 0 0 26px rgba(0, 240, 255, 0.32), inset 0 0 14px rgba(0, 240, 255, 0.12);
-      transform: translateY(-2px);
-    }
-    .module-card.active {
-      border-color: #00f0ff;
-      background: linear-gradient(135deg, rgba(16, 36, 72, 0.88) 0%, rgba(8, 20, 42, 0.95) 100%);
-      box-shadow: 0 0 32px rgba(0, 240, 255, 0.45), inset 0 0 16px rgba(0, 240, 255, 0.2);
-    }
-
-    /* Corner cyber notches */
-    .module-card::before, .module-card::after {
-      content: '';
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      border-color: rgba(0, 240, 255, 0.5);
-      pointer-events: none;
-      transition: all 0.3s ease;
-    }
-    .module-card::before {
-      top: -1px; left: -1px;
-      border-top: 2px solid;
-      border-left: 2px solid;
-      border-top-left-radius: 18px;
-    }
-    .module-card::after {
-      bottom: -1px; right: -1px;
-      border-bottom: 2px solid;
-      border-right: 2px solid;
-      border-bottom-right-radius: 18px;
-    }
-    .module-card:hover::before, .module-card:hover::after,
-    .module-card.active::before, .module-card.active::after {
-      border-color: #00f0ff;
-      width: 10px;
-      height: 10px;
-    }
-
-    /* Icon square container */
-    .icon-container {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: linear-gradient(145deg, rgba(16, 32, 64, 0.85), rgba(7, 16, 34, 0.95));
-      border: 1px solid rgba(0, 240, 255, 0.22);
-      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.6);
-    }
-
-    /* Equalizer mini wave bars */
-    .eq-bar {
-      width: 3px;
-      border-radius: 2px;
-      background-color: #00f0ff;
-      animation: eqBounce 1.2s ease-in-out infinite alternate;
-    }
-    @keyframes eqBounce {
-      0% { height: 4px; }
-      100% { height: 16px; }
-    }
-
-    /* Dialogue bubble styling */
-    .dialogue-pill {
-      background: linear-gradient(180deg, rgba(8, 20, 44, 0.85) 0%, rgba(4, 10, 24, 0.95) 100%);
-      border: 1px solid rgba(0, 240, 255, 0.3);
-      box-shadow: 0 0 30px rgba(0, 240, 255, 0.22), inset 0 0 18px rgba(0, 240, 255, 0.08);
-      border-radius: 22px;
-      backdrop-filter: blur(20px);
-    }
-
-    /* Input pill styling */
-    .input-pill {
-      background: rgba(4, 10, 24, 0.9);
-      border: 1px solid rgba(0, 240, 255, 0.25);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
-      border-radius: 18px;
+    /* ================= SIDEBAR ================= */
+    .sidebar {
+      width: 250px;
+      flex-shrink: 0;
+      border-right: 1px solid #17283a;
+      background: rgba(6, 13, 23, 0.95);
       backdrop-filter: blur(16px);
-    }
-    .input-pill:focus-within {
-      border-color: rgba(0, 240, 255, 0.65);
-      box-shadow: 0 0 25px rgba(0, 240, 255, 0.35);
-    }
-
-    /* Glowing voice button */
-    .glow-btn {
-      background: linear-gradient(135deg, #38bdf8 0%, #00e5ff 50%, #0284c7 100%);
-      color: #030a18;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      box-shadow: 0 0 26px rgba(0, 229, 255, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      transition: all 0.2s ease;
-    }
-    .glow-btn:hover {
-      box-shadow: 0 0 38px rgba(0, 240, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      transform: scale(1.02);
-    }
-    .glow-btn:active {
-      transform: scale(0.98);
+      padding: 24px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 20;
     }
 
-    /* Active Listening pulse animation */
-    .mic-listening {
-      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 50%, #be123c 100%) !important;
-      color: #fff !important;
-      box-shadow: 0 0 35px rgba(244, 63, 94, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
-    }
-
-    /* Modal settings styling */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 5, 12, 0.92);
-      backdrop-filter: blur(25px);
-      z-index: 1000;
-      justify-content: center;
+    .brand {
+      display: flex;
+      gap: 12px;
       align-items: center;
+      padding: 0 6px 30px;
+      cursor: grab;
     }
-    .modal-container {
-      width: 820px;
-      max-height: 85vh;
-      background: #060c1c;
-      border: 1px solid rgba(0, 240, 255, 0.3);
-      border-radius: 16px;
-      box-shadow: 0 25px 80px rgba(0,0,0,0.9), 0 0 40px rgba(0,240,255,0.2);
+    .brand-mark {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #2a8ac0;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      color: #72d5ff;
+      background: #0c2336;
+      box-shadow: 0 0 22px rgba(22, 122, 176, 0.35);
+    }
+    .brand-name {
+      font-weight: 800;
+      letter-spacing: 2.2px;
+      font-size: 16px;
+      color: #ffffff;
+    }
+    .brand-sub, .nav-label, .version, .eyebrow, .panel-kicker, .metric-top span, .message-role, .composer-hint, footer, .hotkey, .module-state, .clock {
+      font-family: 'DM Mono', monospace;
+      letter-spacing: 1.1px;
+    }
+    .brand-sub {
+      font-size: 8px;
+      color: #6f8ca6;
+      margin-top: 3px;
+    }
+
+    .nav-label {
+      font-size: 9px;
+      color: #526a81;
+      padding: 0 10px 10px;
+    }
+    .system-label {
+      margin-top: 24px;
+    }
+
+    nav {
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      gap: 3px;
     }
-    .settings-pane {
-      display: none;
+
+    .nav-item {
+      height: 40px;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #8499ad;
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .nav-item:hover {
+      color: #e2f1ff;
+      background: rgba(18, 58, 88, 0.35);
+    }
+    .nav-item.active {
+      color: #c9edff;
+      background: linear-gradient(90deg, rgba(18, 58, 88, 0.65), #0b1d2d);
+      border: 1px solid #1c5575;
+      box-shadow: inset 0 0 12px rgba(97, 202, 255, 0.1);
+    }
+    .nav-item i {
+      width: 17px;
+      height: 17px;
+      color: #68839b;
+      transition: color 0.2s;
+    }
+    .nav-item.active i {
+      color: #61caff;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      display: flex;
       flex-direction: column;
+      gap: 8px;
+    }
+    .user-chip {
+      border-top: 1px solid #1b2a39;
+      padding: 14px 4px 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #16344b;
+      color: #8ddaff;
+      font-weight: 700;
+      border: 1px solid #2a8ac0;
+    }
+    .user-chip b {
+      display: block;
+      color: #e0f0ff;
+    }
+    .user-chip span {
+      display: block;
+      color: #688096;
+      font-size: 9px;
+      margin-top: 2px;
+    }
+    .version {
+      font-size: 8.5px;
+      color: #41566b;
+      padding: 4px 4px;
+    }
+
+    /* ================= MAIN CONTENT ================= */
+    .main {
+      flex: 1;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px 32px 18px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOPBAR */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+    }
+    .eyebrow {
+      font-size: 9px;
+      color: #5b91b6;
+    }
+    .topbar h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 4px 0 0;
+      letter-spacing: -0.5px;
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .top-status {
+      font: 10px 'DM Mono', monospace;
+      color: #82a1b8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #091724;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1px solid #1c384e;
+    }
+    .live-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #48d9b0;
+      box-shadow: 0 0 10px #48d9b0;
+      animation: pulse-dot 2s infinite;
+    }
+    .divider-v {
+      height: 14px;
+      border-left: 1px solid #26394b;
+      margin: 0 3px;
+    }
+    .clock {
+      color: #506c83;
+    }
+
+    .window-btns {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .win-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: #091724;
+      border: 1px solid #1c384e;
+      color: #85a2ba;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .win-btn:hover {
+      background: #12283c;
+      color: #ffffff;
+      border-color: #3b88b5;
+    }
+    .win-btn.close:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+      color: #f87171;
+    }
+
+    /* HERO GRID */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
       gap: 16px;
+      margin-bottom: 16px;
+      flex-shrink: 0;
     }
-    .settings-pane.active {
+
+    .panel {
+      background: linear-gradient(145deg, rgba(13, 29, 45, 0.95), rgba(8, 18, 29, 0.97));
+      border: 1px solid #1a3449;
+      border-radius: 12px;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+    }
+
+    /* REACTOR PANEL */
+    .core-panel {
+      min-height: 330px;
+      position: relative;
+      overflow: hidden;
       display: flex;
+      align-items: center;
+      flex-direction: column;
+      padding: 20px;
+      background: radial-gradient(ellipse at 50% 48%, #0d3450 0, transparent 52%), linear-gradient(145deg, #0d1d2d, #08121d);
     }
+    .core-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(#1c4a6815 1px, transparent 1px), linear-gradient(90deg, #1c4a6815 1px, transparent 1px);
+      background-size: 26px 26px;
+      mask-image: linear-gradient(transparent, #000, transparent);
+    }
+    .panel-kicker {
+      font-size: 9px;
+      color: #78b5d8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 1;
+    }
+    .muted { color: #55718a; }
+
+    .reactor-wrap {
+      width: 190px;
+      height: 190px;
+      position: relative;
+      margin: 14px 0 6px;
+      display: grid;
+      place-items: center;
+    }
+    .orbit {
+      position: absolute;
+      border: 1px solid rgba(56, 169, 223, 0.35);
+      border-radius: 50%;
+      animation: spin 22s linear infinite;
+    }
+    .orbit-one {
+      border-style: dashed;
+      inset: 0;
+    }
+    .orbit-two {
+      inset: 18px;
+      border-color: rgba(79, 202, 255, 0.55);
+      animation-duration: 14s;
+      animation-direction: reverse;
+    }
+    .orbit-three {
+      inset: 32px;
+      border-color: rgba(50, 136, 186, 0.4);
+      animation-duration: 32s;
+    }
+
+    .reactor {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      padding: 6px;
+      background: conic-gradient(from 20deg, #3bd3ff, #123a5b, #8de7ff, #16466c, #3bd3ff);
+      box-shadow: 0 0 25px rgba(32, 169, 239, 0.4), 0 0 60px rgba(20, 127, 192, 0.25);
+      animation: pulse 4s ease-in-out infinite;
+      cursor: pointer;
+    }
+    .reactor-inner {
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle, #174e70, #071522 72%);
+      border: 1px solid rgba(139, 230, 255, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: #8ce4ff;
+    }
+    .reactor-inner span {
+      font: 10px 'DM Mono', monospace;
+      letter-spacing: 5px;
+      margin-top: 3px;
+    }
+
+    .core-title {
+      font: 11px 'DM Mono', monospace;
+      letter-spacing: 2.5px;
+      color: #b9eaff;
+      z-index: 1;
+      margin-top: 2px;
+    }
+    .core-caption {
+      font-size: 11px;
+      color: #65859e;
+      margin-top: 4px;
+      z-index: 1;
+    }
+    .core-actions {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 14px;
+      z-index: 1;
+    }
+
+    .primary-button, .send-button {
+      border: 1px solid #2689ba;
+      background: linear-gradient(120deg, #12618a, #0e4265);
+      color: #e5f8ff;
+      border-radius: 7px;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(22, 138, 192, 0.25);
+      transition: all 0.2s;
+    }
+    .primary-button:hover, .send-button:hover {
+      background: linear-gradient(120deg, #1877a8, #135580);
+      border-color: #42b1eb;
+      box-shadow: 0 0 25px rgba(22, 138, 192, 0.45);
+    }
+    .hotkey {
+      font-size: 8px;
+      color: #56758d;
+    }
+
+    /* RIGHT STACK */
+    .right-stack {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 12px;
+    }
+    .welcome-panel {
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .welcome-panel h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 10px 0 6px;
+      color: #ffffff;
+    }
+    .welcome-panel p {
+      font-size: 11px;
+      line-height: 1.7;
+      color: #8aa2b7;
+      margin: 0;
+    }
+    .welcome-footer {
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #1c3448;
+      margin-top: 14px;
+      padding-top: 10px;
+      font: 9px 'DM Mono', monospace;
+      letter-spacing: 0.8px;
+      color: #6d91aa;
+    }
+    .welcome-footer span:first-child {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+    }
+    .metric {
+      padding: 12px 12px;
+      background: #091724;
+      border: 1px solid #183146;
+      border-radius: 9px;
+    }
+    .metric-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #65bce7;
+    }
+    .metric-top svg { width: 14px; height: 14px; }
+    .metric-top span { font-size: 8px; color: #7692a8; }
+    .metric strong {
+      display: block;
+      font: 16px 'DM Mono', monospace;
+      margin-top: 8px;
+      color: #d8f1ff;
+      font-weight: 600;
+    }
+    .metric small {
+      display: block;
+      font-size: 8.5px;
+      color: #58748b;
+      margin-top: 3px;
+    }
+
+    /* LOWER GRID */
+    .lower-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 16px;
+      flex: 1;
+      min-height: 280px;
+    }
+
+    .chat-panel, .activity-panel {
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .section-heading h2 {
+      font-size: 15px;
+      margin: 4px 0 0;
+      color: #ffffff;
+    }
+    .tag {
+      font: 8px 'DM Mono', monospace;
+      color: #69c9a9;
+      border: 1px solid #245c50;
+      border-radius: 20px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(105, 201, 169, 0.08);
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 200px;
+    }
+    .message {
+      display: flex;
+      gap: 10px;
+    }
+    .message-avatar {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+      border-radius: 8px;
+      background: #12354c;
+      color: #7bd7ff;
+      display: grid;
+      place-items: center;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid rgba(42, 138, 192, 0.3);
+    }
+    .message.user .message-avatar {
+      background: #253346;
+      color: #b5c6d7;
+      border-color: #3b4e68;
+    }
+    .message-role {
+      font-size: 8px;
+      color: #6ba9ce;
+      font-weight: 600;
+    }
+    .message.user .message-role { color: #879ab0; }
+    .message p {
+      font-size: 11px;
+      color: #b9cbd9;
+      line-height: 1.6;
+      margin: 3px 0 0;
+    }
+    .typing {
+      font: 9px 'DM Mono', monospace;
+      color: #6fa9c9;
+      padding-left: 38px;
+    }
+    .typing span {
+      margin-left: 6px;
+      animation: pulse 1s infinite;
+    }
+
+    .composer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #07121d;
+      border: 1px solid #203b50;
+      border-radius: 8px;
+      padding: 6px 8px;
+      margin-top: 10px;
+    }
+    .composer input {
+      flex: 1;
+      min-width: 0;
+      background: transparent;
+      border: 0;
+      outline: 0;
+      color: #e5f3ff;
+      font-size: 11px;
+    }
+    .composer input::placeholder { color: #536d83; }
+    .icon-button {
+      background: transparent;
+      border: 0;
+      color: #6e9fbd;
+      padding: 5px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .icon-button:hover {
+      background: rgba(110, 159, 189, 0.15);
+      color: #8ce4ff;
+    }
+    .icon-button.active {
+      color: #48d9b0;
+      background: rgba(72, 217, 176, 0.15);
+      box-shadow: 0 0 10px rgba(72, 217, 176, 0.3);
+    }
+    .composer-hint {
+      font-size: 8px;
+      color: #526c82;
+      margin: 6px 3px 0;
+      letter-spacing: 0.4px;
+    }
+
+    /* TELEMETRY ACTIVITY */
+    .module-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid #172b3c;
+    }
+    .module-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: #102b40;
+      color: #6bbde4;
+      display: grid;
+      place-items: center;
+    }
+    .module-icon svg { width: 15px; height: 15px; }
+    .module-copy { flex: 1; }
+    .module-copy b { font-size: 11px; font-weight: 600; color: #ffffff; display: block; }
+    .module-copy small { font-size: 8.5px; color: #678198; margin-top: 2px; display: block; }
+    .module-state { font-size: 8px; }
+    .module-state.active, .module-state.ready { color: #55d6ad; }
+    .module-state.pending { color: #d6b46a; }
+
+    .security-note {
+      display: flex;
+      gap: 9px;
+      align-items: center;
+      padding: 10px 12px;
+      background: #0c2430;
+      border: 1px solid #1c4852;
+      border-radius: 8px;
+      margin-top: 10px;
+      color: #72d3bd;
+    }
+    .security-note b { font-size: 10px; color: #a7e5d7; display: block; }
+    .security-note small { font-size: 8.5px; color: #6e9c9d; margin-top: 2px; display: block; }
+
+    footer {
+      font-size: 8.5px;
+      color: #3e586e;
+      text-align: center;
+      margin-top: 14px;
+      flex-shrink: 0;
+    }
+    footer span { color: #277ba4; margin: 0 7px; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%, 100% { filter: brightness(0.9); } 50% { filter: brightness(1.25); } }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
   </style>
 </head>
-<body class="w-screen h-screen overflow-hidden space-grid flex flex-col justify-between p-4 sm:p-6 relative select-none">
+<body>
 
-  <!-- 3D WebGL Canvas Layer -->
-  <div id="webgl-canvas" class="absolute inset-0 z-0"></div>
+<div class="app-shell">
 
-  <!-- Ambient Holographic Glows -->
-  <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[620px] h-[620px] bg-cyan-500/10 rounded-full blur-[150px] z-0"></div>
-
-  <!-- ================= TOP HEADER BAR ================= -->
-  <header class="relative z-10 flex items-center justify-between w-full" style="-webkit-app-region: drag;">
-    <!-- Left Title & Core Badge -->
-    <div class="flex items-center space-x-3 shrink-0">
-      <div class="w-3.5 h-3.5 rounded-full bg-cyan-400 shadow-[0_0_14px_#00f0ff] animate-pulse"></div>
-      <h1 class="text-base font-bold tracking-[0.2em] text-cyan-50 flex items-center gap-1.5 whitespace-nowrap">
-        J.A.R.V.I.S. <span class="text-xs font-semibold tracking-wider text-slate-300">QUANTUM SYNAPSE</span>
-      </h1>
-      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-code font-bold tracking-wider text-cyan-300 bg-cyan-950/40 border border-cyan-400/40 whitespace-nowrap">
-        NEURAL CORE // ACTIVE
-      </span>
-    </div>
-
-    <!-- Center Status Metrics (Sci-Fi Telemetry) -->
-    <div class="flex items-center space-x-4 text-xs font-code text-slate-400">
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[10px] text-slate-500 uppercase tracking-wider">LATENCY:</span>
-        <span class="text-cyan-300 font-semibold" id="tele-latency">14ms</span>
-      </div>
-      <div class="flex items-center gap-1.5 whitespace-nowrap">
-        <span class="text-[10px] text-slate-500 uppercase tracking-wider">SYNAPSE LOAD:</span>
-        <div class="w-14 h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
-          <div class="w-2/5 h-full bg-gradient-to-r from-cyan-500 to-sky-400" id="tele-load-bar" style="width: 38%;"></div>
-        </div>
-        <span class="text-slate-300" id="tele-load-val">38%</span>
-      </div>
-      <div class="flex items-center gap-1.5 text-emerald-400 whitespace-nowrap">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-        <span class="text-[10px] tracking-wider uppercase">ONLINE</span>
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand" pywebview-drag-region>
+      <div class="brand-mark"><i data-lucide="radio"></i></div>
+      <div>
+        <div class="brand-name">J.A.R.V.I.S.</div>
+        <div class="brand-sub">PERSONAL INTELLIGENCE</div>
       </div>
     </div>
 
-    <!-- Right Controls -->
-    <div class="flex items-center space-x-2.5" style="-webkit-app-region: no-drag;">
-      <button onclick="toggleAgentsSwarm()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-semibold text-emerald-300 bg-emerald-950/40 border border-emerald-500/50 hover:bg-emerald-900/50 hover:text-white transition shadow-lg backdrop-blur-md">
-        <i data-lucide="bot" class="w-3.5 h-3.5 text-emerald-400"></i>
-        <span>Агенты (Swarm)</span>
-      </button>
+    <div class="nav-label">WORKSPACE</div>
+    <nav>
+      <a class="nav-item active" onclick="selectNav(this)"><i data-lucide="layout-dashboard"></i>Обзор</a>
+      <a class="nav-item" onclick="focusChat()"><i data-lucide="message-square"></i>Диалоги</a>
+      <a class="nav-item" onclick="openAgentsModal()"><i data-lucide="bot"></i>Рой Агентов</a>
+      <a class="nav-item" onclick="sendQuickCommand('покажи контент план на youtube')"><i data-lucide="zap"></i>YouTube Скиллы</a>
+      <a class="nav-item" onclick="sendQuickCommand('сверни все окна')"><i data-lucide="monitor"></i>Управление ПК</a>
+    </nav>
 
-      <button onclick="openFullSettings()" class="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-medium text-slate-300 bg-slate-900/75 border border-slate-700/60 hover:border-cyan-400/50 hover:text-white transition shadow-lg backdrop-blur-md">
-        <i data-lucide="settings" class="w-3.5 h-3.5 text-cyan-400"></i>
-        <span>Настройки</span>
-      </button>
+    <div class="nav-label system-label">SYSTEM</div>
+    <nav>
+      <a class="nav-item" onclick="openFullSettings()"><i data-lucide="settings"></i>Настройки</a>
+      <a class="nav-item" onclick="triggerWakeWordTest()"><i data-lucide="mic"></i>Тест Микрофона</a>
+      <a class="nav-item" onclick="checkUpdates()"><i data-lucide="refresh-cw"></i>Обновления</a>
+    </nav>
 
-      <button id="toggle-sphere-btn" class="flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-medium text-slate-300 bg-slate-900/75 border border-slate-700/60 hover:border-cyan-400/50 hover:text-white transition shadow-lg backdrop-blur-md">
-        <i data-lucide="globe" class="w-3.5 h-3.5 text-fuchsia-400"></i>
-        <span id="mode-text">Режим Сферы</span>
-      </button>
-
-      <button onclick="minimizeToTray()" title="Свернуть в трей" class="p-2 rounded-xl text-slate-400 bg-slate-900/75 border border-slate-700/60 hover:border-cyan-400/50 hover:text-white transition shadow-lg backdrop-blur-md">
-        <i data-lucide="minus" class="w-4 h-4"></i>
-      </button>
-
-      <button onclick="closeApp()" title="Закрыть приложение" class="p-2 rounded-xl text-red-400 bg-slate-900/75 border border-red-500/30 hover:bg-red-500/20 hover:border-red-400 transition shadow-lg">
-        <i data-lucide="x" class="w-4 h-4"></i>
-      </button>
+    <div class="sidebar-bottom">
+      <div class="user-chip">
+        <div class="avatar">С</div>
+        <div>
+          <b>Сэр Тони</b>
+          <span>Локальный профиль</span>
+        </div>
+      </div>
+      <div class="version">JARVIS PRIME · BUILD 2.1.0</div>
     </div>
-  </header>
+  </aside>
 
-  <!-- ================= MAIN WORKSPACE (SIDEBARS & 3D HEAD CENTER) ================= -->
-  <main class="relative z-10 flex-1 grid grid-cols-12 items-center pointer-events-none py-2">
-    
-    <!-- LEFT MODULES COLUMN -->
-    <div class="col-span-12 sm:col-span-5 md:col-span-4 lg:col-span-3 space-y-3.5 pointer-events-auto">
-      
-      <!-- Module 1: Screen Vision -->
-      <div class="module-card p-3 flex items-center justify-between cursor-pointer group" onclick="sendQuick('Посмотри на экран и скажи, что здесь открыто')">
-        <div class="flex items-center space-x-3.5">
-          <div class="icon-container flex items-center justify-center shrink-0 group-hover:border-cyan-400 transition">
-            <i data-lucide="eye" class="w-5 h-5 text-cyan-300 group-hover:scale-110 transition"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold tracking-wide text-white group-hover:text-cyan-300 transition">Зрение Экрана</h2>
-            <p class="text-[11px] font-code text-slate-400 mt-0.5">Gemini Vision AI</p>
-          </div>
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar" pywebview-drag-region>
+      <div>
+        <span class="eyebrow">STARK INDUSTRIES · QUANTUM CORE</span>
+        <h1>Центр управления</h1>
+      </div>
+
+      <div class="top-actions">
+        <div class="top-status">
+          <span class="live-dot"></span>
+          <span id="system-status-text">СИСТЕМА В СЕТИ</span>
+          <span class="divider-v"></span>
+          <span class="clock">FIFINE MIC · OK</span>
         </div>
-        <span class="text-[9px] font-code px-2 py-0.5 rounded-full bg-cyan-950/60 text-cyan-300 border border-cyan-500/30">ACTIVE</span>
-      </div>
 
-      <!-- Module 2: Voice Channel -->
-      <div class="module-card p-3 flex items-center justify-between cursor-pointer group" onclick="toggleVoice()">
-        <div class="flex items-center space-x-3.5">
-          <div class="icon-container flex items-center justify-center shrink-0 group-hover:border-cyan-400 transition">
-            <i data-lucide="mic" class="w-5 h-5 text-cyan-300 group-hover:scale-110 transition"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold tracking-wide text-white group-hover:text-cyan-300 transition">Голосовой Канал</h2>
-            <p class="text-[11px] font-code text-slate-400 mt-0.5">Дубляж Баранова</p>
-          </div>
-        </div>
-        <span class="text-[9px] font-code px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700">SYNC</span>
-      </div>
-
-      <!-- Module 3: Mail & Letters (NEW) -->
-      <div class="module-card p-3 flex items-center justify-between cursor-pointer group" onclick="sendQuick('Проверь последние входящие письма на почте')">
-        <div class="flex items-center space-x-3.5">
-          <div class="icon-container flex items-center justify-center shrink-0 group-hover:border-cyan-400 transition">
-            <i data-lucide="mail" class="w-5 h-5 text-sky-400 group-hover:scale-110 transition"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold tracking-wide text-white group-hover:text-cyan-300 transition">Почта & Письма</h2>
-            <p class="text-[11px] font-code text-slate-400 mt-0.5">Яндекс / Gmail IMAP</p>
-          </div>
-        </div>
-        <span class="text-[9px] font-code px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700">READY</span>
-      </div>
-
-      <!-- Module 4: Yandex Music (NEW & ACTIVE) -->
-      <div class="module-card p-3 flex items-center justify-between cursor-pointer group active" onclick="sendQuick('Включи Мою волну в Яндекс Музыке')">
-        <div class="flex items-center space-x-3.5">
-          <div class="icon-container flex items-center justify-center shrink-0 border-cyan-400 transition">
-            <i data-lucide="music-2" class="w-5 h-5 text-fuchsia-400 group-hover:scale-110 transition"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold tracking-wide text-cyan-300">Яндекс Музыка</h2>
-            <p class="text-[11px] font-code text-cyan-400/80 mt-0.5">Моя волна & Поиск</p>
-          </div>
-        </div>
-        <!-- Live Equalizer Bars -->
-        <div class="flex items-end gap-1 h-4 px-1">
-          <div class="eq-bar" style="animation-delay: 0.1s"></div>
-          <div class="eq-bar" style="animation-delay: 0.3s"></div>
-          <div class="eq-bar" style="animation-delay: 0.5s"></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- CENTER SPACER (Holds 3D Head Focus) -->
-    <div class="col-span-12 sm:col-span-2 md:col-span-4 lg:col-span-6 pointer-events-none"></div>
-
-    <!-- RIGHT MODULES COLUMN -->
-    <div class="col-span-12 sm:col-span-5 md:col-span-4 lg:col-span-3 space-y-3.5 pointer-events-auto">
-      
-      <!-- Module 5: Video Generator -->
-      <div class="module-card p-3 flex items-center justify-between cursor-pointer group" onclick="sendQuick('Создай видео полета Железного Человека')">
-        <div class="flex items-center space-x-3.5">
-          <div class="icon-container flex items-center justify-center shrink-0 group-hover:border-cyan-400 transition">
-            <i data-lucide="sparkles" class="w-5 h-5 text-amber-400 group-hover:scale-110 transition"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold tracking-wide text-white group-hover:text-cyan-300 transition">Генератор Видео</h2>
-            <p class="text-[11px] font-code text-slate-400 mt-0.5">60 FPS Ken Burns</p>
-          </div>
-        </div>
-        <span class="text-[9px] font-code px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700">READY</span>
-      </div>
-
-      <!-- Module 6: Dialog Brain -->
-      <div class="module-card p-3 flex items-center justify-between cursor-pointer group" onclick="sendQuick('Расскажи интересную новость из мира технологий')">
-        <div class="flex items-center space-x-3.5">
-          <div class="icon-container flex items-center justify-center shrink-0 group-hover:border-cyan-400 transition">
-            <i data-lucide="message-square" class="w-5 h-5 text-cyan-300 group-hover:scale-110 transition"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold tracking-wide text-white group-hover:text-cyan-300 transition">Диалоговый Мозг</h2>
-            <p class="text-[11px] font-code text-slate-400 mt-0.5">Gemini 3.5 Flash</p>
-          </div>
-        </div>
-        <span class="text-[9px] font-code px-2 py-0.5 rounded-full bg-cyan-950/60 text-cyan-300 border border-cyan-500/30">ONLINE</span>
-      </div>
-
-      <!-- Module 7: FFmpeg Studio -->
-      <div class="module-card p-3 flex items-center justify-between cursor-pointer group" onclick="sendQuick('Обрежь первые 30 секунд у видео')">
-        <div class="flex items-center space-x-3.5">
-          <div class="icon-container flex items-center justify-center shrink-0 group-hover:border-cyan-400 transition">
-            <i data-lucide="clapperboard" class="w-5 h-5 text-fuchsia-400 group-hover:scale-110 transition"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold tracking-wide text-white group-hover:text-cyan-300 transition">FFmpeg Студия</h2>
-            <p class="text-[11px] font-code text-slate-400 mt-0.5">Монтаж & Shorts</p>
-          </div>
-        </div>
-        <span class="text-[9px] font-code px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700">IDLE</span>
-      </div>
-
-      <!-- Module 8: Media Control -->
-      <div class="module-card p-3 flex items-center justify-between cursor-pointer group" onclick="sendQuick('Включи саундтрек Iron Man')">
-        <div class="flex items-center space-x-3.5">
-          <div class="icon-container flex items-center justify-center shrink-0 group-hover:border-cyan-400 transition">
-            <i data-lucide="music" class="w-5 h-5 text-cyan-300 group-hover:scale-110 transition"></i>
-          </div>
-          <div>
-            <h2 class="text-sm font-semibold tracking-wide text-white group-hover:text-cyan-300 transition">Медиа Контроль</h2>
-            <p class="text-[11px] font-code text-slate-400 mt-0.5">Аудио и Плеер</p>
-          </div>
-        </div>
-        <span class="text-[9px] font-code px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-700">ACTIVE</span>
-      </div>
-
-    </div>
-
-  </main>
-
-  <!-- ================= BOTTOM HUD DIALOGUE & COMMAND CONSOLE ================= -->
-  <footer class="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center space-y-2 mb-1">
-    
-    <!-- J.A.R.V.I.S. Response Hologram Bubble -->
-    <div class="dialogue-pill w-full px-5 py-2.5 text-center relative overflow-hidden" style="max-height: 110px; overflow-y: auto;">
-      <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent"></div>
-      
-      <div class="text-[10px] font-code font-bold tracking-widest text-cyan-400 uppercase flex items-center justify-center gap-2 mb-1">
-        <span class="text-cyan-400 animate-pulse">✦</span> 
-        <span>J . A . R . V . I . S .</span> 
-        <span class="text-cyan-400 animate-pulse">✦</span>
-      </div>
-      
-      <div id="dialogue-text" class="text-xs sm:text-sm text-slate-100 font-normal tracking-wide transition-all duration-300">
-        Здравствуйте, сэр. Все квантовые синапсы синхронизированы. Чем могу помочь?
-      </div>
-    </div>
-
-    <!-- Command Input Bar -->
-    <div class="input-pill w-full p-1.5 flex items-center space-x-2">
-      <div class="relative flex-1 flex items-center pl-3">
-        <i data-lucide="terminal" class="w-4 h-4 text-cyan-400/60 mr-2 shrink-0"></i>
-        <input 
-          id="cmd-input"
-          type="text" 
-          placeholder="Введите команду или скажите вслух «Джарвис»..."
-          class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none"
-          onkeydown="if(event.key==='Enter') sendText()"
-        />
-      </div>
-
-      <!-- Action Button -->
-      <button id="mic-trigger" onclick="toggleVoice()" class="glow-btn px-5 py-2 rounded-xl flex items-center space-x-2 shrink-0">
-        <i data-lucide="mic" id="mic-icon" class="w-3.5 h-3.5"></i>
-        <span id="mic-text" class="text-[11px] font-bold uppercase tracking-wider">СЛУШАТЬ</span>
-      </button>
-    </div>
-
-  </footer>
-
-  <!-- ================= СТИЛЬНЫЙ МЕНЕДЖЕР ОТКРЫТЫХ ИИ-АГЕНТОВ (SWARM & GITHUB) ================= -->
-  <div class="modal-overlay" id="agents-swarm-modal" style="display: none;">
-    <div class="modal-container" style="max-width: 960px; width: 95%;">
-      <div class="flex justify-between items-center px-6 py-4 border-b border-emerald-500/30 bg-emerald-950/20">
-        <div class="text-sm font-bold tracking-widest text-emerald-400 flex items-center gap-2">
-          <span>🧠</span> J.A.R.V.I.S. MULTI-AGENT SWARM // НЕЙРОСЕТЕВОЙ РОЙ
-        </div>
-        <button onclick="toggleAgentsSwarm()" class="text-red-400 hover:text-white">&times;</button>
-      </div>
-
-      <div class="p-6 space-y-6 overflow-y-auto" style="max-height: 80vh;">
-        <!-- Header Info Banner -->
-        <div class="bg-slate-900/80 border border-emerald-500/30 rounded-2xl p-4 flex items-center justify-between">
-          <div>
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Активный специализированный агент: <span id="current-agent-badge" class="text-emerald-300">J.A.R.V.I.S. Prime (Командир)</span>
-            </h3>
-            <p class="text-xs text-slate-400 mt-1">
-              Джарвис может привлекать бесплатных ИИ-агентов с открытым исходным кодом под конкретные задачи: кодинг, веб-исследования, аудит безопасности и аналитика.
-            </p>
-          </div>
-          <button onclick="openAddAgentModal()" class="px-4 py-2 text-xs font-bold text-black bg-emerald-400 rounded-xl hover:bg-emerald-300 transition shrink-0 shadow-lg shadow-emerald-500/20">
-            + Добавить агента с GitHub
+        <div class="window-btns">
+          <button onclick="minimizeToTray()" class="win-btn" title="Свернуть в трей">
+            <i data-lucide="minus"></i>
+          </button>
+          <button onclick="closeApp()" class="win-btn close" title="Закрыть программу">
+            <i data-lucide="x"></i>
           </button>
         </div>
+      </div>
+    </header>
 
-        <!-- Grid of Swarm Agents -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="agents-grid">
-          <!-- Заполняется динамически из registry.js / get_agents -->
+    <!-- HERO SECTION -->
+    <section class="hero-grid">
+      <!-- REACTOR CORE -->
+      <div class="core-panel panel">
+        <div class="panel-kicker">
+          <span class="live-dot"></span> JARVIS QUANTUM SYNAPSE <span class="muted">/ READY</span>
         </div>
 
-        <!-- Terminal Output / Agent Dialogue View -->
-        <div class="bg-black/70 border border-white/10 rounded-xl p-4">
-          <div class="flex items-center justify-between text-[11px] font-code text-slate-400 border-b border-white/10 pb-2 mb-2">
-            <span>TERMINAL // AGENT EXECUTION LOG</span>
-            <span class="text-emerald-400">READY</span>
+        <div class="reactor-wrap" onclick="toggleVoice()">
+          <div class="orbit orbit-one"></div>
+          <div class="orbit orbit-two"></div>
+          <div class="orbit orbit-three"></div>
+          <div class="reactor">
+            <div class="reactor-inner">
+              <i data-lucide="activity" style="width: 32px; height: 32px;"></i>
+              <span>CORE</span>
+            </div>
           </div>
-          <div id="agent-log-output" class="text-xs font-code text-slate-300 space-y-1">
-            <p class="text-emerald-400">● [Swarm Core]: Все 6 специализированных агентов инициализированы и готовы к автономной работе.</p>
-            <p class="text-slate-500">Для передачи задачи агенту выберите его карточку или скажите: «Джарвис, подключи АвтоКодера для рефакторинга».</p>
-          </div>
+        </div>
+
+        <div class="core-title" id="core-state-title">СИСТЕМА ГОТОВА</div>
+        <div class="core-caption" id="core-state-caption">Кликните по реактору или скажите «Джарвис»</div>
+
+        <div class="core-actions">
+          <button class="primary-button" onclick="toggleVoice()">
+            <i data-lucide="mic"></i> Слушать команду
+          </button>
+          <span class="hotkey">ALT + J · WAKE WORD ON</span>
         </div>
       </div>
 
-      <div class="flex justify-end p-4 border-t border-white/10 bg-black/40">
-        <button onclick="toggleAgentsSwarm()" class="px-5 py-2 text-xs font-bold text-slate-300 bg-slate-800 rounded hover:bg-slate-700 transition">
-          Закрыть
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Модалка добавления агента с GitHub -->
-  <div class="modal-overlay" id="add-agent-modal" style="display: none; z-index: 1000;">
-    <div class="modal-container" style="max-width: 500px; width: 90%;">
-      <div class="p-5 border-b border-white/10 flex justify-between items-center">
-        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Добавить открытого агента с GitHub</h4>
-        <button onclick="closeAddAgentModal()" class="text-red-400">&times;</button>
-      </div>
-      <div class="p-5 space-y-3">
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Имя агента:</label>
-          <input type="text" id="new-agent-name" placeholder="Например: Pentest Sentinel" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-        </div>
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Репозиторий / Источник GitHub:</label>
-          <input type="text" id="new-agent-repo" placeholder="например: open-source/security-scanner" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-        </div>
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Роль и специализация:</label>
-          <input type="text" id="new-agent-role" placeholder="Аудит портов, поиск утечек API..." class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-        </div>
-        <div>
-          <label class="text-[11px] text-slate-400 block mb-1">Системный промпт (инструкция мозга):</label>
-          <textarea id="new-agent-prompt" rows="3" placeholder="Ты — специалист по..." class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white"></textarea>
-        </div>
-      </div>
-      <div class="p-4 border-t border-white/10 flex justify-end gap-2 bg-black/40">
-        <button onclick="closeAddAgentModal()" class="px-4 py-1.5 text-xs text-slate-400 bg-slate-800 rounded">Отмена</button>
-        <button onclick="submitNewAgent()" class="px-4 py-1.5 text-xs font-bold text-black bg-emerald-400 rounded">Установить</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= МОДАЛЬНОЕ ОКНО НАСТРОЕК ================= -->
-  <div class="modal-overlay" id="full-settings-modal">
-    <div class="modal-container">
-      <div class="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-white/[0.02]">
-        <div class="text-sm font-bold tracking-widest text-cyan-400 flex items-center gap-2">
-          <span>⚙️</span> J.A.R.V.I.S. MATRIX CONFIGURATION
-        </div>
-        <button onclick="closeFullSettings()" class="text-red-400 hover:text-white">&times;</button>
-      </div>
-
-      <div class="grid grid-cols-4 flex-1 overflow-hidden" style="min-height: 380px;">
-        <div class="bg-black/40 border-r border-white/10 p-3 space-y-2">
-          <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-cyan-400 bg-cyan-950/40 border-l-2 border-cyan-400" id="tb-voice-tts" onclick="switchSetTab('voice-tts')">🔊 Голос и Синтез</button>
-          <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-slate-400 hover:text-white" id="tb-mic-stt" onclick="switchSetTab('mic-stt')">🎙️ Слух и Микрофон</button>
-          <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-slate-400 hover:text-white" id="tb-llm-models" onclick="switchSetTab('llm-models')">🧠 Модели и Мозг</button>
-          <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-slate-400 hover:text-white" id="tb-services" onclick="switchSetTab('services')">🎶 Сервисы</button>
-          <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-slate-400 hover:text-white" id="tb-telegram" onclick="switchSetTab('telegram')">📱 Telegram Мост</button>
-          <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-slate-400 hover:text-white" id="tb-person-profile" onclick="switchSetTab('person-profile')">🎩 Персонализация</button>
-          <button class="w-full text-left px-3 py-2 text-xs font-semibold rounded text-emerald-400 bg-emerald-950/30 border-l-2 border-emerald-400" id="tb-system-updates" onclick="switchSetTab('system-updates')">🔄 Обновления</button>
-        </div>
-
-        <div class="col-span-3 p-6 overflow-y-auto">
-          <!-- 1. ГОЛОС -->
-          <div class="settings-pane active" id="sec-voice-tts">
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Голосовой актёр:</label>
-              <select id="set-voice-actor" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-                <option value="ru-RU-DmitryNeural">Русский кинодубляж Баранова (Мужской глубокий)</option>
-                <option value="ru-RU-SvetlanaNeural">Женский голос ПЯТНИЦА / F.R.I.D.A.Y.</option>
-                <option value="en-GB-RyanNeural">Оригинальный английский (Paul Bettany)</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Скорость речи:</label>
-              <input type="range" id="set-rate-slider" min="-20" max="30" value="-2" class="w-full accent-cyan-400" oninput="document.getElementById('rate-val').innerText = this.value + '%'">
-              <div id="rate-val" class="text-xs text-cyan-300 font-code mt-1">-2%</div>
-            </div>
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Высота тона / Бас:</label>
-              <input type="range" id="set-pitch-slider" min="-10" max="10" value="-3" class="w-full accent-cyan-400" oninput="document.getElementById('pitch-val').innerText = this.value + 'Hz'">
-              <div id="pitch-val" class="text-xs text-cyan-300 font-code mt-1">-3Hz</div>
-            </div>
-            <div class="mt-4 pt-3 border-t border-white/10">
-              <button onclick="testVoiceAudio()" class="w-full py-2 text-xs font-bold text-black bg-cyan-400 rounded-lg hover:bg-cyan-300 transition flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
-                <i data-lucide="volume-2" class="w-4 h-4"></i>
-                <span>▶ Проверить звучание голоса прямо сейчас</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- 2. СЛУХ -->
-          <div class="settings-pane" id="sec-mic-stt">
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Wake-Word активация («Джарвис»):</label>
-              <select id="set-wake-word" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-                <option value="true">Включен (Активация голосом без нажатия кнопок)</option>
-                <option value="false">Выключен (Только по кнопке)</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Горячая клавиша:</label>
-              <input type="text" id="set-hotkey" value="alt+j" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-            </div>
-          </div>
-
-          <!-- 3. МОДЕЛИ -->
-          <div class="settings-pane" id="sec-llm-models">
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Нейросетевой движок:</label>
-              <select id="set-model-engine" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-                <option value="gemini-3.5-flash">Google Gemini 3.5 Flash (Мультимодальный + быстрый)</option>
-                <option value="gemini-3.8-flash">Google Gemini 3.8 Flash (Новейший)</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">API Ключ:</label>
-              <input type="password" id="set-api-key" placeholder="Вставьте ваш API ключ..." class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-            </div>
-          </div>
-
-          <!-- 4. СЕРВИСЫ -->
-          <div class="settings-pane" id="sec-services">
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Яндекс Музыка (Токен):</label>
-              <input type="password" id="set-ym-token" placeholder="Токен yandex-music" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-            </div>
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Email пользователя:</label>
-              <input type="email" id="set-email-user" placeholder="user@yandex.ru или user@gmail.com" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-            </div>
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Пароль приложений почты:</label>
-              <input type="password" id="set-email-pass" placeholder="Пароль приложений" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-            </div>
-          </div>
-
-          <!-- 4.1 TELEGRAM МОСТ -->
-          <div class="settings-pane" id="sec-telegram">
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Telegram Bot Token (из @BotFather):</label>
-              <input type="password" id="set-tg-token" placeholder="123456789:ABCDefgh..." class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-              <p class="text-[10px] text-slate-400 mt-1">Создайте бота у @BotFather в Telegram и вставьте его токен сюда.</p>
-            </div>
-            <div class="mt-3">
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Telegram User ID владельца (опционально):</label>
-              <input type="text" id="set-tg-userid" placeholder="Оставьте пустым — бот привяжется автоматически при первом /start" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-              <p class="text-[10px] text-slate-400 mt-1">Если оставить пустым, первый кто нажмет /start в боте станет его владельцем.</p>
-            </div>
-          </div>
-
-          <!-- 5. ПЕРСОНАЛИЗАЦИЯ -->
-          <div class="settings-pane" id="sec-person-profile">
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Как к вам обращаться:</label>
-              <input type="text" id="set-user-name" value="Сэр" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-            </div>
-            <div>
-              <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider block mb-1">Стиль общения:</label>
-              <select id="set-user-tone" class="w-full bg-slate-900 border border-white/20 rounded p-2 text-xs text-white">
-                <option value="sir">Формальный британский джентльмен («На вы», остроумно)</option>
-                <option value="friend">Дружеский тон («На ты», неформально)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- 6. АВТООБНОВЛЕНИЕ СИСТЕМЫ -->
-          <div class="settings-pane" id="sec-system-updates">
-            <div class="bg-black/40 border border-emerald-500/30 rounded-xl p-4 space-y-3">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h4 class="text-xs font-bold text-white flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    СИСТЕМА АВТООБНОВЛЕНИЯ J.A.R.V.I.S.
-                  </h4>
-                  <p class="text-[11px] text-slate-400 mt-1" id="update-status-desc">
-                    Проверка обновлений напрямую с официального GitHub-репозитория...
-                  </p>
-                </div>
-                <button onclick="checkUpdatesManual()" class="px-3 py-1.5 text-xs font-bold text-black bg-emerald-400 rounded-lg hover:bg-emerald-300 transition">
-                  Проверить сейчас
-                </button>
-              </div>
-
-              <div id="update-action-box" class="p-3 bg-slate-900/60 rounded-lg border border-white/10 text-xs text-slate-300 hidden">
-                <div class="font-bold text-cyan-400 mb-1" id="update-version-label">Новая версия готова к установке!</div>
-                <div class="text-[11px] text-slate-400 mb-3" id="update-changelog-box"></div>
-                <button onclick="applyUpdateNow()" class="w-full py-2 text-xs font-bold text-black bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-lg hover:brightness-110 transition shadow-lg shadow-emerald-500/20">
-                  ⚡ Обновить и перезапустить Джарвиса
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="flex justify-end gap-3 p-4 border-t border-white/10 bg-black/40">
-        <button onclick="closeFullSettings()" class="px-4 py-2 text-xs text-slate-300 bg-slate-800 rounded">Отмена</button>
-        <button onclick="saveFullSettings()" class="px-5 py-2 text-xs font-bold text-black bg-cyan-400 rounded">Сохранить</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ================= THREE.JS ANATOMICAL HEAD & ORBIT ENGINE ================= -->
-  <script>
-    lucide.createIcons();
-
-    // Scene Setup
-    const container = document.getElementById('webgl-canvas');
-    let scene, camera, renderer;
-    let headGroup, particlesMesh, basePositions;
-    let leftEyePupil, leftEyeGlowMesh;
-    let polyhedraGroup = [];
-    let orbitArcs = [];
-    let isSphereMode = false;
-    let isSpeaking = false;
-    let isListening = false;
-
-    function init3D() {
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 0, 14.5);
-
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      container.appendChild(renderer.domElement);
-
-      headGroup = new THREE.Group();
-      scene.add(headGroup);
-
-      // Строим голову напрямую из локального массива 9279 вершин (гарантия offline работы!)
-      buildHeadFromLocalMesh();
-
-      // Орбитальные дуги и многогранники вокруг головы
-      createBackgroundHUD();
-
-      window.addEventListener('resize', onResize);
-      setupTracking();
-    }
-
-    function buildHeadFromLocalMesh() {
-      if (!window.HEAD_VERTS || window.HEAD_VERTS.length === 0) return;
-
-      const rawVerts = window.HEAD_VERTS;
-      const count = rawVerts.length / 3;
-
-      const positions = [];
-      const colors = [];
-      const cyan = new THREE.Color(0x00f5ff);
-      const brightTurquoise = new THREE.Color(0x38bdf8);
-      const deepBlue = new THREE.Color(0x0284c7);
-
-      for (let i = 0; i < count; i++) {
-        const scale = 1.05;
-        const x = -rawVerts[i * 3] * scale;
-        // Приподнимаем лицо на +0.55 чтобы подбородок не уходил под нижний диалоговый док
-        const y = (rawVerts[i * 3 + 1] * scale) + 0.35;
-        const z = (rawVerts[i * 3 + 2] * scale) + 0.3;
-
-        positions.push(x, y, z);
-
-        const isSilhouette = Math.abs(x) > 1.8 || z < -0.3;
-        const col = isSilhouette ? cyan : (Math.random() > 0.4 ? brightTurquoise : deepBlue);
-        colors.push(col.r, col.g, col.b);
-      }
-
-      basePositions = new Float32Array(positions);
-
-      const pointGeo = new THREE.BufferGeometry();
-      pointGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      pointGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-
-      const particleMat = new THREE.PointsMaterial({
-        size: 0.065,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.95,
-        blending: THREE.AdditiveBlending
-      });
-
-      particlesMesh = new THREE.Points(pointGeo, particleMat);
-      headGroup.add(particlesMesh);
-
-      // Кибернетический глаз точно на анатомической левой глазнице с учетом нового Y (+0.55)
-      attachOcularImplant(0.72, 2.17, 1.85);
-    }
-
-    function attachOcularImplant(x, y, z) {
-      const eyeGeo = new THREE.SphereGeometry(0.18, 16, 16);
-      const leftEyeMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-      leftEyePupil = new THREE.Mesh(eyeGeo, leftEyeMat);
-      leftEyePupil.position.set(x, y, z);
-      headGroup.add(leftEyePupil);
-
-      const glowGeo = new THREE.RingGeometry(0.14, 0.46, 32);
-      const glowMat = new THREE.MeshBasicMaterial({
-        color: 0x00f5ff,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.85,
-        blending: THREE.AdditiveBlending
-      });
-      leftEyeGlowMesh = new THREE.Mesh(glowGeo, glowMat);
-      leftEyeGlowMesh.position.set(x, y, z + 0.02);
-      headGroup.add(leftEyeGlowMesh);
-    }
-
-    function createBackgroundHUD() {
-      const arcMaterialCyan = new THREE.LineDashedMaterial({
-        color: 0x00f0ff,
-        dashSize: 0.4,
-        gapSize: 0.25,
-        transparent: true,
-        opacity: 0.35
-      });
-      const arcMaterialMagenta = new THREE.LineDashedMaterial({
-        color: 0xe879f9,
-        dashSize: 0.3,
-        gapSize: 0.3,
-        transparent: true,
-        opacity: 0.45
-      });
-
-      function createArc(radius, yPos, tiltX, mat) {
-        const curve = new THREE.EllipseCurve(0, 0, radius, radius * 0.4, 0, 2 * Math.PI, false, 0);
-        const points = curve.getPoints(100);
-        const geom = new THREE.BufferGeometry().setFromPoints(points);
-        const line = new THREE.Line(geom, mat);
-        line.computeLineDistances();
-        line.rotation.x = Math.PI / 2 + tiltX;
-        line.position.y = yPos;
-        scene.add(line);
-        orbitArcs.push(line);
-      }
-
-      createArc(5.8, 0.4, 0.12, arcMaterialCyan);
-      createArc(7.2, -0.6, -0.15, arcMaterialMagenta);
-      createArc(8.0, 1.8, 0.08, arcMaterialCyan);
-
-      const polyData = [
-        { color: 0x00f0ff, pos: [4.8, 2.5, -2], size: 0.42, speed: 0.015 },
-        { color: 0xf43f5e, pos: [5.6, 2.8, -1], size: 0.48, speed: -0.012 },
-        { color: 0xf43f5e, pos: [3.4, 0.6, 1], size: 0.35, speed: 0.018 },
-        { color: 0xf43f5e, pos: [5.2, -0.8, -1.5], size: 0.40, speed: -0.016 },
-        { color: 0x00f0ff, pos: [4.6, -2.4, 0], size: 0.44, speed: 0.014 },
-        { color: 0x00f0ff, pos: [-4.6, 1.6, -2], size: 0.42, speed: -0.015 },
-        { color: 0xf43f5e, pos: [-4.2, -0.3, -1], size: 0.38, speed: 0.02 }
-      ];
-
-      polyData.forEach(item => {
-        const geom = new THREE.OctahedronGeometry(item.size, 0);
-        const wire = new THREE.WireframeGeometry(geom);
-        const mat = new THREE.LineBasicMaterial({
-          color: item.color,
-          transparent: true,
-          opacity: 0.85
-        });
-        const mesh = new THREE.LineSegments(wire, mat);
-        mesh.position.set(...item.pos);
-        mesh.userData = { speed: item.speed, basePos: [...item.pos] };
-        scene.add(mesh);
-        polyhedraGroup.push(mesh);
-      });
-    }
-
-    const mouse = { x: 0, y: 0 };
-    const targetRotation = { x: 0, y: 0 };
-
-    function setupTracking() {
-      window.addEventListener('mousemove', (e) => {
-        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-        targetRotation.y = mouse.x * 0.45;
-        targetRotation.x = -mouse.y * 0.3;
-      });
-    }
-
-    function onResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    let clock = new THREE.Clock();
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const time = clock.getElapsedTime();
-
-      headGroup.rotation.y += (targetRotation.y - headGroup.rotation.y) * 0.06;
-      headGroup.rotation.x += (targetRotation.x - headGroup.rotation.x) * 0.06;
-      headGroup.position.y = -0.2 + Math.sin(time * 1.6) * 0.08;
-
-      if (leftEyePupil && leftEyeGlowMesh) {
-        const eyePulse = 1.0 + Math.sin(time * 5.0) * 0.25;
-        leftEyePupil.scale.set(eyePulse, eyePulse, eyePulse);
-        leftEyeGlowMesh.scale.set(eyePulse, eyePulse, 1.0);
-        leftEyeGlowMesh.rotation.z += 0.02;
-      }
-
-      polyhedraGroup.forEach((mesh, index) => {
-        mesh.rotation.x += mesh.userData.speed;
-        mesh.rotation.y += mesh.userData.speed * 1.5;
-        mesh.position.y = mesh.userData.basePos[1] + Math.sin(time * 2 + index) * 0.15;
-      });
-
-      // Реакция на голос при воспроизведении ответа
-      if (particlesMesh && basePositions && (isSpeaking || isListening)) {
-        const posAttr = particlesMesh.geometry.attributes.position;
-        const count = posAttr.count;
-        for (let i = 0; i < count; i += 2) {
-          const by = basePositions[i * 3 + 1];
-          const bz = basePositions[i * 3 + 2];
-          const wave = Math.sin(time * 20 + by * 5.0) * 0.08;
-          posAttr.setZ(i, bz + wave);
-        }
-        posAttr.needsUpdate = true;
-      }
-
-      renderer.render(scene, camera);
-    }
-
-    // ================= МОСТ К PYWEBVIEW =================
-    function updateSystemGauges(cpu, ram, disk) {
-      const loadVal = document.getElementById('tele-load-val');
-      const loadBar = document.getElementById('tele-load-bar');
-      if (loadVal) loadVal.innerText = cpu + '%';
-      if (loadBar) loadBar.style.width = Math.max(10, Math.min(100, cpu)) + '%';
-    }
-
-    function setStatus(text, listening=false, speaking=false) {
-      isListening = listening;
-      isSpeaking = speaking;
-      const btn = document.getElementById('mic-trigger');
-      const txt = document.getElementById('mic-text');
-      if (listening) {
-        btn.classList.add('mic-listening');
-        txt.innerText = 'СЛУШАЮ...';
-      } else if (speaking) {
-        btn.classList.remove('mic-listening');
-        txt.innerText = 'ОТВЕЧАЮ...';
-      } else {
-        btn.classList.remove('mic-listening');
-        txt.innerText = 'СЛУШАТЬ';
-      }
-    }
-
-    function setSubtitle(text) {
-      document.getElementById('dialogue-text').innerHTML = text;
-    }
-
-    function addMessage(author, text, isUser) {
-      setSubtitle(`<strong>${author}:</strong> ${text}`);
-    }
-
-    function sendText() {
-      const input = document.getElementById('cmd-input');
-      const val = input.value.trim();
-      if (val) {
-        input.value = '';
-        setSubtitle(`<strong>ВЫ:</strong> «${val}»`);
-        if (window.pywebview) window.pywebview.api.send_command(val);
-      }
-    }
-
-    function sendQuick(prompt) {
-      setSubtitle(`<strong>ВЫ:</strong> «${prompt}»`);
-      if (window.pywebview) window.pywebview.api.send_command(prompt);
-    }
-
-    function toggleVoice() {
-      if (window.pywebview) window.pywebview.api.trigger_listen();
-    }
-
-    function minimizeToTray() {
-      if (window.pywebview) window.pywebview.api.minimize_to_tray();
-    }
-
-    function closeApp() {
-      if (window.pywebview) window.pywebview.api.close_app();
-    }
-
-    // Режим сферы / лица
-    const toggleSphereBtn = document.getElementById('toggle-sphere-btn');
-    const modeText = document.getElementById('mode-text');
-    toggleSphereBtn.addEventListener('click', () => {
-      isSphereMode = !isSphereMode;
-      if (isSphereMode) {
-        modeText.textContent = "Режим Лица";
-        morphToSphere();
-      } else {
-        modeText.textContent = "Режим Сферы";
-        restoreFace();
-      }
-    });
-
-    function morphToSphere() {
-      if (!particlesMesh) return;
-      const posAttr = particlesMesh.geometry.attributes.position;
-      const count = posAttr.count;
-      for (let i = 0; i < count; i++) {
-        const u = Math.random();
-        const v = Math.random();
-        const theta = u * 2.0 * Math.PI;
-        const phi = Math.acos(Math.max(-1, Math.min(1, 2.0 * v - 1.0)));
-        const r = 2.7;
-        posAttr.setXYZ(i, r * Math.sin(phi) * Math.cos(theta), r * Math.sin(phi) * Math.sin(theta), r * Math.cos(phi));
-      }
-      posAttr.needsUpdate = true;
-      if (leftEyePupil) leftEyePupil.visible = false;
-      if (leftEyeGlowMesh) leftEyeGlowMesh.visible = false;
-    }
-
-    function restoreFace() {
-      if (!particlesMesh || !basePositions) return;
-      const posAttr = particlesMesh.geometry.attributes.position;
-      const count = posAttr.count;
-      for (let i = 0; i < count; i++) {
-        posAttr.setXYZ(i, basePositions[i * 3], basePositions[i * 3 + 1], basePositions[i * 3 + 2]);
-      }
-      posAttr.needsUpdate = true;
-      if (leftEyePupil) leftEyePupil.visible = true;
-      if (leftEyeGlowMesh) leftEyeGlowMesh.visible = true;
-    }
-
-    // Настройки
-    function openFullSettings() {
-      const modal = document.getElementById('full-settings-modal');
-      if (modal) {
-        modal.style.display = 'flex';
-        if (window.pywebview && window.pywebview.api.get_settings) {
-          window.pywebview.api.get_settings().then(data => {
-            if (data) {
-              if (data.voice) document.getElementById('set-voice-actor').value = data.voice;
-              if (data.model) document.getElementById('set-model-engine').value = data.model;
-              if (data.user_name) document.getElementById('set-user-name').value = data.user_name;
-              if (data.user_tone) document.getElementById('set-user-tone').value = data.user_tone;
-              if (data.gemini_api_key) document.getElementById('set-api-key').value = data.gemini_api_key;
-              if (data.hotkey) document.getElementById('set-hotkey').value = data.hotkey;
-              if (data.yandex_music_token) document.getElementById('set-ym-token').value = data.yandex_music_token;
-              if (data.email_user) document.getElementById('set-email-user').value = data.email_user;
-              if (data.email_password) document.getElementById('set-email-pass').value = data.email_password;
-              if (data.telegram_bot_token) document.getElementById('set-tg-token').value = data.telegram_bot_token;
-              if (data.telegram_user_id) document.getElementById('set-tg-userid').value = data.telegram_user_id;
-              if (data.speech_rate) {
-                const rateNum = parseInt(data.speech_rate) || 0;
-                document.getElementById('set-rate-slider').value = rateNum;
-                document.getElementById('rate-val').innerText = (rateNum >= 0 ? '+' : '') + rateNum + '%';
-              }
-              if (data.speech_pitch) {
-                const pitchNum = parseInt(data.speech_pitch) || -3;
-                document.getElementById('set-pitch-slider').value = pitchNum;
-                document.getElementById('pitch-val').innerText = (pitchNum >= 0 ? '+' : '') + pitchNum + 'Hz';
-              }
-            }
-          });
-        }
-      }
-    }
-
-    function closeFullSettings() {
-      const modal = document.getElementById('full-settings-modal');
-      if (modal) modal.style.display = 'none';
-    }
-
-    function switchSetTab(tabId) {
-      document.querySelectorAll('.settings-pane').forEach(sec => sec.classList.remove('active'));
-      const targetSec = document.getElementById('sec-' + tabId);
-      if (targetSec) targetSec.classList.add('active');
-    }
-
-    function saveFullSettings() {
-      const voice = document.getElementById('set-voice-actor').value;
-      const rateVal = document.getElementById('set-rate-slider').value;
-      const pitchVal = document.getElementById('set-pitch-slider').value;
-      const wake = document.getElementById('set-wake-word').value;
-      const hotkey = document.getElementById('set-hotkey').value;
-      const model = document.getElementById('set-model-engine').value;
-      const apiKey = document.getElementById('set-api-key').value;
-      const userName = document.getElementById('set-user-name').value;
-      const userTone = document.getElementById('set-user-tone').value;
-      const ymToken = document.getElementById('set-ym-token').value;
-      const emailUser = document.getElementById('set-email-user').value;
-      const emailPass = document.getElementById('set-email-pass').value;
-      const tgToken = document.getElementById('set-tg-token').value;
-      const tgUserId = document.getElementById('set-tg-userid').value;
-
-      const newSettings = {
-        voice: voice,
-        speech_rate: (rateVal >= 0 ? '+' : '') + rateVal + '%',
-        speech_pitch: (pitchVal >= 0 ? '+' : '') + pitchVal + 'Hz',
-        wake_word: wake,
-        hotkey: hotkey,
-        model: model,
-        gemini_api_key: apiKey,
-        user_name: userName,
-        user_tone: userTone,
-        yandex_music_token: ymToken,
-        email_user: emailUser,
-        email_password: emailPass,
-        telegram_bot_token: tgToken,
-        telegram_user_id: tgUserId
-      };
-
-      if (window.pywebview && window.pywebview.api.save_settings) {
-        window.pywebview.api.save_settings(newSettings).then(() => {
-          closeFullSettings();
-          setSubtitle(`<strong>J.A.R.V.I.S.:</strong> Конфигурация успешно обновлена, сэр.`);
-        });
-      } else {
-        closeFullSettings();
-      }
-    }
-
-    function toggleAgentsSwarm() {
-      const modal = document.getElementById('agents-swarm-modal');
-      if (modal) {
-        const isHidden = (modal.style.display === 'none' || !modal.style.display);
-        modal.style.display = isHidden ? 'flex' : 'none';
-        if (isHidden) loadAgentsGrid();
-      }
-    }
-
-    function loadAgentsGrid() {
-      if (window.pywebview && window.pywebview.api.get_swarm_agents) {
-        window.pywebview.api.get_swarm_agents().then(agents => {
-          renderAgents(agents);
-        });
-      } else {
-        // Fallback demo agents
-        renderAgents([
-          {id: 'commander', name: 'J.A.R.V.I.S. Prime', icon: 'shield', color: 'cyan', role: 'Главный координатор системы, голос и контроль ПК', status: 'ACTIVE'},
-          {id: 'coder_devin', name: 'AutoCoder (Devin / Aider)', icon: 'terminal', color: 'emerald', role: 'Автономный разработчик ПО, рефакторинг и тесты', status: 'READY'},
-          {id: 'web_researcher', name: 'Web Scout (Crawl4AI)', icon: 'globe', color: 'sky', role: 'Глубокий поиск фактов, анализ сайтов без рекламы', status: 'READY'},
-          {id: 'cyber_sentry', name: 'Security Sentinel', icon: 'lock', color: 'red', role: 'Аудит безопасности ПК, проверка процессов', status: 'READY'},
-          {id: 'creative_director', name: 'Creative Producer', icon: 'sparkles', color: 'purple', role: 'Генерация вирусных идей и сценариев для YouTube', status: 'READY'},
-          {id: 'data_analyst', name: 'Quant Analyst', icon: 'bar-chart-2', color: 'amber', role: 'Анализ Excel таблиц, тренды и расчеты', status: 'READY'}
-        ]);
-      }
-    }
-
-    function renderAgents(agents) {
-      const grid = document.getElementById('agents-grid');
-      if (!grid) return;
-      grid.innerHTML = '';
-      agents.forEach(a => {
-        const isActive = a.status === 'ACTIVE';
-        const card = document.createElement('div');
-        card.className = `module-card p-4 flex flex-col justify-between cursor-pointer transition ${isActive ? 'border-emerald-400 bg-emerald-950/20' : 'hover:border-white/30'}`;
-        card.onclick = () => selectAgent(a.id, a.name);
-        
-        card.innerHTML = `
+      <!-- RIGHT STACK -->
+      <div class="right-stack">
+        <div class="panel welcome-panel">
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-[9px] font-code px-2 py-0.5 rounded-full ${isActive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400' : 'bg-slate-800 text-slate-400'}">
-                ${isActive ? '● АКТИВЕН' : 'ГОТОВ К ВЫЗОВУ'}
-              </span>
-              <span class="text-[9px] font-code text-slate-500">${a.github_source || 'GitHub OSS'}</span>
+            <div class="panel-kicker"><i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> INTELLIGENCE OVERVIEW</div>
+            <h2>Добро пожаловать, сэр.</h2>
+            <p>Все модули J.A.R.V.I.S. Prime синхронизированы. Доступен полный контроль Windows, фоновый трей-режим, голосовой дубляж Тони Старка и 11 инструментов YouTube.</p>
+          </div>
+          <div class="welcome-footer">
+            <span><span class="live-dot"></span> Голосовое ядро активно</span>
+            <span id="voice-name-badge">VOICE: DMITRY (RU)</span>
+          </div>
+        </div>
+
+        <!-- METRICS -->
+        <div class="metrics-grid">
+          <div class="metric">
+            <div class="metric-top"><i data-lucide="cpu"></i><span>CPU LOAD</span></div>
+            <strong id="metric-cpu">8%</strong>
+            <small>8 Cores Active</small>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><i data-lucide="database"></i><span>RAM USE</span></div>
+            <strong id="metric-ram">42%</strong>
+            <small>DDR4 / DDR5</small>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><i data-lucide="hard-drive"></i><span>DISK C:</span></div>
+            <strong id="metric-disk">64%</strong>
+            <small>NVMe Storage</small>
+          </div>
+          <div class="metric">
+            <div class="metric-top"><i data-lucide="wifi"></i><span>STATUS</span></div>
+            <strong>ONLINE</strong>
+            <small>Gemini Flash</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOWER SECTION -->
+    <section class="lower-grid">
+      <!-- CHAT TERMINAL -->
+      <div class="panel chat-panel">
+        <div class="section-heading">
+          <div>
+            <span class="panel-kicker">INTERACTION MODULE</span>
+            <h2>Диалог с J.A.R.V.I.S.</h2>
+          </div>
+          <span class="tag"><span class="live-dot"></span> NEURAL STREAM</span>
+        </div>
+
+        <div class="messages" id="messages-container">
+          <div class="message">
+            <div class="message-avatar"><i data-lucide="radio" style="width: 14px; height: 14px;"></i></div>
+            <div>
+              <div class="message-role">J.A.R.V.I.S.</div>
+              <p>Здравствуйте, сэр. Все квантовые синапсы синхронизированы. Чем могу помочь?</p>
             </div>
-            <h4 class="text-xs font-bold text-white mb-1">${a.name}</h4>
-            <p class="text-[11px] text-slate-400 leading-snug">${a.role}</p>
           </div>
-          <div class="mt-4 pt-2 border-t border-white/10 flex justify-between items-center">
-            <span class="text-[10px] text-cyan-400 font-code">ВЫБРАТЬ МОЗГ</span>
-            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-cyan-400"></i>
+        </div>
+
+        <div id="typing-indicator" class="typing" style="display: none;">
+          J.A.R.V.I.S. обрабатывает запрос<span>•••</span>
+        </div>
+
+        <div class="composer">
+          <button class="icon-button" id="mic-btn" onclick="toggleVoice()" title="Слушать микрофон">
+            <i data-lucide="mic"></i>
+          </button>
+          <input id="chat-input" placeholder="Введите команду или скажите вслух «Джарвис»..." onkeydown="if(event.key==='Enter') sendMessage()" />
+          <button class="send-button" onclick="sendMessage()">
+            <i data-lucide="send"></i>
+          </button>
+        </div>
+        <div class="composer-hint">ENTER — отправить · ALT+J или фраза «Джарвис» — голосовая команда</div>
+      </div>
+
+      <!-- TELEMETRY / MODULES -->
+      <div class="panel activity-panel">
+        <div class="section-heading">
+          <div>
+            <span class="panel-kicker">SYSTEM TELEMETRY</span>
+            <h2>Состояние подсистем</h2>
           </div>
-        `;
-        grid.appendChild(card);
+          <i data-lucide="gauge" class="muted" style="width: 18px; height: 18px;"></i>
+        </div>
+
+        <div class="module-row">
+          <div class="module-icon"><i data-lucide="cpu"></i></div>
+          <div class="module-copy">
+            <b>Gemini 3.5 Flash AI Core</b>
+            <small>Мультимодальный мозг и анализ контекста</small>
+          </div>
+          <span class="module-state active">ACTIVE</span>
+        </div>
+
+        <div class="module-row">
+          <div class="module-icon"><i data-lucide="mic"></i></div>
+          <div class="module-copy">
+            <b>Fifine VAD Listener & Whisper</b>
+            <small>Локальное непрерывное распознавание</small>
+          </div>
+          <span class="module-state active">READY</span>
+        </div>
+
+        <div class="module-row">
+          <div class="module-icon"><i data-lucide="volume-2"></i></div>
+          <div class="module-copy">
+            <b>Neural Voice Engine</b>
+            <small>Дубляж Тони Старка (ru-RU-Dmitry)</small>
+          </div>
+          <span class="module-state active">ONLINE</span>
+        </div>
+
+        <div class="module-row">
+          <div class="module-icon"><i data-lucide="monitor"></i></div>
+          <div class="module-copy">
+            <b>Windows Desktop Automation</b>
+            <small>Управление окнами, звуком и питанием</small>
+          </div>
+          <span class="module-state active">ACTIVE</span>
+        </div>
+
+        <div class="security-note">
+          <i data-lucide="shield-check" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+          <span>
+            <b>Защищённый режим и системный трей</b>
+            <small>Приложение сворачивается в трей и просыпается по голосу.</small>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      J.A.R.V.I.S. PRIME <span>·</span> STARK INDUSTRIES <span>·</span> LOCAL-FIRST HYBRID ARCHITECTURE
+    </footer>
+  </main>
+</div>
+
+<script>
+  lucide.createIcons();
+
+  function addMessage(role, text, isUser = false) {
+    const container = document.getElementById('messages-container');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `message ${isUser ? 'user' : ''}`;
+    
+    msgDiv.innerHTML = `
+      <div class="message-avatar">${isUser ? 'ВЫ' : '<i data-lucide="radio" style="width: 14px; height: 14px;"></i>'}</div>
+      <div>
+        <div class="message-role">${role}</div>
+        <p>${text}</p>
+      </div>
+    `;
+    container.appendChild(msgDiv);
+    container.scrollTop = container.scrollHeight;
+    lucide.createIcons();
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    addMessage('ВЫ', text, true);
+    input.value = '';
+    
+    document.getElementById('typing-indicator').style.display = 'block';
+    document.getElementById('core-state-title').innerText = 'ОБРАБОТКА...';
+    document.getElementById('core-state-caption').innerText = text;
+
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.send_command(text);
+    }
+  }
+
+  function setStatus(statusText, isListening = false, isSpeaking = false) {
+    const title = document.getElementById('core-state-title');
+    const caption = document.getElementById('core-state-caption');
+    const micBtn = document.getElementById('mic-btn');
+    const typing = document.getElementById('typing-indicator');
+
+    if (isListening) {
+      title.innerText = 'СЛУШАЮ ВАС...';
+      title.style.color = '#48d9b0';
+      caption.innerText = 'Говорите команду в микрофон Fifine';
+      micBtn.classList.add('active');
+    } else if (isSpeaking) {
+      title.innerText = 'ОТВЕТ ДЖАРВИСА';
+      title.style.color = '#72d5ff';
+      typing.style.display = 'none';
+      micBtn.classList.remove('active');
+    } else {
+      title.innerText = 'СИСТЕМА ГОТОВА';
+      title.style.color = '#b9eaff';
+      caption.innerText = 'Ожидаю вашей команды';
+      typing.style.display = 'none';
+      micBtn.classList.remove('active');
+    }
+  }
+
+  function updateSystemGauges(cpu, ram, disk) {
+    document.getElementById('metric-cpu').innerText = cpu + '%';
+    document.getElementById('metric-ram').innerText = ram + '%';
+    document.getElementById('metric-disk').innerText = disk + '%';
+  }
+
+  function toggleVoice() {
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.trigger_listen();
+    }
+  }
+
+  function minimizeToTray() {
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.minimize_to_tray();
+    }
+  }
+
+  function closeApp() {
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.close_app();
+    }
+  }
+
+  function checkUpdates() {
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.check_updates().then(res => {
+        alert(res.message || 'Проверка обновлений завершена!');
       });
-      lucide.createIcons();
     }
+  }
 
-    function selectAgent(agentId, agentName) {
-      if (window.pywebview && window.pywebview.api.switch_agent) {
-        window.pywebview.api.switch_agent(agentId).then(res => {
-          document.getElementById('current-agent-badge').innerText = agentName;
-          document.getElementById('agent-log-output').innerHTML += `<p class="text-emerald-400">● [Swarm]: Фокус переключен на «${agentName}». Готов к выполнению задач.</p>`;
-          setSubtitle(`<strong>J.A.R.V.I.S.:</strong> Активирован специализированный агент «${agentName}», сэр.`);
-          loadAgentsGrid();
-        });
-      }
+  function triggerWakeWordTest() {
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.test_voice_sample();
     }
+  }
 
-    function openAddAgentModal() {
-      document.getElementById('add-agent-modal').style.display = 'flex';
+  function openFullSettings() {
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.open_wizard();
     }
+  }
 
-    function closeAddAgentModal() {
-      document.getElementById('add-agent-modal').style.display = 'none';
+  function openAgentsModal() {
+    alert("Рой агентов: в системе доступны AutoCoder, YouTube Producer, Web Scout и Vision Sentry!");
+  }
+
+  function sendQuickCommand(cmd) {
+    addMessage('ВЫ', cmd, true);
+    if (window.pywebview && window.pywebview.api) {
+      window.pywebview.api.send_command(cmd);
     }
+  }
 
-    function submitNewAgent() {
-      const name = document.getElementById('new-agent-name').value.trim();
-      const repo = document.getElementById('new-agent-repo').value.trim();
-      const role = document.getElementById('new-agent-role').value.trim();
-      const prompt = document.getElementById('new-agent-prompt').value.trim();
-      if (!name || !role) return;
+  function focusChat() {
+    document.getElementById('chat-input').focus();
+  }
 
-      if (window.pywebview && window.pywebview.api.install_agent) {
-        window.pywebview.api.install_agent(repo, name, role, prompt).then(() => {
-          closeAddAgentModal();
-          loadAgentsGrid();
-          setSubtitle(`<strong>J.A.R.V.I.S.:</strong> Новый агент «${name}» успешно подключен из ${repo}.`);
-        });
-      } else {
-        closeAddAgentModal();
-      }
-    }
-
-    function checkUpdatesManual() {
-      const desc = document.getElementById('update-status-desc');
-      const box = document.getElementById('update-action-box');
-      desc.innerText = 'Соединение с GitHub и проверка новых коммитов...';
-      if (window.pywebview && window.pywebview.api.check_updates) {
-        window.pywebview.api.check_updates().then(res => {
-          if (res.has_update) {
-            desc.innerText = `Доступна новая версия: ${res.remote_version}`;
-            document.getElementById('update-changelog-box').innerText = res.changelog;
-            box.classList.remove('hidden');
-          } else {
-            desc.innerText = res.message || 'У вас установлена самая актуальная версия!';
-            box.classList.add('hidden');
-          }
-        });
-      }
-    }
-
-    function applyUpdateNow() {
-      const desc = document.getElementById('update-status-desc');
-      desc.innerText = 'Загрузка обновления из репозитория (git pull) и переустановка... Пожалуйста, подождите.';
-      if (window.pywebview && window.pywebview.api.apply_update) {
-        window.pywebview.api.apply_update().then(res => {
-          alert(res.message || 'Обновление успешно завершено!');
-        });
-      }
-    }
-
-    function testVoiceAudio() {
-      const v = document.getElementById('set-voice-actor').value;
-      if (window.pywebview && window.pywebview.api.test_voice_sample) {
-        window.pywebview.api.test_voice_sample(v);
-      }
-    }
-
-    window.onload = function() {
-      init3D();
-      animate();
-    };
-  </script>
+  function selectNav(el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+</script>
 </body>
 </html>
