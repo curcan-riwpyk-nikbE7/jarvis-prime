@@ -252,7 +252,11 @@
         <span id="mode-text">Режим Сферы</span>
       </button>
 
-      <button onclick="closeApp()" class="p-2 rounded-xl text-red-400 bg-slate-900/75 border border-red-500/30 hover:bg-red-500/20 hover:border-red-400 transition shadow-lg">
+      <button onclick="minimizeToTray()" title="Свернуть в трей" class="p-2 rounded-xl text-slate-400 bg-slate-900/75 border border-slate-700/60 hover:border-cyan-400/50 hover:text-white transition shadow-lg backdrop-blur-md">
+        <i data-lucide="minus" class="w-4 h-4"></i>
+      </button>
+
+      <button onclick="closeApp()" title="Закрыть приложение" class="p-2 rounded-xl text-red-400 bg-slate-900/75 border border-red-500/30 hover:bg-red-500/20 hover:border-red-400 transition shadow-lg">
         <i data-lucide="x" class="w-4 h-4"></i>
       </button>
     </div>
@@ -951,6 +955,10 @@
 
     function toggleVoice() {
       if (window.pywebview) window.pywebview.api.trigger_listen();
+    }
+
+    function minimizeToTray() {
+      if (window.pywebview) window.pywebview.api.minimize_to_tray();
     }
 
     function closeApp() {

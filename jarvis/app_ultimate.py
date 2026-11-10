@@ -18,6 +18,7 @@ from jarvis.sound_fx import SoundFX
 from jarvis.tools.telegram_bridge import TelegramBridge
 from jarvis.tools.organizer import OrganizerManager
 from jarvis.tools.security_sentry import SecuritySentry
+from jarvis.tools.tray_manager import TrayManager
 from jarvis.voice.vad_listener import ContinuousVoiceListener
 
 class UltimateBridge:
@@ -77,7 +78,10 @@ class UltimateBridge:
 
     def _setup_hotkeys(self):
         try:
-            keyboard.add_hotkey("alt+j", self.trigger_listen)
+            def on_alt_j():
+                self.restore_from_tray()
+                self.trigger_listen()
+            keyboard.add_hotkey("alt+j", on_alt_j)
         except Exception:
             pass
 
@@ -92,11 +96,13 @@ class UltimateBridge:
 
             if len(cmd) > 2:
                 # Сразу выполняем команду без паузы!
+                self.restore_from_tray()
                 SoundFX.play_wake_sound()
                 self.window.evaluate_js(f"addMessage('СЭР', '{phrase}', true)")
                 self.send_command(cmd)
             else:
-                # Пользователь просто позвал «Джарвис» — переходим в режим ожидания команды
+                # Пользователь просто позвал «Джарвис» — разворачиваем окно и ждем команду
+                self.restore_from_tray()
                 self.trigger_listen()
 
         self.vad_listener = ContinuousVoiceListener(on_wake_word_callback=on_wake, energy_threshold=160)
@@ -263,6 +269,24 @@ class UltimateBridge:
         threading.Thread(target=speak_task, daemon=True).start()
         return True
 
+    def minimize_to_tray(self):
+        """Свернуть Джарвиса в системный трей (Luxify-style)"""
+        try:
+            self.window.hide()
+        except Exception:
+            try:
+                self.window.minimize()
+            except Exception:
+                pass
+
+    def restore_from_tray(self):
+        """Восстановить окно из трея"""
+        try:
+            self.window.restore()
+            self.window.show()
+        except Exception:
+            pass
+
     def close_app(self):
         self.window.destroy()
         os._exit(0)
@@ -280,6 +304,8 @@ def start_ultimate_jarvis():
         background_color='#020409'
     )
     bridge = UltimateBridge(window)
+    icon_path = os.path.join(os.path.dirname(__file__), "icon.ico")
+    TrayManager.setup_tray(window, bridge.trigger_listen, icon_path=icon_path)
     window.expose(
         bridge.trigger_listen,
         bridge.send_command,
@@ -294,6 +320,8 @@ def start_ultimate_jarvis():
         bridge.check_updates,
         bridge.apply_update,
         bridge.test_voice_sample,
+        bridge.minimize_to_tray,
+        bridge.restore_from_tray,
         bridge.close_app
     )
     webview.start()
